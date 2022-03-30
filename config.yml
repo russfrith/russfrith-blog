@@ -1,3 +1,43 @@
-baseURL: http://example.org/
+baseURL: "http://localhost:1313"
 languageCode: en-us
-title: My New Hugo Site
+title: Russell ‛Russ’ Frith
+theme: PaperMod
+
+outputs:
+    home:
+        - HTML
+        - RSS
+        - JSON # is necessary
+
+params:
+  label:
+    icon: "/images/blog-logo.svg"
+    iconHeight: 35
+
+  homeInfoParams:
+    Title: "Welcome to My Blog"
+    Content: I am a seasoned software developer. I share what I have learned, alongside the mistakes that I have made and continue to make so that you don’t have to. However, if you code, you too will make mistakes and learn along with me.
+
+  socialIcons:
+    - name: twitter
+      url: "https://twitter.com/russfrith"
+    - name: linkedin
+      url: "https://www.linkedin.com/in/russellfrith/"
+    - name: github
+      url: "https://github.com/russfrith"  
+    - name: rss
+      url: "http://localhost:1313/index.xml"
+  
+  ShowReadingTime: true
+  ShowShareButtons: true
+
+menu:
+  main:
+    - identifier: categories
+      name: Categories
+      url: /categories/
+      weight: 10
+    - identifier: tags
+      name: Tags
+      url: /tags/
+      weight: 20
