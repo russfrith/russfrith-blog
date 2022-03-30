@@ -1,4 +1,4 @@
-baseURL: "http://localhost:1313"
+baseURL: "https://russfrith.com"
 languageCode: en-us
 title: Russell ‛Russ’ Frith
 theme: PaperMod
@@ -26,7 +26,7 @@ params:
     - name: github
       url: "https://github.com/russfrith"  
     - name: rss
-      url: "http://localhost:1313/index.xml"
+      url: "https://russfrith.com/index.xml"
   
   ShowReadingTime: true
   ShowShareButtons: true
