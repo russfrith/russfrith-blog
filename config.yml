@@ -4,10 +4,10 @@ title: Russell ‛Russ’ Frith
 theme: PaperMod
 
 outputs:
-    home:
-        - HTML
-        - RSS
-        - JSON # is necessary
+  home:
+    - HTML
+    - RSS
+    - JSON # is necessary
 
 params:
   label:
