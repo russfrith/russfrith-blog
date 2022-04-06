@@ -30,6 +30,7 @@ params:
   
   ShowReadingTime: true
   ShowShareButtons: true
+  ShowFullTextinRSS: true
 
 menu:
   main:
