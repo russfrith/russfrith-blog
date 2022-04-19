@@ -7,8 +7,8 @@ cover:
   image: maurice-williams-tPX992SVljo-unsplash.jpg
   alt: "Human skull holding toothbrush between teeth"
   caption: "Photo by [Maurice Williams](https://unsplash.com/@mauricew98?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/s/photos/rainbow-key?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)"
-  tags: ["sqlserver", "dotnet", "csharp"]
-  categories: ["database"]
+tags: ["sqlserver", "dotnet", "csharp"]
+categories: ["database"]
 ---
 
 ## Introduction
