@@ -1,7 +1,7 @@
 ---
 title: "Is Identity GUID or Is It Int?"
 description: "Choosing a Primary Key Type and Exposing It Through Your API"
-date: 2022-04-18T16:38:33-04:00
+date: 2022-04-19T13:31:33-04:00
 draft: false
 cover:
   image: maurice-williams-tPX992SVljo-unsplash.jpg
