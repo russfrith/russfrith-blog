@@ -65,7 +65,7 @@ public Guid Base64ToGuid(string base64)
 
 Using the code above, a GUID of ‘55e7ad83-c81b-4148-a658-07766c221558’ would return a BASE64 string of ‘g63nVRvISEGmWAd2bCIVWA’. This string could then be used on your API. (Keep in mind that this ID is case sensitive.)
 
-If one uses integers as their primary key, there are options to obfuscate that key on their API. One such library is [Hashids](https://hashids.org/), a small open-source library that generates short, unique, non-sequential ids from numbers, which is available for a variety of programming languages.
+If one uses integers as their primary key, there are options to obfuscate that key on their API. One such library is [Hashids](https://hashids.org/), a small open-source library that generates short, unique, non-sequential IDs from numbers, which is available for a variety of programming languages.
 
 While you may see tutorials or production websites that use hackable IDs, you will want to use a mechanism like those suggested above to decouple the keys of your database from your public API.
 
