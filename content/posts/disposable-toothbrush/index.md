@@ -6,7 +6,7 @@ draft: false
 cover:
   image: human-skull-holding-toothbrush-between-teeth-7787979.jpg
   alt: "Human skull holding toothbrush between teeth"
-  caption: "Photo by [Ivan Babydov](https://www.pexels.com/@babydov) on [Pexels](https://www.pexels.com/photo/human-skull-holding-toothbrush-between-teeth-7787979/)"
+  caption: "Photo by [Ivan Babydov](https://www.pexels.com/@babydov?utm_content=attributionCopyText&utm_medium=referral&utm_source=pexels) from [Pexels](https://www.pexels.com/photo/human-skull-holding-toothbrush-between-teeth-7787979/?utm_content=attributionCopyText&utm_medium=referral&utm_source=pexels)"
 tags: ["blog"]
 categories: ["writing"]
 
