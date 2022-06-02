@@ -54,6 +54,8 @@ pandas>=1.4.0
 numpy>=1.22.0
 ```
 
+Pandas can open files and load them into a dataframe. A dataframe is one of the primary datas structures of a Pandas project. In addition to reading and writing to Excel and CSV files, Pandas supports many other file formats, including JSON, XML, SQL, among other formats. We will open an XLSX files as shown below.
+
 ```python
 import pandas as pd
 
