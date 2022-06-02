@@ -14,7 +14,7 @@ Python Pandas is a powerful package used by data scientists to analyze data. My 
 
 As is often the case, the file I was receiving was in an odd format. I’m sure you can relate. The primary problem was that the columns were not all defined. They were unnamed and formatted for some previously defined form, such that the first column might be a person’s name, the second column might be the first line of the address, or a second person’s name.
 
-Column 1   | Column 2  | Column 3   | Column 4
+Column 0   | Column 1  | Column 2   | Column 3
 -----------|-----------|------------|-------------
 Mary Smith | 1 Main St | Newark, NJ | 
 John Doe   | Jane Doe  | 2 Main St  | Trenton, NJ
@@ -44,7 +44,14 @@ COPY . /app
 RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app
 USER appuser
 
-CMD ["python", "./,myapp.py"]
+CMD ["python", "./myapp.py"]
+```
+
+The dockerfile above refers to a requirements.txt file. While this may be overkill for this project, it makes it easier to add dependencies here as you need them, rather than via the pip command in dockerfile, which now can remain unchanged. If you require a new package, just add it to the list in the requirements file as shown below.
+
+```
+pandas>=1.4.0
+numpy>=1.22.0
 ```
 
 ```python
