@@ -47,17 +47,45 @@ USER appuser
 CMD ["python", "./myapp.py"]
 ```
 
-The dockerfile above refers to a requirements.txt file. While this may be overkill for this project, it makes it easier to add dependencies here as you need them, rather than via the pip command in dockerfile, which now can remain unchanged. If you require a new package, just add it to the list in the requirements file as shown below.
+The dockerfile above refers to a requirements.txt file. While this may be overkill for this project, it makes it easier to add dependencies here as you need them, rather than via the pip command in dockerfile, which now can remain unchanged. If you require a new package, just add it to the list in the requirements file as shown below:
 
 ```
 pandas>=1.4.0
 numpy>=1.22.0
 ```
 
-Pandas can open files and load them into a dataframe. A dataframe is one of the primary datas structures of a Pandas project. In addition to reading and writing to Excel and CSV files, Pandas supports many other file formats, including JSON, XML, SQL, among other formats. We will open an XLSX files as shown below.
+Pandas can open files and load them into a dataframe. A dataframe is one of the primary datas structures of a Pandas project. In addition to reading and writing to Excel and CSV files, Pandas supports many other file formats, including JSON, XML, SQL, among other formats. We will open an XLSX files as shown below:
 
 ```python
 import pandas as pd
 
 df_input = pd.read_excel(open('input.xlsx', 'rb'), sheet_name='Sheet2')
+```
+
+My first thought was to find a library that parsed addresses. I found a promising option called usaddresses. It provided all of the features I needed,  but it did not appear to be in active development. Since I had a limited data set and could assume that addresses would start with a house number, and that names would not. Therefore, I was able to use numpy to identify names vs addresses:
+
+```python
+import numpy as np
+
+name_conditions = [
+    ~df_input.iloc[:, 2].str[:1].str.isnumeric() & df_input.iloc[:, 3].str[:1].str.isnumeric(),
+    ~df_input.iloc[:, 2].str[:1].str.isnumeric() & ~df_input.iloc[:, 3].str[:1].str.isnumeric() & df_input.iloc[:, 4].str[:1].str.isnumeric(),
+    ~df_input.iloc[:, 2].str[:1].str.isnumeric() & ~df_input.iloc[:, 3].str[:1].str.isnumeric() & ~df_input.iloc[:, 4].str[:1].str.isnumeric()
+]
+
+names = [
+    df_input.iloc[:, 2],
+    df_input.iloc[:, 2] + '|' + df_input.iloc[:, 3],
+    df_input.iloc[:, 2] + '|' + df_input.iloc[:, 3] + '|' + df_input.iloc[:, 4]
+]
+
+addresses = [
+    df_input.iloc[:, 3] + ', ' + df_input.iloc[:, 4],
+    df_input.iloc[:, 4] + ', ' + df_input.iloc[:, 5],
+    df_input.iloc[:, 5] + ', ' + df_input.iloc[:, 6],
+]
+
+df_input['Full Name'] = np.select(name_conditions, names)
+df_input['Address'] = np.select(name_conditions, addresses)
+
 ```
