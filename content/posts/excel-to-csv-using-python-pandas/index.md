@@ -89,3 +89,9 @@ df_input['Full Name'] = np.select(name_conditions, names)
 df_input['Address'] = np.select(name_conditions, addresses)
 
 ```
+
+Once we make the necessary changes to our dataframe we can export it to a new file:
+
+```python
+df_input.to_csv('output.csv')
+```
