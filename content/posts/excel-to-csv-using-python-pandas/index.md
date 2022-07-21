@@ -44,6 +44,20 @@ One option is to select what are names and what are addresses based on a list of
 numpy.select(condlist, choicelist, default=0)
 ```
 
+## Functions
+Unlike many popular programming languages that use braces (or “curly brackets”), Python uses indentation to indicate a block of code. Therefore, a Python function looks like this:
+
+```python
+def my_function():
+  print("Hello from a function")
+
+my_function()
+```
+
+## Names & Addresses
+Using what we have seen above, we can combine this to solve the name and address problem. I find this solution to be a bit brute force and ugly, and we will learn an alternative shortly, but my goal was to learn enough to solve the problem and move on. A deeper understanding of Python and these libraries may come later.
+
+
 ```python
 import numpy as np
 
