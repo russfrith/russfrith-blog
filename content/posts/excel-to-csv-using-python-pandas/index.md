@@ -23,6 +23,7 @@ Hans Down  | 3 Main St | Ste 100    | Oakland, CA
 
 The table above is a very simplified example of the problem, but we can use it to learn how Pandas can help us.
 
+## Read Excel
 Pandas can open files and load them into a dataframe. A dataframe is one of the primary datas structures of a Pandas project. In addition to reading and writing to Excel and CSV files, Pandas supports many other file formats, including JSON, XML, SQL, among other formats. We will open an XLSX files as shown below:
 
 ```python
@@ -33,6 +34,7 @@ df_input = pd.read_excel(open('input.xlsx', 'rb'), sheet_name='Sheet2')
 
 My first thought was to find a library that parsed addresses. I found a promising option called usaddresses. It provided all of the features I needed,  but it did not appear to be in active development, and was only compatible with Python 2.7. Since I had a limited data set and could assume that addresses would start with a house number, and that names would not. Therefore, I was able to use numpy to identify names vs addresses.
 
+## DataFrame.iloc
 Since the file I was given did not include headings, and because of the problem described above, such headings would be meaningless, we must access columns by the integer index. Pandas provides the DataFrame.loc method to access labeled axes, and the DataFrame.iloc method to access columns based on the integer index. 
 
 ```python
