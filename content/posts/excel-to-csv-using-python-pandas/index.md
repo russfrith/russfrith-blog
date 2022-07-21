@@ -35,7 +35,14 @@ df_input = pd.read_excel(open('input.xlsx', 'rb'), sheet_name='Sheet2')
 My first thought was to find a library that parsed addresses. I found a promising option called usaddresses. It provided all of the features I needed,  but it did not appear to be in active development, and was only compatible with Python 2.7. Since I had a limited data set and could assume that addresses would start with a house number, and that names would not. Therefore, I was able to use numpy to identify names vs addresses.
 
 ## DataFrame.iloc
-Since the file I was given did not include headings, and because of the problem described above, such headings would be meaningless, we must access columns by the integer index. Pandas provides the DataFrame.loc method to access labeled axes, and the DataFrame.iloc method to access columns based on the integer index. 
+Since the file I was given did not include headings, and because of the problem described above, such headings would be meaningless, we must access columns by the integer index. Pandas provides the *DataFrame.loc* method to access labeled axes, and the DataFrame.iloc method to access columns based on the integer index. 
+
+## numpy.select()
+One option is to select what are names and what are addresses based on a list of conditions. Numpy provides the *numpy.select()* statement to achieve this. The *condlist* is a list of conditions that determine from which array in the choice list the output elements are taken. If multiple conditions are satisfied the first one in condlist is used. The *choicelist* is the list of arrays from which the output elements are taken. If all conditions evaluate to false, *default* value is returned.
+
+```python
+numpy.select(condlist, choicelist, default=0)
+```
 
 ```python
 import numpy as np
