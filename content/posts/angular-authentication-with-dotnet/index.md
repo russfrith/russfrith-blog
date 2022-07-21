@@ -1,7 +1,7 @@
 ---
 title: "Angular Authentication With .NET"
 date: 2022-05-09T11:30:40-04:00
-draft: false
+draft: true
 cover:
   image: pexels-gotta-be-worth-it-1160845.jpg
   alt: "Assorted-color metal locks"
