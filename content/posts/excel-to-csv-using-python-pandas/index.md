@@ -35,7 +35,27 @@ df_input = pd.read_excel(open('input.xlsx', 'rb'), sheet_name='Sheet2')
 My first thought was to find a library that parsed addresses. I found a promising option called usaddresses. It provided all of the features I needed,  but it did not appear to be in active development, and was only compatible with Python 2.7. Since I had a limited data set and could assume that addresses would start with a house number, and that names would not. Therefore, I was able to use numpy to identify names vs addresses.
 
 ### DataFrame.iloc
-Since the file I was given did not include headings, and because of the problem described above, such headings would be meaningless, we must access columns by the integer index. Pandas provides the *DataFrame.loc* method to access labeled axes, and the DataFrame.iloc method to access columns based on the integer index. 
+Since the file I was given did not include headings, and because of the problem described above, such headings would be meaningless, we must access columns by the integer index. Pandas provides the *DataFrame.loc* method to access labeled axes, and the DataFrame.iloc method to access columns based on the integer index.
+
+```python
+mydict = [{'a': 1, 'b': 2, 'c': 3, 'd': 4},
+          {'a': 100, 'b': 200, 'c': 300, 'd': 400},
+          {'a': 1000, 'b': 2000, 'c': 3000, 'd': 4000 }]
+
+df = pd.DataFrame(mydict)
+
+print(df)
+      a     b     c     d
+0     1     2     3     4
+1   100   200   300   400
+2  1000  2000  3000  4000
+
+print(df.iloc[0])
+a    1
+b    2
+c    3
+d    4
+```
 
 ### numpy.select()
 One option is to select what are names and what are addresses based on a list of conditions. Numpy provides the *numpy.select()* statement to achieve this. The *condlist* is a list of conditions that determine from which array in the choice list the output elements are taken. If multiple conditions are satisfied the first one in condlist is used. The *choicelist* is the list of arrays from which the output elements are taken. If all conditions evaluate to false, *default* value is returned.
