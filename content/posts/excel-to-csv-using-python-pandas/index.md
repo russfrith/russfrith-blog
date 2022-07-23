@@ -23,6 +23,9 @@ Hans Down  | 3 Main St | Ste 100    | Oakland, CA
 
 In the table above, column 0 is always a name. Column 1 may be a name, or an address, etc. The table above is a very simplified example of the problem, but we can use it to learn how Pandas can help us.
 
+### Pandas Series
+A pandas.Series is a one-dimensional array with axis labels. A Series is equatable to an Excel column. The object supports both integer and label-based indexing and provides methods for performing operations involving the index. 
+
 ### Read Excel
 Pandas can open files and load them into a dataframe. A dataframe is one of the primary datas structures of a Pandas project. In addition to reading and writing to Excel and CSV files, Pandas supports many other file formats, including JSON, XML, SQL, among other formats. We will open an XLSX files as shown below:
 
@@ -32,7 +35,7 @@ import pandas as pd
 df_input = pd.read_excel(open('input.xlsx', 'rb'), sheet_name='Sheet2')
 ```
 
-### DataFrame.iloc
+### DataFrame iloc
 Since the file I was given did not include headings, and because of the problem described above, such headings would be meaningless, we must access columns by the integer index. Pandas provides the *DataFrame.loc* method to access labeled axes, and the DataFrame.iloc method to access columns based on the integer index.
 
 ```python
@@ -63,7 +66,7 @@ print(df.iloc[[0, 2], [1, 3]])
 2  2000  4000
 ```
 
-### numpy.select()
+### numpy select()
 One option is to select what are names and what are addresses based on a list of conditions. Numpy provides the *numpy.select()* statement to achieve this. The *condlist* is a list of conditions that determine from which array in the choice list the output elements are taken. If multiple conditions are satisfied the first one in condlist is used. The *choicelist* is the list of arrays from which the output elements are taken. If all conditions evaluate to false, *default* value is returned.
 
 ```python
