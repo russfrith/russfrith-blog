@@ -53,6 +53,14 @@ a    1
 b    2
 c    3
 d    4
+
+print(df.iloc[0, 1])
+2
+
+print(df.iloc[[0, 2], [1, 3]])
+      b     d
+0     2     4
+2  2000  4000
 ```
 
 ### numpy.select()
