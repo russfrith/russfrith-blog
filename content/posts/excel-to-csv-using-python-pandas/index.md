@@ -24,7 +24,10 @@ Hans Down  | 3 Main St | Ste 100    | Oakland, CA
 In the table above, column 0 is always a name. Column 1 may be a name, or an address, etc. The table above is a very simplified example of the problem, but we can use it to learn how Pandas can help us.
 
 ### Pandas Series
-A pandas.Series is a one-dimensional array with axis labels. A Series is equatable to an Excel column. The object supports both integer and label-based indexing and provides methods for performing operations involving the index. 
+A pandas.Series is a one-dimensional array with axis labels. A Series is equatable to an Excel column. The object supports both integer and label-based indexing and provides methods for performing operations involving the index. Series is the primary Pandas structure.
+
+### DataFrame
+A Pandas DataFrame is a two-dimensional data structure, like a two-dimensional array, or a table with rows and columns. You can think of it as a dictionary for Series objects.
 
 ### Read Excel
 Pandas can open files and load them into a dataframe. A dataframe is one of the primary datas structures of a Pandas project. In addition to reading and writing to Excel and CSV files, Pandas supports many other file formats, including JSON, XML, SQL, among other formats. We will open an XLSX files as shown below:
@@ -66,7 +69,7 @@ print(df.iloc[[0, 2], [1, 3]])
 2  2000  4000
 ```
 
-### numpy select()
+### NumPy Select()
 One option is to select what are names and what are addresses based on a list of conditions. Numpy provides the *numpy.select()* statement to achieve this. The *condlist* is a list of conditions that determine from which array in the choice list the output elements are taken. If multiple conditions are satisfied the first one in condlist is used. The *choicelist* is the list of arrays from which the output elements are taken. If all conditions evaluate to false, *default* value is returned.
 
 ```python
