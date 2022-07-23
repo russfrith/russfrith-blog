@@ -26,11 +26,11 @@ In the table above, column 0 is always a name. Column 1 may be a name, or an add
 ### Pandas Series
 A pandas.Series is a one-dimensional array with axis labels. A Series is equatable to an Excel column. The object supports both integer and label-based indexing and provides methods for performing operations involving the index. Series is the primary Pandas structure.
 
-### DataFrame
-A Pandas DataFrame is a two-dimensional data structure, like a two-dimensional array, or a table with rows and columns. You can think of it as a dictionary for Series objects.
+### Pandas DataFrame
+A Pandas DataFrame is a two-dimensional data structure, like a two-dimensional array, or a table with rows and columns. You can think of it as a dictionary for Series objects. A dataframe is one of the primary datas structures of a Pandas project. 
 
 ### Read Excel
-Pandas can open files and load them into a dataframe. A dataframe is one of the primary datas structures of a Pandas project. In addition to reading and writing to Excel and CSV files, Pandas supports many other file formats, including JSON, XML, SQL, among other formats. We will open an XLSX files as shown below:
+Pandas can open files and load them into a dataframe. In addition to reading and writing to Excel and CSV files, Pandas supports many other file formats, including JSON, XML, SQL, among other formats. We will open an XLSX files as shown below:
 
 ```python
 import pandas as pd
@@ -95,22 +95,25 @@ Using what we have seen above, we can combine this to solve the name and address
 ```python
 import numpy as np
 
+def is_name(column):
+    return ~df_fsr_pan.iloc[:, column].str[:1].str.isnumeric()
+
 name_conditions = [
-    ~df_input.iloc[:, 2].str[:1].str.isnumeric() & df_input.iloc[:, 3].str[:1].str.isnumeric(),
-    ~df_input.iloc[:, 2].str[:1].str.isnumeric() & ~df_input.iloc[:, 3].str[:1].str.isnumeric() & df_input.iloc[:, 4].str[:1].str.isnumeric(),
-    ~df_input.iloc[:, 2].str[:1].str.isnumeric() & ~df_input.iloc[:, 3].str[:1].str.isnumeric() & ~df_input.iloc[:, 4].str[:1].str.isnumeric()
+    is_name(1) & ~is_name(2),
+    is_name(1) & is_name(2) & ~is_name(3),
+    is_name(1) & is_name(2) & is_name(3)
 ]
 
 names = [
-    df_input.iloc[:, 2],
-    df_input.iloc[:, 2] + '|' + df_input.iloc[:, 3],
-    df_input.iloc[:, 2] + '|' + df_input.iloc[:, 3] + '|' + df_input.iloc[:, 4]
+    df_input.iloc[:, 1],
+    df_input.iloc[:, 1] + '|' + df_input.iloc[:, 2],
+    df_input.iloc[:, 1] + '|' + df_input.iloc[:, 2] + '|' + df_input.iloc[:, 3]
 ]
 
 addresses = [
+    df_input.iloc[:, 2] + ', ' + df_input.iloc[:, 3],
     df_input.iloc[:, 3] + ', ' + df_input.iloc[:, 4],
     df_input.iloc[:, 4] + ', ' + df_input.iloc[:, 5],
-    df_input.iloc[:, 5] + ', ' + df_input.iloc[:, 6],
 ]
 
 df_input['Full Name'] = np.select(name_conditions, names)
