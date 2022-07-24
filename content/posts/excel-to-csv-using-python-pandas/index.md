@@ -18,8 +18,7 @@ As is often the case, the file I was receiving was in an odd format. I’m sure 
 Column 0   | Column 1  | Column 2   | Column 3
 -----------|-----------|------------|-------------
 Mary Smith | 1 Main St | Newark, NJ | 
-John Doe   | Jane Doe  | 2 Main St  | Trenton, NJ
-Hans Down  | 3 Main St | Ste 100    | Oakland, CA
+John Doe   | Jane Doe  | 2 Main St  | Oakland, CA
 
 In the table above, column 0 is always a name. Column 1 may be a name, or an address, etc. The table above is a very simplified example of the problem, but we can use it to learn how Pandas can help us.
 
@@ -96,24 +95,21 @@ Using what we have seen above, we can combine this to solve the name and address
 import numpy as np
 
 def is_name(column):
-    return ~df_fsr_pan.iloc[:, column].str[:1].str.isnumeric()
+    return ~df_input.iloc[:, column].str[:1].str.isnumeric()
 
 name_conditions = [
-    is_name(1) & ~is_name(2),
-    is_name(1) & is_name(2) & ~is_name(3),
-    is_name(1) & is_name(2) & is_name(3)
+    is_name(0) & ~is_name(1),
+    is_name(0) & is_name(1) & ~is_name(2)
 ]
 
 names = [
-    df_input.iloc[:, 1],
-    df_input.iloc[:, 1] + '|' + df_input.iloc[:, 2],
-    df_input.iloc[:, 1] + '|' + df_input.iloc[:, 2] + '|' + df_input.iloc[:, 3]
+    df_input.iloc[:, 0],
+    df_input.iloc[:, 0] + '|' + df_input.iloc[:, 1]
 ]
 
 addresses = [
-    df_input.iloc[:, 2] + ', ' + df_input.iloc[:, 3],
-    df_input.iloc[:, 3] + ', ' + df_input.iloc[:, 4],
-    df_input.iloc[:, 4] + ', ' + df_input.iloc[:, 5],
+    df_input.iloc[:, 1] + ', ' + df_input.iloc[:, 2],
+    df_input.iloc[:, 2] + ', ' + df_input.iloc[:, 3]
 ]
 
 df_input['Full Name'] = np.select(name_conditions, names)
