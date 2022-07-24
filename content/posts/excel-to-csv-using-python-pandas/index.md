@@ -131,3 +131,7 @@ pip install pyinstaller
 
 pyinstaller --onefile name_of_script.py
 ```
+
+## Wrapping Up
+Python Pandas is great at manipulating data, but it can also be used to import., transform, and export data when the situation arises. I found it a relatively simple way to take a poorly planned dataset and manipulate it for use in another application. My use case combined with a smallish dataset made my brute-force approach usable. However, if you have a large dataset, or if you are using Pandas as intended, you should operate on a Series. I generally avoid hacks, but as much as it hurt me to share this, it did solve my problem.
+
