@@ -122,3 +122,12 @@ Once we make the necessary changes to our dataframe we can export it to a new fi
 ```python
 df_input.to_csv('output.csv')
 ```
+
+### PyInstaller
+My script will need to be run regularly by someone else. Therefore, I need to create an executable version of my Python script that requires no dependencies. Two options are [auto-py-to-exe](https://pypi.org/project/auto-py-to-exe/) and [PyInstaller](https://pypi.org/project/pyinstaller/). I chose PyInstaller for the command line interface. 
+
+```
+pip install pyinstaller
+
+pyinstaller --onefile name_of_script.py
+```
