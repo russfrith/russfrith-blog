@@ -69,7 +69,7 @@ print(df.iloc[[0, 2], [1, 3]])
 ```
 
 ### NumPy Select()
-One option is to select what are names and what are addresses based on a list of conditions. Numpy provides the *numpy.select()* statement to achieve this. The *condlist* is a list of conditions that determine from which array in the choice list the output elements are taken. If multiple conditions are satisfied the first one in condlist is used. The *choicelist* is the list of arrays from which the output elements are taken. If all conditions evaluate to false, *default* value is returned.
+One option is to select what are names and what are addresses based on a list of conditions. Numpy provides the *numpy.select()* statement to achieve this. The *condlist* is a list of conditions that determine from which array in the choice list the output elements are taken. If multiple conditions are satisfied the first one in *condlist* is used. The *choicelist* is the list of arrays from which the output elements are taken. If all conditions evaluate to false, *default* value is returned.
 
 ```python
 numpy.select(condlist, choicelist, default=0)
@@ -123,6 +123,14 @@ Once we make the necessary changes to our dataframe we can export it to a new fi
 df_input.to_csv('output.csv')
 ```
 
+## Charges and Credits
+In addition to the name and address challenge outlined above, I also needed to parse the transactions. In the file supplied by the source company, they had formatting built into the export file. Date, Description, Charge, Credit, etc. are all combined into one column, and we don’t know how many columns there will be. This was done so that the previous consumer could simply print the entire column, and it would be appropriately formatted. They were unwilling or unable to provide a cleaner export. Therefore, I needed to parse the column to separate the charges and the credits. 
+
+Imagine the column is 80 characters wide. The first 10 characters include the Date. Characters 15 through 25 include a Description. Characters 35 through 45 include the charge if applicable. Characters 50 through 60 include the credit  if applicable. Finally, characters 70 through 80 include the subtotal. The columns could be parsed as follows:
+
+## Wrapping Up
+Python Pandas is great at manipulating data, but it can also be used to import., transform, and export data when the situation arises. I found it a relatively simple way to take a poorly planned dataset and manipulate it for use in another application. My use case combined with a smallish dataset made my brute-force approach usable. However, if you have a large dataset, or if you are using Pandas as intended, you should operate on a Series. I generally avoid hacks, but as much as it hurt me to share this, it did solve my problem.
+
 ### PyInstaller
 My script will need to be run regularly by someone else. Therefore, I need to create an executable version of my Python script that requires no dependencies. Two options are [auto-py-to-exe](https://pypi.org/project/auto-py-to-exe/) and [PyInstaller](https://pypi.org/project/pyinstaller/). I chose PyInstaller for the command line interface. 
 
@@ -132,6 +140,4 @@ pip install pyinstaller
 pyinstaller --onefile name_of_script.py
 ```
 
-## Wrapping Up
-Python Pandas is great at manipulating data, but it can also be used to import., transform, and export data when the situation arises. I found it a relatively simple way to take a poorly planned dataset and manipulate it for use in another application. My use case combined with a smallish dataset made my brute-force approach usable. However, if you have a large dataset, or if you are using Pandas as intended, you should operate on a Series. I generally avoid hacks, but as much as it hurt me to share this, it did solve my problem.
-
+Now anyone can run this executable on their Windows machine without the need for Python to be installed.
