@@ -22,6 +22,13 @@ John Doe   | Jane Doe  | 2 Main St  | Oakland, CA
 
 In the table above, column 0 is always a name. Column 1 may be a name, or an address, etc. The table above is a very simplified example of the problem, but we can use it to learn how Pandas can help us.
 
+Our export requirement is to combine the names, charges, credits, descriptions. and balances into comma, vertical bar separated values as follows:
+
+Full Name          | Address                
+-------------------|------------------------
+Mary Smith         | 1 Main St, Newark, NJ 
+John Doe\|Jane Doe | 2 Main St, Oakland, CA
+
 ### Pandas Series
 A *pandas.Series* is a one-dimensional array with axis labels. A Series is equatable to an Excel column. The object supports both integer and label-based indexing and provides methods for performing operations involving the index.
 
@@ -121,6 +128,68 @@ df_input['Address'] = np.select(name_conditions, addresses)
 In addition to the name and address challenge outlined above, I also needed to parse the transactions. In the file supplied by the source company, they had formatting built into the export file. Date, Description, Charge, Credit, etc. are all combined into one column, and we don’t know how many columns there will be. This was done so that the previous consumer could simply print the entire column, and it would be appropriately formatted. They were unwilling or unable to provide a cleaner export. Therefore, I needed to parse the column to separate the charges and the credits. 
 
 Imagine the column is 80 characters wide. The first 10 characters include the Date. Characters 15 through 25 include a Description. Characters 35 through 45 include the charge if applicable. Characters 50 through 60 include the credit  if applicable. Finally, characters 70 through 80 include the subtotal. The columns could be parsed as follows:
+
+```python
+def transaction_date(col_value):
+    return col_value[:10]
+
+def transaction_description(col_value):
+    return col_value[15:25].strip()
+
+def charge_amount(col_value):
+    return col_value[35:45].strip()
+
+def is_charge(col_value):
+    return charge_amount(col_value) != ''
+
+def credit_amount(col_value):
+    return col_value[50:60].strip()
+
+def is_credit(col_value):
+    return credit_amount(col_value) != ''
+
+def subtotal(col_value):
+    return col_value[70:80].strip()
+
+def charge_list():
+    transaction_dates = []
+    transaction_amounts = []
+    transaction_descriptions = []
+    transaction_subtotals = []
+
+    for row in range(len(df_input)):
+        transaction_amounts_list = []
+        transaction_dates_list = []
+        transaction_descriptions_list = []
+        transaction_subtotal_list = []
+        
+        for column in range(10, len(df_input.columns)):
+            col_value = df_input.iloc[row, column]
+            if isinstance(col_value, str):
+                if is_charge(col_value):
+                    transaction_amounts_list.append(charge_amount(col_value))
+                    transaction_dates_list.append(transaction_date(col_value))
+                    transaction_descriptions_list.append(transaction_description(col_value))
+                    transaction_subtotal_list.append(subtotal(col_value))
+                elif is_credit(col_value):
+                    transaction_amounts_list.append(credit_amount(col_value))
+                    transaction_dates_list.append(transaction_date(col_value))
+                    transaction_descriptions_list.append(transaction_description(col_value))
+                    transaction_subtotal_list.append(subtotal(col_value))
+        separator = '|'
+        transaction_amounts.append(separator.join(transaction_amounts_list))
+        transaction_dates.append(separator.join(transaction_dates_list))
+        transaction_descriptions.append(separator.join(transaction_descriptions_list))
+        transaction_subtotals.append(separator.join(transaction_subtotal_list))
+
+    df_input['Charges'] = transaction_amounts
+    df_input['Dates'] = transaction_dates
+    df_input['Descriptions'] = transaction_descriptions
+    df_input['Balances'] = transaction_subtotals
+    return
+
+charge_list()
+```
 
 ## Wrapping Up
 Python Pandas is great at manipulating data, but it can also be used to import., transform, and export data when the situation arises. I found it a relatively simple way to take a poorly planned dataset and manipulate it for use in another application. My use case combined with a smallish dataset made my brute-force approach usable. However, if you have a large dataset, or if you are using Pandas as intended, you should operate on a Series. I generally avoid hacks, but as much as it hurt me to share this, it did solve my problem.
