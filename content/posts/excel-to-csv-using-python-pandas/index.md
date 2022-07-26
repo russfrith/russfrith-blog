@@ -22,7 +22,7 @@ John Doe   | Jane Doe  | 2 Main St  | Oakland, CA
 
 In the table above, column 0 is always a name. Column 1 may be a name, or an address, etc. The table above is a very simplified example of the problem, but we can use it to learn how Pandas can help us.
 
-Our export requirement is to combine the names, charges, credits, descriptions. and balances into comma delimited, pipe separated values as follows:
+Our export requirement is to combine the names, charges, credits, descriptions, and balances into comma separated values, with pipe separated values in columns where multiple values exist as follows:
 
 Full Name          | Address                
 -------------------|------------------------
