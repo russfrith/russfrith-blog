@@ -1,7 +1,7 @@
 ---
 title: "Excel to CSV Using Python Pandas"
 description: "How to read, transform, and write data using Python and Pandas"
-date: 2022-07-20T18:20:31-04:00
+date: 2022-07-26T15:08:01-04:00
 draft: false
 cover:
   image: fidias-cervantes-oHW-2VFNg-Q-unsplash.jpg
@@ -12,7 +12,7 @@ categories: ["programming"]
 ---
 
 ## Introduction
-Python Pandas is a powerful package used by data scientists to analyze data. My recent use case was far more pedestrian. I had one vendor that was providing a data file in Excel format, and another vendor that needed to consume that data in a completely different schema as a CSV file. 
+Python Pandas is a powerful package used by data scientists to analyze data. My recent use case was far more pedestrian. I had one vendor that was providing a data file in Excel format, and another vendor that needed to consume that data in a completely different schema as a CSV file.
 
 As is often the case, the file I was receiving was formed oddly. I’m sure you can relate. The primary problem was that the columns were not all defined. They were unnamed and formatted for some previously defined form, such that the first column might be a person’s name, the second column might be the first line of the address, or a second person’s name.
 
@@ -34,7 +34,7 @@ John Doe\|Jane Doe | 2 Main St, Oakland, CA
 A *pandas.Series* is a one-dimensional array with axis labels. A Series is equatable to an Excel column. The object supports both integer and label-based indexing and provides methods for performing operations involving the index.
 
 ### Pandas DataFrame
-A *pandas.DataFrame* is a two-dimensional data structure, like a two-dimensional array, or a table with rows and columns. You can think of it as a dictionary for Series objects. A dataframe is one of the primary datas structures of a Pandas project. 
+A *pandas.DataFrame* is a two-dimensional data structure, like a two-dimensional array, or a table with rows and columns. You can think of it as a dictionary for Series objects. A dataframe is one of the primary datas structures of a Pandas project.
 
 ### Read Excel
 Pandas can open files and load them into a dataframe. In addition to reading and writing to Excel and CSV files, Pandas supports many other file formats, including JSON, XML, SQL, among others. We will open an XLSX files as shown below:
@@ -126,7 +126,7 @@ df_input['Address'] = np.select(name_conditions, addresses)
 ```
 
 ## Charges and Credits
-In addition to the name and address challenge outlined above, I also needed to parse the transactions. In the file supplied by the source company, they had formatting built into the export file. Date, Description, Charge, Credit, etc. are all combined into one column, and we don’t know how many columns there will be. This was done so that the previous consumer could simply print the entire column, and it would be appropriately formatted. They were unwilling or unable to provide a cleaner export. Therefore, I needed to parse the column to separate the charges and the credits. 
+In addition to the name and address challenge outlined above, I also needed to parse the transactions. In the file supplied by the source company, they had formatting built into the export file. Date, Description, Charge, Credit, etc. are all combined into one column, and we don’t know how many columns there will be. This was done so that the previous consumer could simply print the entire column, and it would be appropriately formatted. They were unwilling or unable to provide a cleaner export. Therefore, I needed to parse the column to separate the charges and the credits.
 
 One small thing that made this easier was the fact that the unknown number of charges and credits were the final columns. Therefore, we could assume that if the first possible column with a charge or credit was at index 10, the remaining columns would all be credits, debits, or empty.
 
@@ -202,10 +202,10 @@ df_input.to_csv('output.csv')
 ```
 
 ## Wrapping Up
-Python Pandas is great at manipulating data, but it can also be used to import., transform, and export data when the situation arises. I found it a relatively simple way to take a poorly planned dataset and manipulate it for use in another application. My use case combined with a smallish dataset made my brute-force approach usable. However, if you have a large dataset, or if you are using Pandas as intended, you should operate on a Series. 
+Python Pandas is great at manipulating data, but it can also be used to import., transform, and export data when the situation arises. I found it a relatively simple way to take a poorly planned dataset and manipulate it for use in another application. My use case combined with a smallish dataset made my brute-force approach usable. However, if you have a large dataset, or if you are using Pandas as intended, you should operate on a Series.
 
 ### PyInstaller
-My script will need to be run regularly by someone else. Therefore, I need to create an executable version of my Python script that requires no dependencies. Two options are [auto-py-to-exe](https://pypi.org/project/auto-py-to-exe/) and [PyInstaller](https://pypi.org/project/pyinstaller/). I chose PyInstaller for the command line interface. 
+My script will need to be run regularly by someone else. Therefore, I need to create an executable version of my Python script that requires no dependencies. Two options are [auto-py-to-exe](https://pypi.org/project/auto-py-to-exe/) and [PyInstaller](https://pypi.org/project/pyinstaller/). I chose PyInstaller for the command line interface.
 
 ```
 pip install pyinstaller
