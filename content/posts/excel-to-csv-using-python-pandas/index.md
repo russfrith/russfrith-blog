@@ -1,5 +1,6 @@
 ---
 title: "Excel to CSV Using Python Pandas"
+description: "How to read, transform, and write data using Python and Pandas"
 date: 2022-07-20T18:20:31-04:00
 draft: false
 cover:
