@@ -22,7 +22,7 @@ John Doe   | Jane Doe  | 2 Main St  | Oakland, CA
 
 In the table above, column 0 is always a name. Column 1 may be a name, or an address, etc. The table above is a very simplified example of the problem, but we can use it to learn how Pandas can help us.
 
-Our export requirement is to combine the names, charges, credits, descriptions. and balances into comma, vertical bar separated values as follows:
+Our export requirement is to combine the names, charges, credits, descriptions. and balances into comma delimited, pipe separated values as follows:
 
 Full Name          | Address                
 -------------------|------------------------
@@ -95,7 +95,7 @@ my_function()
 ## Names & Addresses
 My first thought was to find a library that parsed addresses. I found a promising option called [usaddress](https://pypi.org/project/usaddress/). It provided all of the features I needed,  but it did not appear to be in active development, and was only compatible with Python 2.7. Since I had a limited data set and could assume that addresses would start with a house number, and that names would not, I was able to use NumPy to identify names vs addresses.
 
-Using what we have seen above, we can combine this to solve the name and address problem. I find this solution to be a bit brute force and ugly, and we will learn an alternative shortly, but my goal was to learn enough to solve the problem and move on. A deeper understanding of Python and these libraries may come later.
+Using what we have seen above, we can combine this to solve the name and address problem. I find this solution to be a bit brute force and ugly, but my goal was to learn enough to solve the problem and move on. A deeper understanding of Python and these libraries may come later.
 
 
 ```python
@@ -127,7 +127,9 @@ df_input['Address'] = np.select(name_conditions, addresses)
 ## Charges and Credits
 In addition to the name and address challenge outlined above, I also needed to parse the transactions. In the file supplied by the source company, they had formatting built into the export file. Date, Description, Charge, Credit, etc. are all combined into one column, and we don’t know how many columns there will be. This was done so that the previous consumer could simply print the entire column, and it would be appropriately formatted. They were unwilling or unable to provide a cleaner export. Therefore, I needed to parse the column to separate the charges and the credits. 
 
-Imagine the column is 80 characters wide. The first 10 characters include the Date. Characters 15 through 25 include a Description. Characters 35 through 45 include the charge if applicable. Characters 50 through 60 include the credit  if applicable. Finally, characters 70 through 80 include the subtotal. The columns could be parsed as follows:
+One small thing that made this easier was the fact that the unknown number of charges and credits were the final columns. Therefore, we could assume that if the first possible column with a charge or credit was at index 10, the remaining columns would all be credits, debits, or empty.
+
+Imagine the column is 80 characters wide. The first 10 characters include the Date. Characters 15 through 25 include a Description. Characters 35 through 45 include the charge if applicable. Characters 50 through 60 include the credit if applicable. Finally, characters 70 through 80 include the subtotal. The columns could be parsed as follows:
 
 ```python
 def transaction_date(col_value):
@@ -192,14 +194,14 @@ charge_list()
 ```
 
 ### Write CSV
-Once we make the necessary changes to our dataframe we can export it to a new file:
+Once we make the necessary changes to our dataframe, we can export it to a new file:
 
 ```python
 df_input.to_csv('output.csv')
 ```
 
 ## Wrapping Up
-Python Pandas is great at manipulating data, but it can also be used to import., transform, and export data when the situation arises. I found it a relatively simple way to take a poorly planned dataset and manipulate it for use in another application. My use case combined with a smallish dataset made my brute-force approach usable. However, if you have a large dataset, or if you are using Pandas as intended, you should operate on a Series. I generally avoid hacks, but as much as it hurt me to share this, it did solve my problem.
+Python Pandas is great at manipulating data, but it can also be used to import., transform, and export data when the situation arises. I found it a relatively simple way to take a poorly planned dataset and manipulate it for use in another application. My use case combined with a smallish dataset made my brute-force approach usable. However, if you have a large dataset, or if you are using Pandas as intended, you should operate on a Series. 
 
 ### PyInstaller
 My script will need to be run regularly by someone else. Therefore, I need to create an executable version of my Python script that requires no dependencies. Two options are [auto-py-to-exe](https://pypi.org/project/auto-py-to-exe/) and [PyInstaller](https://pypi.org/project/pyinstaller/). I chose PyInstaller for the command line interface. 
@@ -211,3 +213,5 @@ pyinstaller --onefile name_of_script.py
 ```
 
 Now anyone can run this executable on their Windows machine without the need for Python to be installed.
+
+I generally avoid hacks, but as much as it hurt me to share this, it did solve my problem. This was not my favorite project, and it pains me to share it, but if this helps one person understand how Python Pandas can manipulate data when they have a simiar situation, then the pain was worth suffering.
