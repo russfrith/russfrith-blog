@@ -14,3 +14,6 @@ categories: ["programming"]
 Authentication is the act of validating that a user is whom they claim to be. All other security measures are based on the premise that the system has properly identified the current user. Authorization is the act of granting an authenticated party permission to access a specific resource or function. 
 
 Username and password, also known as password authentication, is the most popular authentication mechanism. Password authentication is fraught with challenges. Users typically choose weak passwords and repeat them among multiple websites.
+
+### JWT
+JSON Web Tokens (JWT) are an open, URL-safe, industry standard [RFC 7519](https://www.rfc-editor.org/rfc/rfc7519) method for representing claims securely between two parties.
