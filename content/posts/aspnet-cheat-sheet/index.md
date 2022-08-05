@@ -17,3 +17,6 @@ While Node.js has been the exciting backend web development framework for years 
 
 ## MVC
 Model–view–controller (MVC) is a software architectural pattern commonly used for developing user interfaces that divide the related program logic into three interconnected elements. A Model represents some part of the program purely and intuitively. A View is a visual representation of a Model, retrieving data from the Model to display to the user and passing requests back and forth between the user and the Model. A Controller is an organizational part of the user interface that lays out and coordinates multiple Views on the screen, and which receives user input and sends the appropriate messages to its underlying Views.
+
+### Tag Helpers
+Tag Helpers are server-side components that perform defined transformations on HTML Elements. They are processed on the server to create and render HTML elements in the Razor files.
