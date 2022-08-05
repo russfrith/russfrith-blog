@@ -1,5 +1,5 @@
 ---
-title: "ASP.NET Cheatsheet"
+title: "ASP.NET Cheat Sheet"
 date: 2022-08-04T19:37:28-04:00
 draft: false
 cover:
