@@ -7,6 +7,7 @@ cover:
   image: christina-wocintechchat-com-glRqyWJgUeY-unsplash.jpg
   alt: "Woman standing next to server room"
   caption: "Photo by [Christina @ wocintechchat.com](https://unsplash.com/@wocintechchat?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/@wocintechchat?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyTex)"
+ShowToc: true
 tags: ["aspnet", "csharp"]
 categories: ["programming"]
 ---
