@@ -19,7 +19,7 @@ While Node.js has been the exciting backend web development framework for years 
 Model–view–controller (MVC) is a software architectural pattern commonly used for developing user interfaces that divide the related program logic into three interconnected elements. A Model represents some part of the program purely and intuitively. A View is a visual representation of a Model, retrieving data from the Model to display to the user and passing requests back and forth between the user and the Model. A Controller is an organizational part of the user interface that lays out and coordinates multiple Views on the screen, and which receives user input and sends the appropriate messages to its underlying Views.
 
 ### HTML Helpers
-HTML Helpers are methods that return a string, usually HTML. They were introduced in the original release of ASP.NET MVC in 2008, along with UrlHelper and AjaxHelper. One also has the ability to create their own HTML Helper in addition to those provided. These helper objects simplify the creation of a web application interface. The included helpers are:
+HTML Helpers are methods that return a string, usually HTML. They were introduced in the original release of ASP.NET MVC in 2008, along with UrlHelper and AjaxHelper. One also has the ability to create their own HTML Helper in addition to those provided. These helper objects simplify the creation of a web application interface. The included HTML Helpers are:
 - Html.ActionLink()
 - Html.BeginForm()
 - Html.CheckBox()
