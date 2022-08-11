@@ -34,3 +34,13 @@ HTML Helpers are methods that return a string, usually HTML. They were introduce
 
 ### Tag Helpers
 Rather than introducing a new syntax as was the case with HTML Helpers, Tag Helpers use a syntax that aligns with standard HTML tags. Tag Helpers are server-side components introduced in ASP.NET Core that perform defined transformations on HTML Elements. They are processed on the server to create and render HTML elements in the Razor files. As with HTML Helpers, you can create Tag Helpers that perform custom transformations.
+- asp-controller
+- asp-action
+- asp-route-{value}
+- asp-route
+- asp-all-route-data
+- asp-fragment
+- asp-area
+- asp-protocol
+- asp-host
+- asp-page
