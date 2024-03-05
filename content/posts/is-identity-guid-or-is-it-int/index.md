@@ -5,7 +5,7 @@ date: 2022-04-19T13:31:33-04:00
 draft: false
 cover:
   image: maurice-williams-tPX992SVljo-unsplash.jpg
-  alt: "Human skull holding toothbrush between teeth"
+  alt: "Man holding keys"
   caption: "Photo by [Maurice Williams](https://unsplash.com/@mauricew98?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/s/photos/rainbow-key?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)"
 tags: ["sqlserver", "dotnet", "csharp"]
 categories: ["database"]
