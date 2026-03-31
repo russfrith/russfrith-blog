@@ -16,9 +16,8 @@ outputs:
     - JSON # is necessary
 
 params:
-  author:
-    name: "Russell Frith"
-    email: "russell@russfrith.com"
+  author: "Russell Frith"
+  # email: "russell@frith.email"
 
   label:
     icon: "/images/blog-logo.svg"
