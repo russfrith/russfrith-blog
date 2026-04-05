@@ -4,10 +4,10 @@ title: Russell ‛Russ’ Frith
 theme: PaperMod
 env: production
 
-social:
-  x: russfrith
-  linkedin: russellfrith
-  github: russfrith
+enableRobotsTXT: true
+buildDrafts: false
+buildFuture: false
+buildExpired: false
 
 outputs:
   home:
@@ -16,9 +16,6 @@ outputs:
     - JSON # is necessary
 
 params:
-  author: "Russell Frith"
-  # email: "russell@frith.email"
-
   label:
     icon: "/images/blog-logo.svg"
     iconHeight: 35
@@ -29,14 +26,14 @@ params:
 
   socialIcons:
     - name: x
-      url: "https://x.com/russfrith"
+      url: "https://twitter.com/russfrith"
     - name: linkedin
       url: "https://www.linkedin.com/in/russellfrith/"
     - name: github
-      url: "https://github.com/russfrith"
+      url: "https://github.com/russfrith"  
     - name: rss
       url: "https://russfrith.com/index.xml"
-
+  
   ShowReadingTime: true
   ShowShareButtons: true
   ShowFullTextinRSS: true

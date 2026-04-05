@@ -2,6 +2,10 @@
 title: "Cracking Polly"
 date: 2023-01-10T15:33:44-04:00
 draft: true
+cover:
+  image: kaitlin-dowis-3YnT86K0CdE-unsplash.jpg
+  alt: "Man holding keys"
+  caption: "Photo by [Kaitlin Dowis](https://unsplash.com/@kaitlindowis?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash) on [Unsplash](https://unsplash.com/photos/red-yellow-and-green-parrot-3YnT86K0CdE?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)"
 ---
 ## Introduction
 Polly is a resilience and transient-fault-handling library that provides developers with an easy and effective way to handle and recover from faults in their applications.
