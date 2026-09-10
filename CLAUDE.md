@@ -37,7 +37,11 @@ categories: ["category"]
 
 - New posts always start with `draft: true`. Never set `draft: false` on a new or existing post — that's a publishing decision I make myself, not something to do automatically as part of content edits.
 - `date` should be updated to reflect actual publish time whenever the post is eventually published (i.e. whenever I flip `draft: false` myself).
-- Cover images are typically sourced from Unsplash; keep the caption attribution format above (photographer name linked, "Unsplash" linked to the photo).
+- Cover images may come from Unsplash, Pexels, Midjourney, or elsewhere — use whatever attribution format fits the source:
+  - Unsplash/Pexels (or similar licensed stock sites): `caption: "Photo by [Name](profile-url) on [Site](photo-url)"`
+  - AI-generated (Midjourney, etc.): `caption: "Image generated with Midjourney"` (no attribution link needed, but note the tool used)
+  - No attribution needed: omit the `caption` field entirely rather than leaving a placeholder
+- Don't assume Unsplash by default — check the actual image source before writing a caption.
 - Don't invent tags/categories that aren't already in use elsewhere in the site unless asked — check existing posts for the established taxonomy first.
 
 ## Writing style
@@ -46,6 +50,17 @@ categories: ["category"]
 - Prefer tight, direct prose. Merge short one-sentence paragraphs where it improves flow rather than leaving them fragmented.
 - Use bullet lists for actual lists rather than list-like prose paragraphs.
 - Keep my voice: plain, first-person, a little dry. Don't over-polish into generic "content marketing" tone.
+
+## Companion code for posts
+
+Some posts reference runnable code — benchmarks, demos, sample projects — that readers can clone and run themselves. This code is NOT a benchmark-only thing; it could be any kind of runnable example a post references.
+
+- Location: `companion-code/<post-slug>/`, using the same slug as the post's folder under `content/posts/`.
+- This must stay outside `content/` entirely. Hugo treats a post's folder as a "leaf bundle" and any non-index files inside it become page resources that can get copied into the built site — so companion code living inside a post's own folder risks getting published as part of the site output. Keeping it under a top-level `companion-code/` sibling avoids that.
+- `companion-code/` is long-lived and public, not scratch work — commit source files (`.csproj`, `.cs`, `Dockerfile`, etc.) so readers can run things themselves.
+- Add a `.gitignore` entry for build output (`bin/`, `obj/`, or language-equivalent) — don't commit build artifacts, only source.
+- Include a `README.md` in each post's companion-code folder explaining how to build and run it (local + Docker, if applicable).
+- When a post references companion code, prefer showing short, relevant snippets directly in the post itself rather than assuming readers will go clone the folder to understand the point being made — the companion code is for readers who want to reproduce or extend it, not a substitute for explaining things in the post.
 
 ## What not to touch without being asked
 
