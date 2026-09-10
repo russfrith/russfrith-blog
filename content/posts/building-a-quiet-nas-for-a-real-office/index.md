@@ -1,11 +1,11 @@
 ---
-title: "Building a Quiet NAS for a Real Office (and Why I Chose TrueNAS)"
+title: "Building a Quiet NAS for a Real Small Office (and Why I Chose TrueNAS)"
 description: "How I’m Running My Office Infrastructure Like Something I’d Trust in Production"
-date: 2026-03-31T13:33:33-04:00
-draft: true
+date: 2026-04-20T10:04:30-04:00
+draft: false
 cover:
   image: william-warby-ykyUSsbDviA-unsplash-crop.jpg
-  alt: "Hard Drive"
+  alt: "Hard disk drive"
   caption: "Photo by [William Warby](https://unsplash.com/@wwarby?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/photos/a-close-up-of-a-hard-drive-with-a-pair-of-scissors-ykyUSsbDviA?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)"
 tags: ["truenas", "linux", "nas"]
 categories: ["cloud"]
@@ -13,13 +13,13 @@ categories: ["cloud"]
 
 When people talk about building a NAS, the conversation usually goes one of two ways:
 
-* A step-by-step install guide for TrueNAS
+* A step-by-step install guide for software such as TrueNAS
 * Or a massive rack-mounted setup with more drives than most small businesses will ever need
 
 Neither of those was what I was looking for.
 
-I didn’t want a lab.
-I didn’t want a science project.
+I didn’t want a homelab,
+I didn’t want a science project,
 And I definitely didn’t want something that sounded like a server room sitting five feet from my desk.
 
 I wanted something simple:
@@ -34,14 +34,14 @@ This is how I approached that problem—and why I landed on TrueNAS.
 
 Before looking at hardware or software, I had to be honest about the constraints.
 
-This wasn’t going into a basement or a dedicated rack closet. It was going into a small office where I actually work every day.
+This wasn’t going into a basement or a dedicated rack closet; it was going into a small office where I actually work every day.
 
 That meant:
 
-* **Noise matters** — constant fan noise gets old fast
+* **Noise matters** — constant fan and/or hard disk noise gets old fast
 * **Size matters** — I don’t have space for a full rack server
 * **Power usage matters** — this runs 24/7
-* **Reliability matters** — this is backing up real work, not media hoarding
+* **Reliability matters** — this is storing real work, not media hoarding
 * **Cost matters** — but not at the expense of stability
 
 And maybe most importantly:
@@ -56,7 +56,7 @@ That framing alone rules out a lot of overbuilt solutions.
 
 I seriously considered it.
 
-Synology (and QNAP) are great for:
+Synology (and others) are great for:
 
 * Plug-and-play setups
 * Low effort
@@ -69,9 +69,7 @@ But I kept coming back to a few concerns:
 * You don’t really control the underlying system
 * ZFS (which I wanted) isn’t part of the story
 
-For some use cases, that tradeoff is fine.
-
-For mine, I wanted something that felt a little closer to the metal—without becoming a full-time job to manage.
+For some use cases, that tradeoff is fine. For mine, I wanted something that felt a little closer to the metal, without becoming a full-time job to manage.
 
 ---
 
@@ -87,13 +85,11 @@ The problem is:
 * It’s often **less power efficient**
 * It tends to become **less reliable over time**
 
-I’ve done this before. It works—until it doesn’t.
-
-This time, I wanted something intentionally built for the role.
+It works—until it doesn’t. I wanted something intentionally built for the role.
 
 ---
 
-Hardware: Right-Sized, Not Overbuilt
+## Hardware: Right-Sized, Not Overbuilt
 
 I ended up building around an Intel N5105-based motherboard in a compact NAS case.
 
@@ -107,10 +103,10 @@ That immediately lowered the cost of the build and made the N5105 platform a ver
 
 Beyond that, the platform checked the boxes I cared about:
 
-Low power draw
-Quiet operation (no need for aggressive cooling)
-Enough performance for storage and light services
-Compact, purpose-built NAS boards available
+* Low power draw
+* Quiet operation (no need for aggressive cooling)
+* Enough performance for storage and light services
+* Compact, purpose-built NAS boards available
 
 For storage, I went with:
 
@@ -121,13 +117,11 @@ Why 3 drives?
 
 Because it hit the balance I was looking for:
 
-Redundancy
-Reasonable usable capacity
-Lower cost and less noise than a larger array
+* Redundancy
+* Reasonable usable capacity
+* Lower cost and less noise than a larger array
 
-Could I have gone bigger? Sure.
-
-But again, the goal wasn’t to build the biggest NAS possible—it was to build the right one.
+Could I have gone bigger? Sure. But again, the goal wasn’t to build the biggest NAS possible—it was to build the right one.
 
 ---
 
@@ -236,11 +230,7 @@ I kept things simple:
 * `boot-pool` (system)
 * `core-pool` (main RAIDZ1 storage)
 
-There’s a temptation to over-engineer this early.
-
-I’d recommend resisting that.
-
-Start simple. Expand later.
+There’s a temptation to over-engineer this early. I’d recommend resisting that. Start simple. Expand later.
 
 ---
 
@@ -280,7 +270,7 @@ Keeping those roles separate has already proven to be the right call.
 A few small things:
 
 * I’d plan static IP assignments earlier
-* I might use a smaller dedicated boot SSD (2TB is overkill)
+* You don't need a huge boot drive; I settled on 32GB and it's been plenty
 * I’d document drive bay → serial mappings sooner
 
 Nothing major—but these are the kinds of details that matter over time.
@@ -298,9 +288,9 @@ Most of them fall into one of two categories:
 
 I was aiming for something in the middle.
 
-Not flashy.
-Not massive.
-Not complicated.
+* Not flashy.
+* Not massive.
+* Not complicated.
 
 Just:
 
@@ -312,8 +302,8 @@ And for that, TrueNAS turned out to be the right foundation.
 
 If you’re building something similar, my advice is simple:
 
-Start with your constraints.
-Be honest about what you actually need.
-And resist the urge to build for a future that may never come.
+* Start with your constraints.
+* Be honest about what you actually need.
+* And resist the urge to build for a future that may never come.
 
 That alone will get you 90% of the way there.
