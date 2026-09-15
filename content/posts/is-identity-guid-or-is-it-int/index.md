@@ -81,9 +81,15 @@ I began writing this with the premise of showing how a COMB or similar sequentia
 
 This is an interesting topic to dive into deeper. I recommend reading the posts below, and if you use SQL Server, consume just about everything that Kimberly Tripp writes or says.
 
+## Update: UUIDv7
+Since I wrote this post, [UUIDv7](https://www.rfc-editor.org/rfc/rfc9562)[[6](#references)] has been formalized, and it changes the calculus above. A UUIDv7 embeds a millisecond timestamp in its leading bits, so values generated over time sort in roughly increasing order, the same property that made COMB GUIDs and NEWSEQUENTIALID() worth the extra effort in the [Clustered Index Fragmentation](#clustered-index-fragmentation) section. Unlike NEWSEQUENTIALID(), it can be generated entirely in application code, and unlike a hand-rolled COMB, it is a standardized format with growing library support (.NET added native support with `Guid.CreateVersion7()` in .NET 9).
+
+This does not change the [Column Size](#column-size) or [Index Structure Size](#index-structure-size) arguments; a UUIDv7 is still 16 bytes. But it removes most of the fragmentation penalty that was the strongest argument for choosing *int* over GUID. If I were writing my recommendations today, "use some form of sequential GUID" would mean UUIDv7 by default, rather than reaching for COMB or NEWSEQUENTIALID().
+
 ## References
 1. Robert C. Martin. [No DB](https://blog.cleancoder.com/uncle-bob/2012/05/15/NODB.html), _The Clean Code Blog_, May 15, 2012.
 2. Kimberly Tripp. [GUIDs as PRIMARY KEYs and/or the clustering key](https://www.sqlskills.com/blogs/kimberly/guids-as-primary-keys-andor-the-clustering-key/). _SQLskills_, March 5, 2009.
 3. Jimmy Nilsson. [The Cost of GUIDs as Primary Keys](https://www.informit.com/articles/article.aspx?p=25862), _InformIT_, March 8, 2002.
 4. Jeff Atwood. [Primary Keys: IDs versus GUIDs](https://blog.codinghorror.com/primary-keys-ids-versus-guids/), _Coding Horror_, March 19, 2007.
 5. Tom Harrison. [UUID or GUID as Primary Keys? Be Careful!](https://tomharrisonjr.com/uuid-or-guid-as-primary-keys-be-careful-7b2aa3dcb439), _Tom Harrison’s Blog_, February 12, 2017.
+6. Peabody, Davis, et al. [RFC 9562: Universally Unique IDentifiers (UUIDs)](https://www.rfc-editor.org/rfc/rfc9562), _IETF_, May 2024.
