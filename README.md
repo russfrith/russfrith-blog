@@ -1,12 +1,12 @@
 # russfrith-blog
 
-This repository contains the source content for my blog, published at [russfrith.com](https://russfrith.com). It's public mainly so readers can see how a post is written, follow its history, and — where applicable — get the code referenced in a post.
+This repository contains the source content for my blog, published at [russfrith.com](https://russfrith.com). It's public mainly so readers can see how a post is written, follow its history, and where applicable, get the code referenced in a post.
 
 This is not a general-purpose Hugo starter or theme; it isn't intended for others to clone and host as their own site.
 
 ## Post source vs. the published blog
 
-Posts live under `content/posts/<slug>/`. Not everything here has been published. Each post's front matter includes a `draft` flag, and posts with `draft: true` are excluded from the built site — they may be unfinished, unreviewed, or scheduled for later. If you're browsing this repository, treat draft posts as work in progress, not as final or endorsed content. The published, canonical version of any post is whatever appears on [russfrith.com](https://russfrith.com), not necessarily the current state of a file here.
+Posts live under `content/posts/<slug>/`. Not everything here has been published. Each post's front matter includes a `draft` flag, and posts with `draft: true` are excluded from the built site; they may be unfinished, unreviewed, or scheduled for later. If you're browsing this repository, treat draft posts as work in progress, not as final or endorsed content. The published, canonical version of any post is whatever appears on [russfrith.com](https://russfrith.com), not necessarily the current state of a file here.
 
 ## Companion code
 
