@@ -15,7 +15,7 @@ categories: ["business"]
 
 I'm a 1099 consultant, and I'd like to stay one. I chose this. I pay self-employment tax, I fund my own SEP IRA, I carry my own risk, and I pick my clients. When New Jersey's new rule on independent contractor classification became operative on October 1 [[3]](#references), I read it with one question in mind: what happens to me if a client can't pass the ABC test?
 
-Under New Jersey law, anyone paid for services is presumed to be an employee. The hiring company must prove all three prongs, and if it fails any one, the law treats me as an employee [[1]](#references)[[5]](#references). A 1099, a contractor agreement, or an LLC doesn't change that on its own [[1]](#references)[[6]](#references). However independently I actually work, the client's inability to prove it overrides the facts. NJDOL says workers aren't penalized for being misclassified [[1]](#references), but the consequences still land on me: a terminated contract, a restructured one, or a prospective client who decides hiring an independent New Jersey consultant isn't worth the risk.
+Under New Jersey law, anyone paid for services is presumed to be an employee. The hiring company must prove all three prongs, and if it fails any one, the law treats me as an employee [[1]](#references)[[5]](#references). A 1099, a contractor agreement, or an LLC doesn't change that on its own [[1]](#references)[[6]](#references). However independently I actually work, the client's inability to prove it overrides the facts. The New Jersey Department of Labor and Workforce Development (NJDOL) says workers aren't penalized for being misclassified [[1]](#references), but the consequences still land on me: a terminated contract, a restructured one, or a prospective client who decides hiring an independent New Jersey consultant isn't worth the risk.
 
 The state says the rule isn't a new test. Acting Labor Commissioner Kevin Jarvis said it isn't a new test or a change in enforcement [[2]](#references), and Gov. Sherrill said that anyone who is a legitimate contractor today will still be one tomorrow [[3]](#references). I'd like to believe that, but a promise isn't a protection. The Department softened its own proposal after public comment, including adding a safe harbor for control a client exercises only to comply with the law [[5]](#references). A draft that needed softening wasn't a pure restatement.
 
@@ -121,7 +121,7 @@ The uncertainty is itself the cost. It pushes clients toward the cautious choice
 
 ## The critique
 
-**The test is a 1936 statute applied to a remote economy.** NJBIA's Jack Kelly says applying it to remote work and the modern gig economy misses the mark [[2]](#references). The pile of exemption bills is the evidence.
+**The test is a 1936 statute applied to a remote economy.** Jack Kelly of the New Jersey Business and Industry Association says applying it to remote work and the modern gig economy misses the mark [[2]](#references). The pile of exemption bills is the evidence.
 
 **The uncertainty is the product.** The factors are non-exhaustive, no single one decides, and the hiring company carries the burden. A risk-averse New Jersey client doesn't have to be convinced you're an employee. It only has to be unable to prove you aren't.
 
