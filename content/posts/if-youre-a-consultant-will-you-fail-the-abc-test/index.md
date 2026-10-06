@@ -1,7 +1,7 @@
 ---
 title: "If You're a Consultant, Will You Fail the ABC Test?"
 description: "A New Jersey rule, not a national one: what N.J.A.C. 12:11 means for 1099 consultants who chose to be independent and want to stay that way."
-date: 2026-10-05T17:50:00-04:00
+date: 2026-10-06T12:36:00-04:00
 draft: false
 cover:
   image: abc-blocks-on-1099.jpg
