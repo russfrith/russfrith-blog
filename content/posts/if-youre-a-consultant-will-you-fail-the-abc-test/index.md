@@ -21,11 +21,13 @@ The state says the rule isn't a new test. Acting Labor Commissioner Kevin Jarvis
 
 ## The three prongs, from a consultant's seat
 
-| Prong | What the client must show | What it means for a consultant |
-|---|---|---|
-| **A: Control** | You're free from control or direction, in the contract and in practice [[5]](#references) | Nine factors: set hours, control over details and means, personal performance, who negotiates the services, fixed pay, risk of loss, on-call duty, limits on working for others, and client training [[5]](#references)[[6]](#references) |
-| **B: Business or place** | The work is outside the client's usual course of business, *or* performed outside all of its places of business [[5]](#references) | An "or." A remote consultant normally clears the second route (more below) |
-| **C: Independent business** | You're customarily engaged in an independently established business that can survive the end of this relationship [[6]](#references) | Seven factors: how long and how viable your business is, customer count, share of income from this client, employees, investment in your own tools, setting your own rate, and advertising and a visible business location [[5]](#references) |
+- **Prong A, Control:** The client must show you're free from its control or direction, in the contract and in practice [[5]](#references).
+  - The rule lists nine factors: set hours, control over details and means, personal performance, who negotiates the services, fixed pay, risk of loss, on-call duty, limits on working for others, and client training [[5]](#references)[[6]](#references).
+- **Prong B, Business or place:** The client must show the work is outside its usual course of business, *or* performed outside all of its places of business [[5]](#references).
+  - It's an "or." A remote consultant normally clears the second route (more below).
+- **Prong C, Independent business:** The client must show you're customarily engaged in an independently established business that can survive the end of this relationship [[6]](#references).
+  - The rule lists seven factors: how long and how viable your business is, customer count, share of income from this client, employees, investment in your own tools, setting your own rate, and advertising and a visible business location [[5]](#references).
+  - Having multiple clients, an LLC, a professional license, or liability insurance isn't enough on its own [[6]](#references).
 
 Having multiple clients, an LLC, a professional license, or liability insurance isn't enough on its own under Prong C [[6]](#references).
 
