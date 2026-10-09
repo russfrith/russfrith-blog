@@ -11,7 +11,7 @@ tags: ["csharp", "dotnet"]
 categories: ["programming"]
 ---
 
-Somewhere in your codebase there is a `switch` with a `_ =>` arm and a comment that says `// can't happen`. This is a story about that arm, and the C# 15 feature that retires it.
+Somewhere in your codebase there is a `switch` with a `_ =>` arm that throws for anything it doesn't recognize, because the type it's switching on never told the compiler what "everything" meant. This is a story about that arm, and the C# 15 feature that retires it.
 
 ## 2:03 a.m.
 
@@ -55,7 +55,13 @@ decimal Fee(Payment payment) => payment switch
 };
 ```
 
-There is no catch-all, because there is nothing left to catch. Delete the `BankTransfer` arm and the compiler tells you the `switch` doesn't handle every case. Better still, the next time someone adds a fourth payment type to the union's list, every `switch` over `Payment` in the codebase lights up at build time, long before a pager does.
+There is no catch-all, because there is nothing left to catch. Delete the `BankTransfer` arm and the compiler says so, at build time, by name:
+
+```
+warning CS8509: The switch expression does not handle all possible values of its input type 'Payment' (it is not exhaustive). For example, the pattern 'BankTransfer' is not covered.
+```
+
+Better still, the next time someone adds a fourth payment type to the union's list, every `switch` over `Payment` in the codebase raises that same warning at build time, long before a pager does. (More on turning that warning into a hard stop below.)
 
 Passing values in stays simple, too. A `Card` goes where a `Payment` is expected, so call sites read the way they always did.
 
