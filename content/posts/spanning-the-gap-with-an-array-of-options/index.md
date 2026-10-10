@@ -120,7 +120,7 @@ What C# 14 adds is making these conversions participate in **extension method re
 - **Generic type inference:** passing an array to a generic method like `T Length<T>(ReadOnlySpan<T> span)` can now infer `T` from the array's element type in cases that previously failed with "type arguments cannot be inferred." Before C# 14 you had to call `Length<int>(numbers)` explicitly.
 - **`Span<T>` → `ReadOnlySpan<T>`:** still implicit, as it's been since C# 7.2; unchanged by this feature.
 
-Plain assignment (`Span<int> s = array;`, and even `ReadOnlySpan<object> s = someStringArray;` via covariance) already compiled under C# 13, through the existing user-defined operators. That part of the story hasn't changed; the new ground is specifically extension receivers and generic inference.
+Plain assignment (`Span<int> s = array;`, and even `ReadOnlySpan<object> s = someStringArray;` via covariance) already compiled under C# 13, through the existing user-defined operators. Covariance here just means treating a more specific array type, like `string[]`, as if it were its less specific base, `object[]`. That part of the story hasn't changed; the new ground is specifically extension receivers and generic inference.
 
 Where C# 14 does add a genuinely new *conversion* at the language level is the plain, non-covariant array case: the spec now defines `T[]` → `Span<T>`/`ReadOnlySpan<T>` as a first-class implicit span conversion rather than relying on the BCL happening to ship the right operator. In practice that's not observable from user code today, since the operator has existed since .NET Core 2.1, but it means the conversion no longer depends on the BCL; it would work even against a hypothetical span-like type with no hand-written operators.
 
