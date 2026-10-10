@@ -81,14 +81,35 @@ There is one habit to drop. A discard arm (`_ =>`), even one that throws, tells 
 
 If you want shared logic without a switch at every call site, a union can also carry a body with helper members, so the one `switch` lives next to the type it describes.
 
+## When the cases already share a base class
+
+`Payment` needed a union because `Card`, `PayPal` and `BankTransfer` share no common ancestor. Plenty of designs don't have that problem; they're already an inheritance hierarchy, and the gap is the same one: nothing stops someone from adding a subclass without updating every switch over the base type.
+
+That's what `closed` is for. Mark the base class `closed` and the compiler tracks every subclass declared in the same file, the same way it tracks a union's case list:
+
+```csharp
+public closed class Shape;
+public class Circle(double Radius) : Shape;
+public class Square(double Side) : Shape;
+
+double Area(Shape shape) => shape switch
+{
+    Circle c => Math.PI * c.Radius * c.Radius,
+    Square s => s.Side * s.Side,
+};
+```
+
+Add a `Triangle : Shape` anywhere else in the file and forget to extend `Area`, and you get the same `CS8509` warning `Payment` would have given you, for the same reason: the compiler now knows the full list of subtypes and checks your switch against it. Everything from here down is identical to the union story, promote `CS8509` to an error, don't add a discard arm, and the forgotten case fails the build instead of the on-call shift.
+
+The difference is purely about what your types look like going in. Unrelated types that need a common label: union. Subclasses of a base you already have: `closed`.
+
 ## Fine print
 
-- **It's preview.** C# 15 ships with .NET 11 in November, but unions are still a preview feature, so syntax could shift. Install the .NET 11 SDK and set the language version to preview. Preview 5 or later includes the runtime types.
+- **It's preview.** C# 15 ships with .NET 11 in November, but both unions and `closed` classes are still preview features, so syntax could shift. Install the .NET 11 SDK and set the language version to preview. Preview 5 or later includes the runtime types.
 - **It boxes, for now.** A union compiles to a struct holding a single nullable `object`, so value-type cases like `int` are boxed by default. A non-boxing pattern exists for custom union types, if you need it.
 - **It's a type union, not an F# union.** A value is a `Card` or a `PayPal`. Cases don't have names of their own, so two cases of the same type can't be told apart.
 - **Your libraries still work.** OneOf, ErrorOr and friends don't have to be rewritten in the new syntax to benefit.
-
-It also has a sibling: `closed` classes declare a closed hierarchy, giving the same guarantee to designs built on inheritance.
+- **`closed` only sees its own file.** Subclasses have to be declared in the same file as the closed base, so the compiler can actually enumerate them.
 
 ## Sources
 
