@@ -11,7 +11,7 @@ tags: ["csharp", "dotnet"]
 categories: ["programming"]
 ---
 
-`Span<T>` and `ReadOnlySpan<T>` have been performance powerhouses since C# 7.2 / .NET Core 2.1: zero-allocation, type-safe views over memory that show up all over modern .NET's hot paths. C# 14, shipping with .NET 10, makes them first-class language citizens: new implicit span conversions that cut ceremony and let the compiler infer types in places it used to give up.
+This post answers two separate questions. First: why reach for `Span<T>` and `ReadOnlySpan<T>` at all? They've been performance powerhouses since C# 7.2 / .NET Core 2.1: zero-allocation, type-safe views over memory that show up all over modern .NET's hot paths. Second: what does C# 14 change about getting into one? Shipping with .NET 10, it makes spans first-class language citizens, with new implicit conversions that cut ceremony and let the compiler infer types in places it used to give up. That second change is about ergonomics, not speed; it doesn't make `Span<T>` any faster than it already was, it just makes it easier to reach for.
 
 The companion code for this post (the full BenchmarkDotNet suite behind every number below) is on GitHub: [companion-code/spanning-the-gap-with-an-array-of-options](https://github.com/russfrith/russfrith-blog/tree/master/companion-code/spanning-the-gap-with-an-array-of-options).
 
@@ -19,7 +19,7 @@ The companion code for this post (the full BenchmarkDotNet suite behind every nu
 
 Despite those performance wins, `Span<T>` and `ReadOnlySpan<T>` remain underused in everyday application code. Library authors and the .NET runtime itself lean on them heavily for parsers, serializers, and high-throughput APIs, but most application developers still reach for arrays, strings, and `List<T>` out of habit, or because the old conversion rules felt awkward enough to just avoid. C# 14's first-class implicit span conversions lower that friction: arrays and strings now flow into span-based parameters without ceremony, overload resolution favors the span overloads more often, and type inference works without extra type arguments. The practical effect is that allocation-free techniques that used to live mostly in framework internals become realistic for ordinary business logic too, which is the thread running through the rest of this post.
 
-Before getting into what's new, it's worth being honest about where this post went wrong the first time around: it's easy to let "C# 14 adds span conversions" slide into "span conversions make things faster," and those are two different claims. The conversions are a compile-time convenience; they don't change what runs. So this version starts with `Span<T>` itself, including the performance case for reaching for it over arrays and `List<T>` in the first place, and only then gets into what C# 14 actually changes about how you get into one.
+> Donald Knuth's famous line is usually trimmed to "premature optimization is the root of all evil," but the fuller quote is the useful part: he's describing programmers who burn time worrying about the speed of code that was never going to be a bottleneck, while the small fraction of cases that actually matter go unmeasured. It's a trap worth naming here because "the compiler can now do this conversion automatically" and "therefore it's faster" are two different claims, and it's easy to let the first slide into the second. `List<T>` is the right default precisely because it's clear and well-understood. Whether `Span<T>` is worth reaching for is a question a profiler answers, not one you decide in advance. The question isn't whether it's faster, but whether this particular call site is one where that speed is worth the reach.
 
 ## Overview of Span<T>
 
@@ -38,7 +38,7 @@ Before getting into what's new, it's worth being honest about where this post we
 
 ### Performance: where Span actually wins
 
-This is the comparison the first draft of this post lost track of. Below are four scenarios run with BenchmarkDotNet (`[MemoryDiagnoser]`, 5 measured iterations, 3 warmup, in Docker on a 12th Gen Intel i5-12600K); treat the absolute nanosecond figures as illustrative, but the allocation columns should hold regardless of hardware:
+Below are four scenarios run with BenchmarkDotNet (`[MemoryDiagnoser]`, 5 measured iterations, 3 warmup, in Docker on a 12th Gen Intel i5-12600K); treat the absolute nanosecond figures as illustrative, but the allocation columns should hold regardless of hardware:
 
 | Scenario | Array/collection-based | Span-based | Allocated (before → after) |
 |---|---|---|---|
