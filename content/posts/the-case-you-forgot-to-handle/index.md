@@ -6,7 +6,7 @@ draft: true
 cover:
   image: photorealistic-night-pro-2842606.jpg
   alt: "A developer working alone at a desk late at night"
-  caption: "Image created by author using [Flux 2 Pro](https://bfl.ai/) by Black Forest Labs"
+  caption: "Image created by author using [FLUX.2 [pro]](https://bfl.ai/) by Black Forest Labs"
 tags: ["csharp", "dotnet"]
 categories: ["programming"]
 ---
