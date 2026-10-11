@@ -4,9 +4,9 @@ description: "A practical guide to moving from EF Core 10, plus the new features
 date: 2026-10-10T20:15:50-04:00
 draft: true
 cover:
-  image: TODO-cover-image.jpg
-  alt: "TODO alt text"
-  caption: "TODO caption - check actual image source before writing"
+  image: Wild-and-Geometric-Bonsai-Contrast.png
+  alt: "A bonsai tree in a ceramic pot, its right side pruned into sharp, right-angled geometric branches"
+  caption: "Image generated with ChatGPT"
 tags: ["dotnet", "csharp", "sqlserver", "efcore"]
 categories: ["programming"]
 ---
