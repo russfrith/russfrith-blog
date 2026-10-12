@@ -1,0 +1,3 @@
+P:System.DateTime.UtcNow;Use TimeProvider.GetUtcNow() instead of DateTime.UtcNow.
+P:System.DateTimeOffset.UtcNow;Use TimeProvider.GetUtcNow() instead of DateTimeOffset.UtcNow.
+P:System.DateTime.Now;Use TimeProvider.GetLocalNow() (or GetUtcNow()) instead of DateTime.Now.
