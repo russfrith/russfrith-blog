@@ -1,8 +1,8 @@
 ---
 title: "Spanning the Gap with an Array of Options: C# 14's Implicit Span Conversions"
 description: "A Span<T> refresher, where it actually pays off over arrays and List<T>, and what C# 14's first-class span conversions change (and don't)"
-date: 2026-10-08T21:04:39-04:00
-draft: true
+date: 2026-10-13T13:50:57-04:00
+draft: false
 cover:
   image: anders-jilden--N2UXcPBIYI-unsplash.jpg
   alt: "Bridge"
