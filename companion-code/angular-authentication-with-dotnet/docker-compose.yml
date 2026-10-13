@@ -1,0 +1,12 @@
+services:
+  api:
+    build: ./src/AuthDemo.Api
+    ports:
+      - "5268:8080"
+
+  client:
+    build: ./src/auth-client
+    ports:
+      - "4200:4200"
+    depends_on:
+      - api
