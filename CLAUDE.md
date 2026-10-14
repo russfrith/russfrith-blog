@@ -47,6 +47,8 @@ categories: ["category"]
 ## Writing style
 
 - Straight quotes/apostrophes, not curly/smart quotes.
+- Don't use em-dashes. Use commas, periods, parentheses, colons, or semicolons instead, whichever reads most naturally in context. I use em-dashes myself only rarely, for a deliberate dramatic pause (like a joke's beat), not as a general-purpose connector.
+- Don't use the phrase "a lot" (or "a lot of"). Use a more precise word or phrase instead ("many," "much," "significant," "considerable," a specific quantity, etc.), whichever fits the sentence.
 - Prefer tight, direct prose. Merge short one-sentence paragraphs where it improves flow rather than leaving them fragmented.
 - Use bullet lists for actual lists rather than list-like prose paragraphs.
 - Keep my voice: plain, first-person, a little dry. Don't over-polish into generic "content marketing" tone.
