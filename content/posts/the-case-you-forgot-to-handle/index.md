@@ -1,8 +1,8 @@
 ---
 title: "The Case You Forgot to Handle: How C# 15 Unions Fix Your Switch"
 description: "C# 15's union types close the gap that object and interface switches leave open, turning a forgotten case into a compiler error instead of a 2 a.m. page"
-date: 2026-10-09T17:41:19-04:00
-draft: true
+date: 2026-10-15T12:13:22-04:00
+draft: false
 cover:
   image: photorealistic-night-pro-2842606.jpg
   alt: "A developer working alone at a desk late at night"
