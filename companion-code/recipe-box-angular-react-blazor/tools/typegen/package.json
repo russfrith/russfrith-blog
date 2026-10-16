@@ -1,0 +1,17 @@
+{
+  "name": "recipe-box-typegen",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Generates TypeScript types from api/openapi.json for the Angular and React clients.",
+  "scripts": {
+    "generate": "sh generate.sh",
+    "check-types": "tsc --noEmit --strict type-checks.ts",
+    "contract-check": "sh generate.sh schema.d.ts && npm run check-types"
+  },
+  "dependencies": {
+    "openapi-typescript": "^7.6.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  }
+}
