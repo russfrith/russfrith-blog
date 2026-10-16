@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/api/">
+    <Project Path="api/RecipeBox.Api.Tests/RecipeBox.Api.Tests.csproj" />
+    <Project Path="api/RecipeBox.Api/RecipeBox.Api.csproj" />
+  </Folder>
+  <Folder Name="/shared/">
+    <Project Path="shared/RecipeBox.Shared.Tests/RecipeBox.Shared.Tests.csproj" />
+    <Project Path="shared/RecipeBox.Shared/RecipeBox.Shared.csproj" />
+  </Folder>
+</Solution>

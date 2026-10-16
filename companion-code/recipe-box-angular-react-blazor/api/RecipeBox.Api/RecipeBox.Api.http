@@ -1,0 +1,23 @@
+@host = http://localhost:5080
+
+GET {{host}}/api/recipes
+
+###
+GET {{host}}/api/recipes/1
+
+###
+GET {{host}}/api/tags
+
+###
+POST {{host}}/api/recipes
+Content-Type: application/json
+
+{
+  "title": "Test Recipe",
+  "servings": 2,
+  "prepMinutes": 5,
+  "cookMinutes": 5,
+  "tags": ["test"],
+  "ingredients": [{ "quantity": 1, "unit": "cup", "name": "water" }],
+  "steps": [{ "order": 1, "instruction": "Boil it." }]
+}
