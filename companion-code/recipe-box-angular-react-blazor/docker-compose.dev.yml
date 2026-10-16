@@ -1,0 +1,48 @@
+services:
+  # Dev-only build/test/EF loop: `docker compose -f docker-compose.yml -f
+  # docker-compose.dev.yml run --rm dotnet dotnet test ...`. Source is bind-mounted
+  # for iteration; bin/obj/the NuGet cache live in named volumes so nothing
+  # generated lands in the working tree.
+  dotnet:
+    image: mcr.microsoft.com/dotnet/sdk:10.0
+    profiles: ["tools"]
+    working_dir: /workspace
+    environment:
+      Storage__SeedRoot: /workspace/seed
+      Storage__ImageRoot: /tmp/recipebox-images
+    volumes:
+      - .:/workspace
+      - nuget-cache:/root/.nuget/packages
+      - shared-bin:/workspace/shared/RecipeBox.Shared/bin
+      - shared-obj:/workspace/shared/RecipeBox.Shared/obj
+      - shared-tests-bin:/workspace/shared/RecipeBox.Shared.Tests/bin
+      - shared-tests-obj:/workspace/shared/RecipeBox.Shared.Tests/obj
+      - api-bin:/workspace/api/RecipeBox.Api/bin
+      - api-obj:/workspace/api/RecipeBox.Api/obj
+      - api-tests-bin:/workspace/api/RecipeBox.Api.Tests/bin
+      - api-tests-obj:/workspace/api/RecipeBox.Api.Tests/obj
+
+  typegen:
+    build:
+      context: .
+      dockerfile: tools/typegen/Dockerfile
+    profiles: ["tools"]
+    working_dir: /app
+    volumes:
+      - ./tools/typegen:/app
+      - typegen-node-modules:/app/node_modules
+      # generate.sh resolves "../../api/openapi.json" relative to /app; only
+      # this one file (read-only) is exposed, not the whole repo.
+      - ./api/openapi.json:/api/openapi.json:ro
+
+volumes:
+  nuget-cache:
+  shared-bin:
+  shared-obj:
+  shared-tests-bin:
+  shared-tests-obj:
+  api-bin:
+  api-obj:
+  api-tests-bin:
+  api-tests-obj:
+  typegen-node-modules:
