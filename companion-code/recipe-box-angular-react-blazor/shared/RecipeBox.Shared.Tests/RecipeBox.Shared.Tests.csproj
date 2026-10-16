@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RecipeBox.Shared\RecipeBox.Shared.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\test-vectors.json" Link="test-vectors.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
