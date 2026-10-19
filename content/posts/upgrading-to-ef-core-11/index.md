@@ -160,6 +160,10 @@ There's more beyond this: full-text search table-valued functions, `JSON_CONTAIN
 
 ## Complex Types as value objects
 
+{{< aside >}}
+Every value object below (`Address`, `PersonName`, `PhoneNumber`) is deliberately minimal. A real `Address` would need more fields: apartment or suite lines, a state or province, postal code formats that vary by country. A real `PersonName` would need to handle cultures where a simple first/last split doesn't fit. A real `PhoneNumber` would need actual validation and formatting rules per country, not just a country code and a string. None of that is the point here. The point is the EF Core mapping, not a production-ready value object library.
+{{< /aside >}}
+
 ### A decade of circling back to the same problem
 
 I've been using Entity Framework since the "full" .NET Framework days, and classic EF had a real `ComplexType` feature: you could define a reference-type class with no key of its own, map it to columns on the owner's table, and use it for things like `Address` without EF pretending it was a separate entity. It had sharp edges (reference types only, no sharing the same instance across two properties without duplicating it), but it worked, and it modeled the right concept.
