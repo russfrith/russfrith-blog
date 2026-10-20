@@ -1,8 +1,8 @@
 ---
 title: "Upgrading to EF Core 11: Prettier SQL and a Few Ugly Changes"
 description: "A practical guide to moving from EF Core 10, plus a deep dive into Complex Types and why value objects matter"
-date: 2026-10-10T20:15:50-04:00
-draft: true
+date: 2026-10-20T14:26:11-04:00
+draft: false
 cover:
   image: Wild-and-Geometric-Bonsai-Contrast.png
   alt: "A bonsai tree in a ceramic pot, its right side pruned into sharp, right-angled geometric branches"
