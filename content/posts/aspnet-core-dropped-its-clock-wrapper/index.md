@@ -45,12 +45,12 @@ public async Task Lockout_clears_once_fake_time_advances_past_lockout_window()
 
 Lock a user out, advance a fake clock six minutes, assert they're unlocked. No `Thread.Sleep`, no wall-clock wait, no flaky CI run because the lockout window happened to be five minutes and the test needed six. That's `UserManager.IsLockedOutAsync` and `AccessFailedAsync`, ASP.NET Core Identity's actual lockout check, reading time from a `TimeProvider` I registered in the test's DI container.
 
-I want to tell you this has worked since .NET 8, when `TimeProvider` first showed up in ASP.NET Core. It hasn't. I checked the source at the `release/8.0`, `release/9.0`, and `release/10.0` tags: in all three, `IsLockedOutAsync` and `AccessFailedAsync` call `DateTimeOffset.UtcNow` directly. No hook, no DI, nothing to fake. The test above only passes on .NET 11 RC1, where that lockout code got a private `UtcNow()` helper that checks the DI container for a `TimeProvider` before falling back to the real clock. I found this by actually running the test against the three older SDKs' source, expecting it to just confirm what I already believed, and it didn't.
+I want to tell you this has worked since .NET 8, when `TimeProvider` first showed up in ASP.NET Core. It hasn't. I checked the previous three releases directly in the source, .NET 8, 9, and 10[[4](#references)], and in all three, `IsLockedOutAsync` and `AccessFailedAsync` call `DateTimeOffset.UtcNow` directly. No hook, no DI, nothing to fake. The test above only passes on .NET 11 RC1, where that lockout code got a private `UtcNow()` helper that checks the DI container for a `TimeProvider` before falling back to the real clock. I went looking expecting the source to just confirm what I already believed, and it didn't.
 
-That's the real news, and it's narrower than it sounds. More on exactly how narrow in a minute.
+That's the real news, and it's narrower than it sounds. We'll get back to exactly how narrow, after a detour through what `TimeProvider` gives you outside Identity entirely.
 
 {{< aside >}}
-A confession: many people did not start using `TimeProvider` when it shipped with .NET 8, and I may or may not be one of them. If an `IClock` wrapper already worked, there was no forcing function to rip it out for a BCL type that did the same job with extra ceremony. The forcing function, as it turns out, was never going to come from my own code. My `IClock` could wrap anything I'd written myself, but it was never going to reach into `UserManager` and change what `DateTimeOffset.UtcNow` meant inside the framework.
+Many people did not start using `TimeProvider` when it shipped with .NET 8, and I may or may not be one of them. If an `IClock` wrapper already worked, there was no forcing function to rip it out for a BCL type that did the same job with extra ceremony. The forcing function, as it turns out, was never going to come from my own code. My `IClock` could wrap anything I'd written myself, but it was never going to reach into `UserManager` and change what `DateTimeOffset.UtcNow` meant inside the framework.
 {{< /aside >}}
 
 ## Why everyone wrote one of these
@@ -61,58 +61,9 @@ Before `TimeProvider`, there wasn't a shared, testable abstraction for "now" in 
 **A short, accurate timeline.** ASP.NET Core marked `ISystemClock` (and `SystemClock`, and the authentication handler constructors that took one) `[Obsolete]` in **.NET 8 Preview 5**[[1](#references)]. That's "obsoleted," not "removed." It still compiles, it still sits in the DI container, it just warns. The same breaking-change doc says Microsoft "may" remove it in a future version; as of the .NET 11 RC1 source I checked, it's still there. Don't read anything stronger into this than what actually happened: one framework-internal interface got a compiler warning, and a new BCL type, `System.TimeProvider`, became the thing ASP.NET Core actually reads time from in several, not all, of its time-dependent components.
 {{< /aside >}}
 
-## What's actually testable, by version
+## The deep dive: TimeProvider, the general case
 
-Here's what's actually testable with a fake clock, as of .NET 11 RC1, grouped by status. Some of these are backed by a `FakeTimeProvider`-driven test that ran green in Docker; the rest come from reading the source directly at each release tag (`release/8.0`, `release/9.0`, `release/10.0`, and `v11.0.0-rc.1.26425.128` in `dotnet/aspnetcore`), since the behavior in question is either "calls `TimeProvider.GetUtcNow()`" or "calls `DateTimeOffset.UtcNow`." I've marked which is which below.
-
-**Already worked since .NET 8, and still does on RC1:**
-
-- Cookie / OAuth / OIDC / JWT auth expiration, because `AuthenticationSchemeOptions` got a settable `TimeProvider` property. (Source-verified; not covered by a test in the companion code.)
-- Security-stamp re-validation (cookie renew/reject), because `SecurityStampValidatorOptions.TimeProvider` did too, auto-populated from DI since 8.0 GA. (Tested.)
-- Identity bearer tokens from `MapIdentityApi`, for the same reason as cookie auth above. (Source-verified only; I tested this directly in an earlier pass with a full in-process web host, confirmed it, then cut that test because it added a lot of weight for a claim that reduces to the same mechanism as cookie auth above.)
-
-**New in .NET 11:**
-
-- Identity lockout (`IsLockedOutAsync` / `AccessFailedAsync`). (Tested.) I was wrong when I first assumed this had worked since .NET 8, until I checked the actual source at each tag and found the DI-aware `UtcNow()` helper only exists at the `v11.0.0-rc.1.26425.128` tag, not before.
-
-**Still a gap, even on RC1:**
-
-- Password reset, email confirmation, and change-email tokens. (Tested.) `DataProtectorTokenProvider` (the class behind `GeneratePasswordResetTokenAsync`, `GenerateEmailConfirmationTokenAsync`, and `GenerateChangeEmailTokenAsync`) calls `DateTimeOffset.UtcNow` directly, with no `TimeProvider` hook anywhere in it.
-- TOTP 2FA codes (authenticator apps). (Source-verified only, for the same reason as bearer tokens above: confirming it meant reimplementing RFC 6238 from scratch, since Identity's own TOTP class is `internal`, and that reimplementation taught the reader nothing about `TimeProvider`.) No `TimeProvider` hook exists anywhere in the class that computes them.
-
-Here's the first of those gaps, proven rather than asserted:
-
-```csharp
-// TimeProviderDemo.Tests.TokenExpiryGapTests.Password_reset_token_ignores_fake_time_advancing_past_its_lifespan
-[Fact]
-public async Task Password_reset_token_ignores_fake_time_advancing_past_its_lifespan()
-{
-    using var fixture = new IdentityFixture();
-    var userManager = fixture.GetRequiredService<UserManager<AppUser>>();
-
-    var user = new AppUser { UserName = "reset-token@example.com", Email = "reset-token@example.com" };
-    await userManager.CreateAsync(user);
-
-    var token = await userManager.GeneratePasswordResetTokenAsync(user);
-
-    // Default token lifespan is 1 day. Advance the FAKE clock 10 days.
-    fixture.TimeProvider.Advance(TimeSpan.FromDays(10));
-
-    var isValid = await userManager.VerifyUserTokenAsync(
-        user, TokenOptions.DefaultProvider, "ResetPassword", token);
-
-    // Still valid: the provider reads the real wall clock, not our fake one.
-    Assert.True(isValid);
-}
-```
-
-That assertion is `True` after advancing the fake clock ten days past the token's one-day lifespan. If `DataProtectorTokenProvider` honored `TimeProvider`, this would be `False`. It isn't, because it can't be: there's nothing in that class to fake. Same story for TOTP 2FA codes: `Rfc6238AuthenticationService`, the internal class behind authenticator-app codes, is static and reads `DateTimeOffset.UtcNow` with no parameter or hook of any kind.
-
-**Reconciling this with the docs.** The .NET 11 "what's new" page doesn't mention Identity or `TimeProvider` at all, and the ASP.NET Core 11 release notes have no Identity section as of RC1[[2](#references)]. So there's no official claim to contradict here. I went looking for one and didn't find it. If you've seen a doc or blog post claiming Identity now uses `TimeProvider` for "all" time-related operations, I'd treat that as aspirational or describing a different, narrower change (lockout) rather than literal, and I'd want to see which specific API it means before repeating it. What I can tell you, dated: as of .NET 11 RC1, lockout is testable with a fake clock, token expiration and TOTP are not, and I'm not promising any of this changes by GA.
-
-## The deep dive: what TimeProvider actually gives you
-
-Past Identity, `TimeProvider` is the general-purpose clock abstraction, and it's worth knowing the whole surface because it's smaller than you'd expect and it quietly plugs into async APIs you already use.
+`TimeProvider` is the **general-purpose clock abstraction**: anywhere you'd otherwise call `DateTime.UtcNow` or `DateTimeOffset.UtcNow`, from business logic to timers, `TimeProvider` is the injectable, fakeable replacement. It's worth knowing the whole surface because it's smaller than you'd expect, and it quietly plugs into async APIs you already use.
 
 Timestamps, the obvious part:
 
@@ -159,9 +110,62 @@ Assert.True(cts.Token.IsCancellationRequested);
 
 That's a retry policy, a timeout, a debounce, or a background poller, all testable in milliseconds of real wall-clock time instead of the seconds-to-minutes your production timeouts actually need.
 
+That's `TimeProvider` in general. Now back to Identity, where this post started: how far does that general wiring actually reach?
+
+## What's actually testable, by version
+
+Here's what's actually testable with a fake clock, as of .NET 11 RC1, grouped by status. Some of these are backed by a `FakeTimeProvider`-driven test that ran green in Docker; the rest come from reading the source directly in .NET 8, 9, 10, and 11 RC1[[4](#references)], since the behavior in question is either "calls `TimeProvider.GetUtcNow()`" or "calls `DateTimeOffset.UtcNow`." I've marked which is which below.
+
+**Already worked since .NET 8, and still does on RC1:**
+
+- Cookie / OAuth / OIDC / JWT auth expiration, because `AuthenticationSchemeOptions` got a settable `TimeProvider` property. (Source-verified; not covered by a test in the companion code.)
+- Security-stamp re-validation (cookie renew/reject), because `SecurityStampValidatorOptions.TimeProvider` did too, auto-populated from DI since 8.0 GA. (Tested.)
+- Identity bearer tokens from `MapIdentityApi`, for the same reason as cookie auth above. (Source-verified only; I tested this directly in an earlier pass with a full in-process web host, confirmed it, then cut that test because it added a lot of weight for a claim that reduces to the same mechanism as cookie auth above.)
+
+**New in .NET 11:**
+
+- Identity lockout (`IsLockedOutAsync` / `AccessFailedAsync`). (Tested.) I was wrong when I first assumed this had worked since .NET 8, until I checked the actual source at each release and found the DI-aware `UtcNow()` helper only exists starting at .NET 11 RC1[[4](#references)], not before.
+
+**Still a gap, even on RC1:**
+
+- Password reset, email confirmation, and change-email tokens. (Tested.) `DataProtectorTokenProvider` (the class behind `GeneratePasswordResetTokenAsync`, `GenerateEmailConfirmationTokenAsync`, and `GenerateChangeEmailTokenAsync`) calls `DateTimeOffset.UtcNow` directly, with no `TimeProvider` hook anywhere in it.
+- TOTP 2FA codes (authenticator apps). (Source-verified only, for the same reason as bearer tokens above: confirming it meant reimplementing RFC 6238 from scratch, since Identity's own TOTP class is `internal`, and that reimplementation taught the reader nothing about `TimeProvider`.) No `TimeProvider` hook exists anywhere in the class that computes them.
+
+Here's the first of those gaps, proven rather than asserted:
+
+```csharp
+// TimeProviderDemo.Tests.TokenExpiryGapTests.Password_reset_token_ignores_fake_time_advancing_past_its_lifespan
+[Fact]
+public async Task Password_reset_token_ignores_fake_time_advancing_past_its_lifespan()
+{
+    using var fixture = new IdentityFixture();
+    var userManager = fixture.GetRequiredService<UserManager<AppUser>>();
+
+    var user = new AppUser { UserName = "reset-token@example.com", Email = "reset-token@example.com" };
+    await userManager.CreateAsync(user);
+
+    var token = await userManager.GeneratePasswordResetTokenAsync(user);
+
+    // Default token lifespan is 1 day. Advance the FAKE clock 10 days.
+    fixture.TimeProvider.Advance(TimeSpan.FromDays(10));
+
+    var isValid = await userManager.VerifyUserTokenAsync(
+        user, TokenOptions.DefaultProvider, "ResetPassword", token);
+
+    // Still valid: the provider reads the real wall clock, not our fake one.
+    Assert.True(isValid);
+}
+```
+
+That assertion is `True` after advancing the fake clock ten days past the token's one-day lifespan. If `DataProtectorTokenProvider` honored `TimeProvider`, this would be `False`. It isn't, because it can't be: there's nothing in that class to fake. Same story for TOTP 2FA codes: `Rfc6238AuthenticationService`, the internal class behind authenticator-app codes, is static and reads `DateTimeOffset.UtcNow` with no parameter or hook of any kind.
+
+**Reconciling this with the docs.** The .NET 11 "what's new" page doesn't mention Identity or `TimeProvider` at all, and the ASP.NET Core 11 release notes have no Identity section as of RC1[[2](#references)]. So there's no official claim to contradict here. I went looking for one and didn't find it. If you've seen a doc or blog post claiming Identity now uses `TimeProvider` for "all" time-related operations, I'd treat that as aspirational or describing a different, narrower change (lockout) rather than literal, and I'd want to see which specific API it means before repeating it. What I can tell you, dated: as of .NET 11 RC1, lockout is testable with a fake clock, token expiration and TOTP are not, and I'm not promising any of this changes by GA.
+
 ## The gap is real, but it's not unworkable
 
-`DataProtectorTokenProvider` has no seam, no point where you can swap in different behavior without touching its own source, so there's nothing to inject a `TimeProvider` into. I needed a password-reset-style token I could actually test, so I wrote one. This is the wrapper that earns its keep, not because it makes testing easier in the abstract, but because it closes a specific, source-verified hole:
+`DataProtectorTokenProvider` is what actually produces the string you see in a password reset link or an email confirmation callback: a payload (the user's ID, plus the timestamp it was created) encrypted with ASP.NET Core's data protection APIs, which Identity later decrypts and checks against `Options.TokenLifespan` to decide whether it's still good. That timestamp check is where `DateTimeOffset.UtcNow` gets called directly, and the class has no seam, no point where you can swap in different behavior without touching its own source, so there's nothing to inject a `TimeProvider` into.
+
+I needed a password-reset-style token I could actually test, so I wrote one. `TimeProviderTokenProvider<TUser>` isn't a replacement for `DataProtectorTokenProvider`; it's registered under its own name as an additional provider, so anything already using the default password-reset or email-confirmation flow keeps working exactly as before. This is the wrapper that earns its keep, not because it makes testing easier in the abstract, but because it closes a specific, source-verified hole:
 
 ```csharp
 // TimeProviderDemo.Tests.TimeProviderTokenProviderTests.Token_expires_once_fake_time_advances_past_its_lifespan
@@ -220,6 +224,31 @@ Same assertion, same shape, but the second version didn't need me to write `Fake
 
 `BusinessCalendar` wraps `TimeProvider` for a reason `TimeProvider` can't do itself: it carries a tenant's time zone and a definition of "business day."
 
+The extension method it's built on is the smallest useful example of adding meaning on top of `TimeProvider` instead of just forwarding it:
+
+```csharp
+// TimeProviderExtensions.cs
+public static DateTimeOffset GetLocalNow(this TimeProvider timeProvider, TimeZoneInfo timeZone) =>
+    TimeZoneInfo.ConvertTime(timeProvider.GetUtcNow(), timeZone);
+```
+
+```csharp
+// TimeProviderDemo.Tests.BusinessCalendarTests.NowInTenantTime_converts_fake_utc_time_into_the_tenants_zone
+[Fact]
+public void NowInTenantTime_converts_fake_utc_time_into_the_tenants_zone()
+{
+    // 2026-06-15T02:30:00Z is 2026-06-14T22:30:00 Eastern (EDT, UTC-4) the evening before.
+    var timeProvider = new FakeTimeProvider(DateTimeOffset.Parse("2026-06-15T02:30:00Z"));
+    var calendar = new BusinessCalendar(timeProvider, Eastern);
+
+    var tenantNow = calendar.NowInTenantTime();
+
+    Assert.Equal(new DateTime(2026, 6, 14, 22, 30, 0), tenantNow.DateTime);
+}
+```
+
+`GetLocalNow` by itself is a one-liner. `BusinessCalendar` builds on it to answer a real domain question `TimeProvider` has no concept of, which day comes next for invoicing or scheduling purposes:
+
 ```csharp
 // TimeProviderDemo.Tests.BusinessCalendarTests.NextBusinessDay_skips_the_weekend
 [Fact]
@@ -235,7 +264,7 @@ public void NextBusinessDay_skips_the_weekend()
 }
 ```
 
-`TimeProvider.LocalTimeZone` is whatever zone the machine (or container) is set to. In most CI runners and server deployments, that's UTC, full stop. It has no idea what "local" means to a tenant in another time zone, and no idea Saturday and Sunday aren't business days for your invoicing logic. `BusinessCalendar` is the kind of wrapper worth keeping: it's not there to make testing possible, `TimeProvider` already does that; it's there because it means something `TimeProvider` doesn't.
+`TimeProvider.LocalTimeZone` is whatever zone the machine (or container) is set to. In most CI runners and server deployments, that's UTC, full stop. It has no idea what "local" means to a tenant in another time zone, and no idea Saturday and Sunday aren't business days for your invoicing logic. Run the verdict's own test on it: delete `BusinessCalendar` and inline `TimeProvider` everywhere it's used, and `NextBusinessDay` has nowhere to live, no tenant zone to convert into, no weekend definition to check against. That's a wrapper worth keeping.
 
 ## Pros, cons, and one thing the analyzer catches
 
