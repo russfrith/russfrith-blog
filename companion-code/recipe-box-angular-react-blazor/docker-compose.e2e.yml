@@ -1,0 +1,19 @@
+# Layered on the default compose file: `docker compose -f docker-compose.yml
+# -f docker-compose.e2e.yml ...`. Puts the API in Testing (so the
+# reset-and-reseed endpoint is reachable - 404 under the plain default
+# compose file by design, see CLAUDE.md) and adds the Playwright runner.
+services:
+  api:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Testing
+
+  e2e:
+    build:
+      context: .
+      dockerfile: e2e/Dockerfile
+    environment:
+      BASE_URL: ${BASE_URL:-http://angular:8080}
+    volumes:
+      - ./e2e/test-results:/repo/e2e/test-results
+      - ./e2e/playwright-report:/repo/e2e/playwright-report
+      - ./e2e/screenshots:/repo/e2e/screenshots
