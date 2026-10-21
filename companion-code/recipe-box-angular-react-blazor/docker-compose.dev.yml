@@ -21,6 +21,8 @@ services:
       - api-obj:/workspace/api/RecipeBox.Api/obj
       - api-tests-bin:/workspace/api/RecipeBox.Api.Tests/bin
       - api-tests-obj:/workspace/api/RecipeBox.Api.Tests/obj
+      - blazor-bin:/workspace/clients/blazor/bin
+      - blazor-obj:/workspace/clients/blazor/obj
 
   typegen:
     build:
@@ -76,4 +78,6 @@ volumes:
   api-obj:
   api-tests-bin:
   api-tests-obj:
+  blazor-bin:
+  blazor-obj:
   typegen-node-modules:

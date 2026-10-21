@@ -49,8 +49,8 @@ Pin versions and record them here before writing code. Use current stable releas
 - Angular: 22.2.3 (`@angular/build:application` esbuild/Vite builder, zoneless, standalone components, built-in `@if`/`@for` control flow)
 - Angular unit tests: Vitest 5.0.5 via the `@angular/build:unit-test` builder (`ng test`)
 - React (and build tool): TBD (Phase 4)
-- Blazor render mode: standalone WebAssembly
-- Tailwind CSS: 4.3.3 (CSS-first `@theme` config), `@tailwindcss/postcss` 4.3.3
+- Blazor render mode: standalone WebAssembly. Microsoft.AspNetCore.Components.WebAssembly: 10.0.13 (no `.DevServer` package — Blazor has no local dev-watch loop against the API, see Docker section)
+- Tailwind CSS: 4.3.3 (CSS-first `@theme` config). Angular/React: `@tailwindcss/postcss` 4.3.3. Blazor: the standalone Tailwind CLI (no Node involved), same 4.3.3
 - Playwright: 1.64.1, Docker image `mcr.microsoft.com/playwright:v1.64.1-noble` (tag confirmed to match the npm package version)
 - Node: 24.x LTS (typegen container and later client build containers only — never a host install)
 - TypeScript: 5.9.x in `tools/typegen` (openapi-typescript's peer range is `^5.x`; do not take the current TypeScript 7.x there)
@@ -81,7 +81,7 @@ Readers see excerpts, not the repo. Write accordingly.
 
 ## Shared code
 
-- `shared/` is a C# class library referenced by both the API and the Blazor client. It holds `Recipe`, `Ingredient`, `Step`, DataAnnotations validation, and the pure scaling and fraction-formatting functions (unit tested).
+- `shared/` is a C# class library referenced by both the API and the Blazor client. It holds `Recipe`, `Ingredient`, `Step`, a hand-written `RecipeValidator` (returns a field-path-keyed error dictionary, not attribute-based validation) and `RecipeNormalizer`, and the pure scaling and fraction-formatting functions (unit tested).
 - Angular and React get TypeScript types generated from the API's OpenAPI document via openapi-typescript (see "TypeScript generation" below).
 - Validation rules and the scaling and fraction logic must be re-expressed by hand in TypeScript for Angular and React, matching the shared test vectors in `shared/test-vectors.json` exactly. Keep those ports faithful and obvious. The duplication is a point the post makes.
 - The server is always the source of truth for validation. Client-side validation is a convenience.

@@ -33,11 +33,11 @@ docker compose up --build
 ```
 
 The API listens on `http://localhost:5080`, seeded automatically on first
-start. The Angular client listens on `http://localhost:5081` (proxying
-`/api` to the API). `docker compose down -v` returns to a clean state
-(fresh reseed on the next `up`). React and Blazor client services are
-added in later phases. Port scheme: api 5080, angular 5081, blazor 5082,
-react 5083.
+start. The Angular client listens on `http://localhost:5081` and the
+Blazor client on `http://localhost:5082` (both proxying `/api` to the
+API). `docker compose down -v` returns to a clean state (fresh reseed on
+the next `up`). The React client is added in a later phase. Port scheme:
+api 5080, angular 5081, blazor 5082, react 5083.
 
 For local iteration (dotnet build/test, EF migrations, typegen, `ng
 serve`/`ng test`), see `docker-compose.dev.yml` — for example:
@@ -48,16 +48,25 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml run --rm ng npx n
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up ng
 ```
 
-To run the shared Playwright e2e suite against a client (here, Angular),
-layer `docker-compose.e2e.yml` on top of the default file — this puts the
-API in `Testing` mode, which is required for the suite's reset endpoint
-and is never exposed under the plain default compose file:
+Blazor has no equivalent local dev-serve loop (its WASM dev server has no
+`/api` proxy) — iterate with `dotnet build`/`dotnet publish` via the
+`dotnet` service above, and use `docker compose up --build blazor` to see
+it running end to end.
+
+To run the shared Playwright e2e suite against a client, layer
+`docker-compose.e2e.yml` on top of the default file — this puts the API
+in `Testing` mode, which is required for the suite's reset endpoint and
+is never exposed under the plain default compose file:
 
 ```
 docker compose -f docker-compose.yml -f docker-compose.e2e.yml down -v
 docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d --build api angular
 docker compose -f docker-compose.yml -f docker-compose.e2e.yml run --rm --build e2e
 ```
+
+Swap `angular` for `blazor` (and pass `-e BASE_URL=http://blazor:8080` to
+the final `run`) to test the Blazor client instead — the suite itself
+needs no changes either way.
 
 Screenshots land in `e2e/screenshots/<client>/` (gitignored, overwritten
 each run) for copying into the post.
