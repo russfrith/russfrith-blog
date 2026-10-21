@@ -1,0 +1,17 @@
+@implements IDisposable
+
+@if (EditContext.GetValidationMessages(EditContext.Field(FieldKey)).FirstOrDefault() is { } message)
+{
+    <p data-testid="form-error-@FieldKey" class="mt-1 text-sm text-[var(--color-danger)]">@message</p>
+}
+
+@code {
+    [CascadingParameter] public EditContext EditContext { get; set; } = default!;
+    [Parameter, EditorRequired] public string FieldKey { get; set; } = "";
+
+    protected override void OnInitialized() => EditContext.OnValidationStateChanged += Refresh;
+
+    private void Refresh(object? sender, ValidationStateChangedEventArgs e) => StateHasChanged();
+
+    public void Dispose() => EditContext.OnValidationStateChanged -= Refresh;
+}

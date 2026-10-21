@@ -1,0 +1,51 @@
+@using RecipeBox.Shared
+
+<div class="space-y-2">
+    @foreach (var (index, ingredient) in Ingredients.Index())
+    {
+        <div data-testid="ingredient-row-@index" class="flex items-start gap-2">
+            <div>
+                <InputNumber @bind-Value="ingredient.Quantity" step="any" data-testid="@($"ingredient-quantity-input-{index}")"
+                             class="w-20 rounded-[var(--radius-control)] border border-[var(--color-border)] px-2 py-1" />
+                <FieldError FieldKey="@($"ingredients[{index}].quantity")" />
+            </div>
+            <div>
+                <InputText @bind-Value="ingredient.Unit" data-testid="@($"ingredient-unit-input-{index}")"
+                           class="w-20 rounded-[var(--radius-control)] border border-[var(--color-border)] px-2 py-1" />
+                <FieldError FieldKey="@($"ingredients[{index}].unit")" />
+            </div>
+            <div class="flex-1">
+                <InputText @bind-Value="ingredient.Name" data-testid="@($"ingredient-name-input-{index}")"
+                           class="w-full rounded-[var(--radius-control)] border border-[var(--color-border)] px-2 py-1" />
+                <FieldError FieldKey="@($"ingredients[{index}].name")" />
+            </div>
+            <button type="button" data-testid="ingredient-remove-@index" @onclick="() => RemoveRow(index)"
+                    disabled="@(Ingredients.Count <= 1)" class="rounded-[var(--radius-control)] border px-2 py-1">
+                Remove
+            </button>
+        </div>
+    }
+    <FieldError FieldKey="ingredients" />
+    <button type="button" data-testid="add-ingredient-button" @onclick="AddRow" class="rounded-[var(--radius-control)] border px-3 py-1">
+        Add ingredient
+    </button>
+</div>
+
+@code {
+    [CascadingParameter] public EditContext EditContext { get; set; } = default!;
+    [Parameter, EditorRequired] public List<Ingredient> Ingredients { get; set; } = default!;
+
+    private void AddRow()
+    {
+        Ingredients.Add(new Ingredient());
+        Notify();
+    }
+
+    private void RemoveRow(int index)
+    {
+        Ingredients.RemoveAt(index);
+        Notify();
+    }
+
+    private void Notify() => EditContext.NotifyFieldChanged(EditContext.Field("ingredients"));
+}

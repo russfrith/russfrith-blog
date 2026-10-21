@@ -1,0 +1,55 @@
+@page "/"
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<div class="mb-6 space-y-4">
+    <input data-testid="search-input" value="@searchText"
+           @oninput="OnSearchInput"
+           placeholder="Search recipes..."
+           class="w-full rounded-[var(--radius-control)] border border-[var(--color-border)] px-3 py-2" />
+    <TagFilter Tag="@Tag" Search="@Search" />
+</div>
+
+@if (loading)
+{
+    <div data-testid="list-skeleton" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        @for (var i = 0; i < 6; i++)
+        {
+            <div class="h-56 animate-pulse rounded-[var(--radius-card)] bg-[var(--color-border)]"></div>
+        }
+    </div>
+}
+else if (error)
+{
+    <div data-testid="list-error" class="rounded-[var(--radius-card)] bg-[var(--color-danger-bg)] p-6 text-center">
+        <p class="mb-4 text-[var(--color-danger)]">Couldn't load recipes.</p>
+        <button data-testid="list-retry-button" @onclick="LoadAsync" class="rounded-[var(--radius-control)] border px-4 py-2">
+            Retry
+        </button>
+    </div>
+}
+else if (recipes is { Count: 0 } && string.IsNullOrEmpty(Search) && string.IsNullOrEmpty(Tag))
+{
+    <div data-testid="list-empty" class="py-12 text-center">
+        <p class="mb-4 text-[var(--color-ink-muted)]">No recipes yet.</p>
+        <a href="/recipes/new" class="rounded-[var(--radius-control)] bg-[var(--color-accent)] px-4 py-2 text-white">New recipe</a>
+    </div>
+}
+else if (recipes is { Count: 0 })
+{
+    <div data-testid="list-no-matches" class="py-12 text-center">
+        <p class="mb-4 text-[var(--color-ink-muted)]">No matches.</p>
+        <button data-testid="clear-filters-button" @onclick="ClearFilters" class="rounded-[var(--radius-control)] border px-4 py-2">
+            Clear filters
+        </button>
+    </div>
+}
+else
+{
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        @foreach (var recipe in recipes!)
+        {
+            <RecipeCard Recipe="recipe" @key="recipe.Id" />
+        }
+    </div>
+}

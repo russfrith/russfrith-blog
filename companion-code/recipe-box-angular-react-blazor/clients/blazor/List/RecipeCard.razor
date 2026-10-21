@@ -1,0 +1,25 @@
+@using RecipeBox.Shared
+
+<a href="/recipes/@Recipe.Id"
+   data-testid="recipe-card-@Recipe.Id"
+   class="block overflow-hidden rounded-[var(--radius-card)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-card)]">
+    @if (Recipe.ImageUrl is { } src)
+    {
+        <img src="@src" alt="" class="h-40 w-full object-cover" />
+    }
+    else
+    {
+        <div class="flex h-40 w-full items-center justify-center bg-[var(--color-border)] text-[var(--color-ink-muted)]">
+            No photo
+        </div>
+    }
+    <div class="p-4">
+        <h2 data-testid="recipe-card-title-@Recipe.Id" class="font-serif text-lg">@Recipe.Title</h2>
+        <p class="text-sm text-[var(--color-ink-muted)]">@string.Join(", ", Recipe.Tags)</p>
+        <p class="text-sm text-[var(--color-ink-muted)]">@(Recipe.PrepMinutes + Recipe.CookMinutes) min</p>
+    </div>
+</a>
+
+@code {
+    [Parameter, EditorRequired] public RecipeSummary Recipe { get; set; } = default!;
+}

@@ -7,4 +7,7 @@
     <Project Path="shared/RecipeBox.Shared.Tests/RecipeBox.Shared.Tests.csproj" />
     <Project Path="shared/RecipeBox.Shared/RecipeBox.Shared.csproj" />
   </Folder>
+  <Folder Name="/clients/">
+    <Project Path="clients/blazor/RecipeBox.Blazor.csproj" />
+  </Folder>
 </Solution>

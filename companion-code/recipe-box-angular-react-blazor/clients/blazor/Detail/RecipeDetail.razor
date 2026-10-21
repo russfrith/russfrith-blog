@@ -1,0 +1,74 @@
+@page "/recipes/{Id:int}"
+@using static RecipeBox.Shared.Quantities
+@inject HttpClient Http
+@inject NavigationManager Nav
+@inject RecipeCount Count
+
+@if (loading)
+{
+    <div class="h-96 animate-pulse rounded-[var(--radius-card)] bg-[var(--color-border)]"></div>
+}
+else if (notFound)
+{
+    <p data-testid="detail-not-found" class="py-12 text-center text-[var(--color-ink-muted)]">Recipe not found.</p>
+}
+else if (error)
+{
+    <div data-testid="detail-error" class="rounded-[var(--radius-card)] bg-[var(--color-danger-bg)] p-6 text-center">
+        <p class="mb-4 text-[var(--color-danger)]">Couldn't load this recipe.</p>
+        <button @onclick="LoadAsync" class="rounded-[var(--radius-control)] border px-4 py-2">Retry</button>
+    </div>
+}
+else if (recipe is not null)
+{
+    @if (recipe.ImageUrl is { } src)
+    {
+        <img data-testid="detail-image" src="@src" alt="" class="mb-6 h-64 w-full rounded-[var(--radius-card)] object-cover" />
+    }
+    <h1 data-testid="detail-title" class="font-serif text-3xl">@recipe.Title</h1>
+    <p class="mt-2 text-[var(--color-ink-muted)]">@recipe.Description</p>
+    <p class="mt-1 text-sm text-[var(--color-ink-muted)]">@string.Join(", ", recipe.Tags)</p>
+    <p class="mt-1 text-sm text-[var(--color-ink-muted)]">Prep @recipe.PrepMinutes min / Cook @recipe.CookMinutes min</p>
+
+    <div class="mt-6">
+        <ServingsStepper Servings="servings" ServingsChanged="@((int s) => servings = s)" />
+    </div>
+
+    <ul class="mt-4 space-y-1">
+        @for (var i = 0; i < recipe.Ingredients.Count; i++)
+        {
+            var index = i;
+            var ingredient = recipe.Ingredients[index];
+            <li>
+                <span data-testid="ingredient-quantity-@index">@FormatQuantity(ScaledQuantity(ingredient.Quantity, recipe.Servings, servings))</span>
+                @* Razor trims the whitespace between this block and the next
+                   element, so the space has to be part of the text itself. *@
+                @(ingredient.Unit is { } unit ? $" {unit} " : " ")<span data-testid="ingredient-name-@index">@ingredient.Name</span>
+            </li>
+        }
+    </ul>
+
+    <ol class="mt-4 list-decimal space-y-2 pl-5">
+        @for (var i = 0; i < recipe.Steps.Count; i++)
+        {
+            <li data-testid="step-@i">@recipe.Steps[i].Instruction</li>
+        }
+    </ol>
+
+    <div class="mt-6 flex gap-3">
+        <a data-testid="edit-button" href="/recipes/@Id/edit" class="rounded-[var(--radius-control)] border px-4 py-2">Edit</a>
+        @if (!confirming)
+        {
+            <button data-testid="delete-button" @onclick="() => confirming = true" class="rounded-[var(--radius-control)] border px-4 py-2">
+                Delete
+            </button>
+        }
+        else
+        {
+            <button data-testid="delete-confirm-button" @onclick="DeleteAsync"
+                    class="rounded-[var(--radius-control)] bg-[var(--color-danger)] px-4 py-2 text-white">
+                Confirm delete
+            </button>
+        }
+    </div>
+}

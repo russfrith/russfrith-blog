@@ -1,0 +1,30 @@
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<div class="flex flex-wrap gap-2">
+    @if (tags is not null)
+    {
+        @foreach (var tag in tags)
+        {
+            var isActive = Tag == tag.Name;
+            var classes = isActive
+                ? "border-[var(--color-accent)] bg-[var(--color-accent)] text-white"
+                : "border-[var(--color-border)] text-[var(--color-ink-muted)]";
+            <a href="@Nav.GetUriWithQueryParameter("tag", isActive ? null : tag.Name)"
+               data-testid="tag-chip-@tag.Name"
+               class="rounded-full border px-3 py-1 text-sm @classes">
+                @tag.Name (@tag.Count)
+            </a>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public string? Tag { get; set; }
+    [Parameter] public string? Search { get; set; }
+
+    private List<RecipeBox.Shared.TagCount>? tags;
+
+    protected override async Task OnInitializedAsync() =>
+        tags = await Http.GetFromJsonAsync<List<RecipeBox.Shared.TagCount>>("/api/tags");
+}

@@ -1,0 +1,16 @@
+<div class="flex items-center gap-3">
+    <button data-testid="servings-minus" @onclick="() => Step(-1)" disabled="@(Servings <= 1)" class="h-8 w-8 rounded-full border">
+        &minus;
+    </button>
+    <span data-testid="servings-value" class="w-8 text-center">@Servings</span>
+    <button data-testid="servings-plus" @onclick="() => Step(1)" disabled="@(Servings >= 48)" class="h-8 w-8 rounded-full border">
+        +
+    </button>
+</div>
+
+@code {
+    [Parameter] public int Servings { get; set; }
+    [Parameter] public EventCallback<int> ServingsChanged { get; set; }
+
+    private Task Step(int delta) => ServingsChanged.InvokeAsync(Math.Clamp(Servings + delta, 1, 48));
+}

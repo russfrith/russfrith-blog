@@ -1,0 +1,77 @@
+@page "/recipes/new"
+@page "/recipes/{Id:int}/edit"
+@inject HttpClient Http
+@inject NavigationManager Nav
+@inject RecipeCount Count
+
+@if (editContext is null)
+{
+    <div class="h-96 animate-pulse rounded-[var(--radius-card)] bg-[var(--color-border)]"></div>
+}
+else
+{
+    <EditForm EditContext="editContext" OnSubmit="SubmitAsync" @key="editContext" class="space-y-6">
+        <RecipeValidation @ref="validation" />
+
+        <div>
+            <label class="block text-sm font-medium">Title</label>
+            <InputText @bind-Value="recipe!.Title" data-testid="form-title"
+                       class="w-full rounded-[var(--radius-control)] border border-[var(--color-border)] px-3 py-2" />
+            <FieldError FieldKey="title" />
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium">Description</label>
+            <InputTextArea @bind-Value="recipe!.Description" data-testid="form-description"
+                           class="w-full rounded-[var(--radius-control)] border border-[var(--color-border)] px-3 py-2" />
+            <FieldError FieldKey="description" />
+        </div>
+
+        <div class="flex gap-4">
+            <div>
+                <label class="block text-sm font-medium">Servings</label>
+                <InputNumber @bind-Value="recipe!.Servings" data-testid="form-servings"
+                             class="w-24 rounded-[var(--radius-control)] border border-[var(--color-border)] px-3 py-2" />
+                <FieldError FieldKey="servings" />
+            </div>
+            <div>
+                <label class="block text-sm font-medium">Prep (min)</label>
+                <InputNumber @bind-Value="recipe!.PrepMinutes" data-testid="form-prep"
+                             class="w-24 rounded-[var(--radius-control)] border border-[var(--color-border)] px-3 py-2" />
+                <FieldError FieldKey="prepMinutes" />
+            </div>
+            <div>
+                <label class="block text-sm font-medium">Cook (min)</label>
+                <InputNumber @bind-Value="recipe!.CookMinutes" data-testid="form-cook"
+                             class="w-24 rounded-[var(--radius-control)] border border-[var(--color-border)] px-3 py-2" />
+                <FieldError FieldKey="cookMinutes" />
+            </div>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium">Tags</label>
+            <TagInput Recipe="recipe!" />
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium">Hero image</label>
+            <InputFile OnChange="OnFileSelected" accept="image/jpeg,image/png,image/webp" data-testid="form-image-input" />
+            <FieldError FieldKey="file" />
+        </div>
+
+        <div>
+            <h2 class="font-serif text-lg">Ingredients</h2>
+            <IngredientRows Ingredients="recipe!.Ingredients" />
+        </div>
+
+        <div>
+            <h2 class="font-serif text-lg">Steps</h2>
+            <StepRows Steps="recipe!.Steps" />
+        </div>
+
+        <button type="submit" data-testid="form-submit" disabled="@saving"
+                class="rounded-[var(--radius-control)] bg-[var(--color-accent)] px-5 py-2 text-white">
+            @(saving ? "Saving..." : "Save recipe")
+        </button>
+    </EditForm>
+}

@@ -1,0 +1,57 @@
+@using RecipeBox.Shared
+
+<div class="space-y-2">
+    @foreach (var (index, step) in Steps.Index())
+    {
+        <div data-testid="step-row-@index" class="flex items-start gap-2">
+            <div class="flex-1">
+                <InputTextArea @bind-Value="step.Instruction" data-testid="@($"step-input-{index}")"
+                               class="w-full rounded-[var(--radius-control)] border border-[var(--color-border)] px-2 py-1" />
+                <FieldError FieldKey="@($"steps[{index}].instruction")" />
+            </div>
+            <button type="button" data-testid="step-up-@index" @onclick="() => MoveUp(index)" disabled="@(index == 0)"
+                    class="rounded-[var(--radius-control)] border px-2 py-1">&uarr;</button>
+            <button type="button" data-testid="step-down-@index" @onclick="() => MoveDown(index)" disabled="@(index == Steps.Count - 1)"
+                    class="rounded-[var(--radius-control)] border px-2 py-1">&darr;</button>
+            <button type="button" data-testid="step-remove-@index" @onclick="() => RemoveRow(index)" disabled="@(Steps.Count <= 1)"
+                    class="rounded-[var(--radius-control)] border px-2 py-1">Remove</button>
+        </div>
+    }
+    <FieldError FieldKey="steps" />
+    <button type="button" data-testid="add-step-button" @onclick="AddRow" class="rounded-[var(--radius-control)] border px-3 py-1">
+        Add step
+    </button>
+</div>
+
+@code {
+    [CascadingParameter] public EditContext EditContext { get; set; } = default!;
+    [Parameter, EditorRequired] public List<Step> Steps { get; set; } = default!;
+
+    private void AddRow()
+    {
+        Steps.Add(new Step());
+        Notify();
+    }
+
+    private void RemoveRow(int index)
+    {
+        Steps.RemoveAt(index);
+        Notify();
+    }
+
+    private void MoveUp(int index)
+    {
+        if (index == 0) return;
+        (Steps[index - 1], Steps[index]) = (Steps[index], Steps[index - 1]);
+        Notify();
+    }
+
+    private void MoveDown(int index)
+    {
+        if (index == Steps.Count - 1) return;
+        (Steps[index], Steps[index + 1]) = (Steps[index + 1], Steps[index]);
+        Notify();
+    }
+
+    private void Notify() => EditContext.NotifyFieldChanged(EditContext.Field("steps"));
+}

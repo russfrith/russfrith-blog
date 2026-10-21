@@ -1,0 +1,47 @@
+@using RecipeBox.Shared
+
+<div class="flex flex-wrap items-center gap-2">
+    @foreach (var (index, tag) in Recipe.Tags.Index())
+    {
+        <button type="button" data-testid="form-tag-@tag" @onclick="() => RemoveTag(index)"
+                class="rounded-full border border-[var(--color-border)] px-3 py-1 text-sm">
+            @tag &times;
+        </button>
+    }
+    @* form="none-such" keeps this input detached from the surrounding
+       EditForm, so pressing Enter can't trigger implicit form submission -
+       no per-key preventDefault needed, which would also block typing. *@
+    <input form="none-such" data-testid="form-tag-input" @bind="newTag" @bind:event="oninput" @onkeydown="OnKeyDown"
+           placeholder="Add a tag and press Enter"
+           class="rounded-[var(--radius-control)] border border-[var(--color-border)] px-2 py-1" />
+</div>
+<FieldError FieldKey="tags" />
+@foreach (var index in Enumerable.Range(0, Recipe.Tags.Count))
+{
+    <FieldError FieldKey="@($"tags[{index}]")" />
+}
+
+@code {
+    [CascadingParameter] public EditContext EditContext { get; set; } = default!;
+    [Parameter, EditorRequired] public Recipe Recipe { get; set; } = default!;
+
+    private string newTag = "";
+
+    private void OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key != "Enter") return;
+        var value = newTag.Trim().ToLowerInvariant();
+        newTag = "";
+        if (string.IsNullOrEmpty(value)) return;
+        Recipe.Tags.Add(value);
+        Notify();
+    }
+
+    private void RemoveTag(int index)
+    {
+        Recipe.Tags.RemoveAt(index);
+        Notify();
+    }
+
+    private void Notify() => EditContext.NotifyFieldChanged(EditContext.Field("tags"));
+}
