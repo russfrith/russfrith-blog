@@ -22,5 +22,14 @@ services:
     ports:
       - "5081:8080"
 
+  blazor:
+    build:
+      context: .
+      dockerfile: clients/blazor/Dockerfile
+    depends_on:
+      - api
+    ports:
+      - "5082:8080"
+
 volumes:
   recipebox-data:

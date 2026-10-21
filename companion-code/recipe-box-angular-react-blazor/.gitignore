@@ -29,3 +29,6 @@ e2e/screenshots/
 
 # Angular
 clients/angular/.angular/
+
+# Blazor (Tailwind standalone CLI output, generated at Docker build time)
+clients/blazor/wwwroot/css/app.css
