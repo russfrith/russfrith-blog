@@ -56,13 +56,39 @@ Running log for the post. Claude Code appends entries as it builds. The author a
 
 ## Phase 2: Angular (reference implementation)
 
+### Versions used
+
+- Angular 22.2.3 (CLI/`@angular/build`/core, confirmed via `npm view` rather than assumed), scaffolded with the esbuild/Vite `@angular/build:application` builder
+- Zoneless by default: a fresh `ng new` in this version installs no `zone.js` dependency at all; `provideZonelessChangeDetection()` is added explicitly in `app.config.ts` anyway, since relying on an absent polyfill to imply zoneless felt like the wrong thing to build on
+- Unit tests: Vitest 5.0.5 via the `@angular/build:unit-test` builder (`ng test`) — Karma is gone from the default template
+- Tailwind CSS 4.3.3 (CSS-first `@theme` config, no `tailwind.config.js`), wired through `@tailwindcss/postcss` 4.3.3
+- TypeScript ~6.0.2 (Angular's own pin; separate from `tools/typegen`'s 5.9.x, which has its own `package.json`)
+- Playwright 1.64.1, Docker image `mcr.microsoft.com/playwright:v1.64.1-noble` (confirmed the tag exists before building against it)
+
 ### Surprises and mistakes
+
+- **Surprise/mistake:** `withComponentInputBinding()` sets a route/query-param-bound `input()` to the literal JS value `undefined` when the URL simply doesn't have that param — not the input's declared default. Passing that straight into `httpResource`'s `params` object serialized to the literal query string `search=undefined&tag=undefined`, which the API treated as actual (non-blank) filter values, breaking the recipe list and tag filtering entirely. Fixed by normalizing with `?? ''` everywhere a query-param-bound input value gets used (`recipe-list.ts`, `tag-filter.ts`). This only showed up once things ran in a real browser against the real API — unit tests and the strict `ng build` both stayed green throughout.
+- **Surprise/mistake:** in the Playwright skeleton/error/retry test, calling `page.unroute(url => isRecipeList(url))` with a freshly-created wrapper arrow function did not remove the route registered earlier with a *different* wrapper arrow function — Playwright matches routes to unroute by function reference, not by behavior, so the old route handler silently stayed active and stacked with the new one. Fixed by holding the handler in a named `const` and passing that exact same reference to both `route()` and `unroute()`.
+- **Surprise/mistake (same shape as Phase 1):** `docker compose run --rm ng ...` kept using a stale `node_modules` named volume after `package.json` changed (adding `@types/node` for `quantities.spec.ts`'s `node:fs`/`node:path` imports) — the volume isn't refreshed just because the underlying image changed. Fixed by `docker volume rm` before the next run, same as Phase 1's bin/obj lesson.
+- **Surprise/mistake:** Docker Desktop's nested-named-volume-under-bind-mount trick (same mechanism documented in Phase 1) leaves a non-empty-looking `clients/angular/node_modules/` stub in the working tree — specifically a single `.package-lock.json` metadata file, not real `node_modules` content. It's already gitignored and harmless; worth not mistaking it for a leaked install.
+- **Mistake caught by review, not by a failing test:** the Angular production build initially failed on two real type errors that the earlier unit-test run hadn't caught (different compilation unit): `WritableSignal` imported from `@angular/forms` instead of `@angular/core`, and `patchValue`-ing a nullable `unit: string | null` from the API straight into a non-nullable form control. Both are compile-time catches from the strict `ng build` itself — exactly the "build is the contract check" design the plan called for working as intended.
 
 ### Decisions
 
-(Idioms chosen: standalone components, signals, reactive forms, and why.)
+- **Standalone components, signals, zoneless, built-in `@if`/`@for` control flow, suffix-free file naming (`recipe-card.ts` / `RecipeCard`, not `recipe-card.component.ts`)** — all current Angular CLI defaults as of 22.2.3, not a deliberate swim against the grain.
+- **Reactive forms, not Signal Forms.** `@angular/forms/signals` is not part of this Angular version's stable public API surface (not present in the scaffolded dependencies) — reactive forms stayed the default per the plan, with no idiom-swap decision actually needed.
+- **`httpResource` for all reads, injected `HttpClient` for writes.** No service layer or store beyond `RecipeCount` — it's the one place CLAUDE.md's "no abstractions" rule meets spec.md's one explicit shared-state requirement (the header count), so it's the one service that exists.
+- **`linkedSignal` for the servings stepper's current value**, keyed off the loaded recipe's own `servings` — handles "initialize once the recipe loads" and "reset when navigating to a different recipe" as one declarative line, no manual `ngOnChanges`-style reset logic.
+- **Server-error-to-form-control mapping is pure string manipulation** (`ingredients[0].quantity` → `ingredients.0.quantity`, resolved via `FormGroup#get`) — works because `FormArray` index order is exactly what gets sent to the server, so reordering/removing rows can never misroute an error onto the wrong control.
+- **Angular runs the full image-upload path**, not the spec's optional fallback — e2e test 12 covers both the real upload and the real wrong-type rejection against this client, not the reduced form.
 
 ### Snippet candidates
+
+- `src/app/quantities.ts:1-50` — the TypeScript port of `scaledQuantity`/`formatQuantity`, line-for-line next to the C# original, including the 4-decimal-rounding-before-snapping step.
+- `src/app/recipe-count.ts` — the full `RecipeCount` signal service, ~15 lines, the header-count cross-framework comparison point.
+- `src/app/recipe-detail/recipe-detail.ts` — the `linkedSignal` servings-reset-on-navigation line.
+- `src/app/recipe-form/apply-server-errors.ts` — the server-error-key-to-FormControl mapping.
+- `e2e/tests/list.spec.ts` — Playwright route interception for the loading-skeleton/forced-error states, reusable unmodified against the other two clients later.
 
 ## Phase 3: Blazor WebAssembly
 
