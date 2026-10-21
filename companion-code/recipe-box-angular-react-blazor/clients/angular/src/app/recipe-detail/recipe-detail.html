@@ -1,0 +1,61 @@
+@if (recipe.isLoading()) {
+  <div class="h-96 animate-pulse rounded-[var(--radius-card)] bg-[var(--color-border)]"></div>
+} @else if (recipe.error(); as err) {
+  @if ($any(err).status === 404) {
+    <p data-testid="detail-not-found" class="py-12 text-center text-[var(--color-ink-muted)]">Recipe not found.</p>
+  } @else {
+    <div data-testid="detail-error" class="rounded-[var(--radius-card)] bg-[var(--color-danger-bg)] p-6 text-center">
+      <p class="mb-4 text-[var(--color-danger)]">Couldn't load this recipe.</p>
+      <button (click)="recipe.reload()" class="rounded-[var(--radius-control)] border px-4 py-2">Retry</button>
+    </div>
+  }
+} @else if (recipe.value(); as r) {
+  @if (r.imageUrl; as src) {
+    <img data-testid="detail-image" [src]="src" alt="" class="mb-6 h-64 w-full rounded-[var(--radius-card)] object-cover" />
+  }
+  <h1 data-testid="detail-title" class="font-serif text-3xl">{{ r.title }}</h1>
+  <p class="mt-2 text-[var(--color-ink-muted)]">{{ r.description }}</p>
+  <p class="mt-1 text-sm text-[var(--color-ink-muted)]">{{ r.tags.join(', ') }}</p>
+  <p class="mt-1 text-sm text-[var(--color-ink-muted)]">Prep {{ r.prepMinutes }} min / Cook {{ r.cookMinutes }} min</p>
+
+  <div class="mt-6">
+    <app-servings-stepper [(servings)]="servings" />
+  </div>
+
+  <ul class="mt-4 space-y-1">
+    @for (ingredient of r.ingredients; track $index) {
+      <li>
+        <span [attr.data-testid]="'ingredient-quantity-' + $index">{{ quantities()[$index] }}</span>
+        @if (ingredient.unit) {
+          {{ ingredient.unit }}
+        }
+        <span [attr.data-testid]="'ingredient-name-' + $index">{{ ingredient.name }}</span>
+      </li>
+    }
+  </ul>
+
+  <ol class="mt-4 list-decimal space-y-2 pl-5">
+    @for (step of r.steps; track $index) {
+      <li [attr.data-testid]="'step-' + $index">{{ step.instruction }}</li>
+    }
+  </ol>
+
+  <div class="mt-6 flex gap-3">
+    <a data-testid="edit-button" [routerLink]="['/recipes', r.id, 'edit']" class="rounded-[var(--radius-control)] border px-4 py-2">
+      Edit
+    </a>
+    @if (!confirming()) {
+      <button data-testid="delete-button" (click)="confirming.set(true)" class="rounded-[var(--radius-control)] border px-4 py-2">
+        Delete
+      </button>
+    } @else {
+      <button
+        data-testid="delete-confirm-button"
+        (click)="deleteRecipe()"
+        class="rounded-[var(--radius-control)] bg-[var(--color-danger)] px-4 py-2 text-white"
+      >
+        Confirm delete
+      </button>
+    }
+  </div>
+}

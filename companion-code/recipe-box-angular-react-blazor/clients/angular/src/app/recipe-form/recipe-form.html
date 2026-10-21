@@ -1,0 +1,56 @@
+<form [formGroup]="form" (ngSubmit)="submit()" class="space-y-6">
+  <div>
+    <label class="block text-sm font-medium">Title</label>
+    <input formControlName="title" data-testid="form-title" class="w-full rounded-[var(--radius-control)] border border-[var(--color-border)] px-3 py-2" />
+    <app-field-error fieldKey="title" [message]="errorFor(form.controls.title)" />
+  </div>
+
+  <div>
+    <label class="block text-sm font-medium">Description</label>
+    <textarea formControlName="description" data-testid="form-description" class="w-full rounded-[var(--radius-control)] border border-[var(--color-border)] px-3 py-2"></textarea>
+    <app-field-error fieldKey="description" [message]="errorFor(form.controls.description)" />
+  </div>
+
+  <div class="flex gap-4">
+    <div>
+      <label class="block text-sm font-medium">Servings</label>
+      <input type="number" formControlName="servings" data-testid="form-servings" class="w-24 rounded-[var(--radius-control)] border border-[var(--color-border)] px-3 py-2" />
+      <app-field-error fieldKey="servings" [message]="errorFor(form.controls.servings)" />
+    </div>
+    <div>
+      <label class="block text-sm font-medium">Prep (min)</label>
+      <input type="number" formControlName="prepMinutes" data-testid="form-prep" class="w-24 rounded-[var(--radius-control)] border border-[var(--color-border)] px-3 py-2" />
+      <app-field-error fieldKey="prepMinutes" [message]="errorFor(form.controls.prepMinutes)" />
+    </div>
+    <div>
+      <label class="block text-sm font-medium">Cook (min)</label>
+      <input type="number" formControlName="cookMinutes" data-testid="form-cook" class="w-24 rounded-[var(--radius-control)] border border-[var(--color-border)] px-3 py-2" />
+      <app-field-error fieldKey="cookMinutes" [message]="errorFor(form.controls.cookMinutes)" />
+    </div>
+  </div>
+
+  <div>
+    <label class="block text-sm font-medium">Tags</label>
+    <app-tag-input [tags]="form.controls.tags" [errorFor]="errorFor" />
+  </div>
+
+  <div>
+    <label class="block text-sm font-medium">Hero image</label>
+    <input type="file" accept="image/jpeg,image/png,image/webp" data-testid="form-image-input" (change)="onFileSelected($event)" />
+    <app-field-error fieldKey="file" [message]="fileError()" />
+  </div>
+
+  <div>
+    <h2 class="font-serif text-lg">Ingredients</h2>
+    <app-ingredient-rows [ingredients]="form.controls.ingredients" [errorFor]="errorFor" />
+  </div>
+
+  <div>
+    <h2 class="font-serif text-lg">Steps</h2>
+    <app-step-rows [steps]="form.controls.steps" [errorFor]="errorFor" />
+  </div>
+
+  <button type="submit" data-testid="form-submit" [disabled]="saving()" class="rounded-[var(--radius-control)] bg-[var(--color-accent)] px-5 py-2 text-white">
+    {{ saving() ? 'Saving...' : 'Save recipe' }}
+  </button>
+</form>

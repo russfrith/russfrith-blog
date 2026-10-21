@@ -1,0 +1,44 @@
+<div class="mb-6 space-y-4">
+  <input
+    data-testid="search-input"
+    [formControl]="searchControl"
+    placeholder="Search recipes..."
+    class="w-full rounded-[var(--radius-control)] border border-[var(--color-border)] px-3 py-2"
+  />
+  <app-tag-filter [active]="tag()" />
+</div>
+
+@if (recipes.isLoading()) {
+  <div data-testid="list-skeleton" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+      <div class="h-56 animate-pulse rounded-[var(--radius-card)] bg-[var(--color-border)]"></div>
+    }
+  </div>
+} @else if (recipes.error()) {
+  <div data-testid="list-error" class="rounded-[var(--radius-card)] bg-[var(--color-danger-bg)] p-6 text-center">
+    <p class="mb-4 text-[var(--color-danger)]">Couldn't load recipes.</p>
+    <button data-testid="list-retry-button" (click)="recipes.reload()" class="rounded-[var(--radius-control)] border px-4 py-2">
+      Retry
+    </button>
+  </div>
+} @else if (recipes.value()?.length === 0 && !search() && !tag()) {
+  <div data-testid="list-empty" class="py-12 text-center">
+    <p class="mb-4 text-[var(--color-ink-muted)]">No recipes yet.</p>
+    <a routerLink="/recipes/new" class="rounded-[var(--radius-control)] bg-[var(--color-accent)] px-4 py-2 text-white">
+      New recipe
+    </a>
+  </div>
+} @else if (recipes.value()?.length === 0) {
+  <div data-testid="list-no-matches" class="py-12 text-center">
+    <p class="mb-4 text-[var(--color-ink-muted)]">No matches.</p>
+    <button data-testid="clear-filters-button" (click)="clearFilters()" class="rounded-[var(--radius-control)] border px-4 py-2">
+      Clear filters
+    </button>
+  </div>
+} @else {
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    @for (recipe of recipes.value(); track recipe.id) {
+      <app-recipe-card [recipe]="recipe" />
+    }
+  </div>
+}

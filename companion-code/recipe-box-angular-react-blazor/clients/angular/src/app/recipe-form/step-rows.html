@@ -1,0 +1,27 @@
+<div class="space-y-2">
+  @for (row of steps().controls; track $index) {
+    <div [attr.data-testid]="'step-row-' + $index" class="flex items-start gap-2">
+      <div class="flex-1">
+        <textarea
+          [formControl]="row"
+          [attr.data-testid]="'step-input-' + $index"
+          class="w-full rounded-[var(--radius-control)] border border-[var(--color-border)] px-2 py-1"
+        ></textarea>
+        <app-field-error [fieldKey]="'steps[' + $index + '].instruction'" [message]="errorFor()(row)" />
+      </div>
+      <button type="button" [attr.data-testid]="'step-up-' + $index" (click)="moveUp($index)" [disabled]="$index === 0" class="rounded-[var(--radius-control)] border px-2 py-1">
+        ↑
+      </button>
+      <button type="button" [attr.data-testid]="'step-down-' + $index" (click)="moveDown($index)" [disabled]="$index === steps().length - 1" class="rounded-[var(--radius-control)] border px-2 py-1">
+        ↓
+      </button>
+      <button type="button" [attr.data-testid]="'step-remove-' + $index" (click)="removeRow($index)" [disabled]="steps().length <= 1" class="rounded-[var(--radius-control)] border px-2 py-1">
+        Remove
+      </button>
+    </div>
+  }
+  <app-field-error fieldKey="steps" [message]="errorFor()(steps())" />
+  <button type="button" data-testid="add-step-button" (click)="addRow()" class="rounded-[var(--radius-control)] border px-3 py-1">
+    Add step
+  </button>
+</div>

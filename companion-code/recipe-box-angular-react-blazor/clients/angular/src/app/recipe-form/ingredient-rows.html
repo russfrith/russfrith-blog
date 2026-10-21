@@ -1,0 +1,42 @@
+<div class="space-y-2">
+  @for (row of ingredients().controls; track $index) {
+    <div [formGroup]="row" [attr.data-testid]="'ingredient-row-' + $index" class="flex items-start gap-2">
+      <div>
+        <input
+          type="number"
+          step="any"
+          [formControl]="row.controls.quantity"
+          [attr.data-testid]="'ingredient-quantity-input-' + $index"
+          class="w-20 rounded-[var(--radius-control)] border border-[var(--color-border)] px-2 py-1"
+        />
+        <app-field-error [fieldKey]="'ingredients[' + $index + '].quantity'" [message]="errorFor()(row.controls.quantity)" />
+      </div>
+      <input
+        [formControl]="row.controls.unit"
+        [attr.data-testid]="'ingredient-unit-input-' + $index"
+        class="w-20 rounded-[var(--radius-control)] border border-[var(--color-border)] px-2 py-1"
+      />
+      <div class="flex-1">
+        <input
+          [formControl]="row.controls.name"
+          [attr.data-testid]="'ingredient-name-input-' + $index"
+          class="w-full rounded-[var(--radius-control)] border border-[var(--color-border)] px-2 py-1"
+        />
+        <app-field-error [fieldKey]="'ingredients[' + $index + '].name'" [message]="errorFor()(row.controls.name)" />
+      </div>
+      <button
+        type="button"
+        [attr.data-testid]="'ingredient-remove-' + $index"
+        (click)="removeRow($index)"
+        [disabled]="ingredients().length <= 1"
+        class="rounded-[var(--radius-control)] border px-2 py-1"
+      >
+        Remove
+      </button>
+    </div>
+  }
+  <app-field-error fieldKey="ingredients" [message]="errorFor()(ingredients())" />
+  <button type="button" data-testid="add-ingredient-button" (click)="addRow()" class="rounded-[var(--radius-control)] border px-3 py-1">
+    Add ingredient
+  </button>
+</div>
