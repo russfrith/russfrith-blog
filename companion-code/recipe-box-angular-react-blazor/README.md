@@ -29,20 +29,38 @@ Docker with Compose is the only requirement; no .NET SDK, Node, or
 Playwright needs to be installed on the host.
 
 ```
-docker compose up --build api
+docker compose up --build
 ```
 
 The API listens on `http://localhost:5080`, seeded automatically on first
-start. `docker compose down -v` returns to a clean state (fresh reseed on
-the next `up`). Angular, React, and Blazor client services are added in
-later phases; this compose file currently only runs the API.
+start. The Angular client listens on `http://localhost:5081` (proxying
+`/api` to the API). `docker compose down -v` returns to a clean state
+(fresh reseed on the next `up`). React and Blazor client services are
+added in later phases. Port scheme: api 5080, angular 5081, blazor 5082,
+react 5083.
 
-For local iteration (dotnet build/test, EF migrations, typegen), see
-`docker-compose.dev.yml` — for example:
+For local iteration (dotnet build/test, EF migrations, typegen, `ng
+serve`/`ng test`), see `docker-compose.dev.yml` — for example:
 
 ```
 docker compose -f docker-compose.yml -f docker-compose.dev.yml run --rm dotnet dotnet build
+docker compose -f docker-compose.yml -f docker-compose.dev.yml run --rm ng npx ng test --watch=false
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up ng
 ```
+
+To run the shared Playwright e2e suite against a client (here, Angular),
+layer `docker-compose.e2e.yml` on top of the default file — this puts the
+API in `Testing` mode, which is required for the suite's reset endpoint
+and is never exposed under the plain default compose file:
+
+```
+docker compose -f docker-compose.yml -f docker-compose.e2e.yml down -v
+docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d --build api angular
+docker compose -f docker-compose.yml -f docker-compose.e2e.yml run --rm --build e2e
+```
+
+Screenshots land in `e2e/screenshots/<client>/` (gitignored, overwritten
+each run) for copying into the post.
 
 SQLite is a deliberate choice for this single-instance demo; it isn't
 meant to scale beyond one API replica.

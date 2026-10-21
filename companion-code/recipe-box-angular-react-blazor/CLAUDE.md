@@ -24,6 +24,7 @@ recipe-box-angular-react-blazor/
   README.md
   docker-compose.yml
   docker-compose.dev.yml
+  docker-compose.e2e.yml
   .gitignore
   .gitattributes
   api/            ASP.NET Core minimal API (EF Core + SQLite)
@@ -45,11 +46,12 @@ Pin versions and record them here before writing code. Use current stable releas
 - Microsoft.EntityFrameworkCore.Sqlite / .Design, Microsoft.AspNetCore.OpenApi, Microsoft.AspNetCore.Mvc.Testing: 10.0.13 (latest 10.0.x patch as of this check; bumped from 10.0.0 to clear transitive NU1902/NU1903 vulnerability warnings in `Microsoft.OpenApi`, `SQLitePCLRaw.lib.e_sqlite3`, and `System.Security.Cryptography.Pkcs` — see blog-notes.md)
 - dotnet-ef (local tool, `.config/dotnet-tools.json`): 10.0.13
 - Test framework: xunit v3 4.0.2, xunit.runner.visualstudio 4.0.1, Microsoft.NET.Test.Sdk 18.3.0
-- Angular: TBD (Phase 2)
+- Angular: 22.2.3 (`@angular/build:application` esbuild/Vite builder, zoneless, standalone components, built-in `@if`/`@for` control flow)
+- Angular unit tests: Vitest 5.0.5 via the `@angular/build:unit-test` builder (`ng test`)
 - React (and build tool): TBD (Phase 4)
 - Blazor render mode: standalone WebAssembly
-- Tailwind CSS: TBD
-- Playwright: TBD (the Docker image tag must match the npm package version)
+- Tailwind CSS: 4.3.3 (CSS-first `@theme` config), `@tailwindcss/postcss` 4.3.3
+- Playwright: 1.64.1, Docker image `mcr.microsoft.com/playwright:v1.64.1-noble` (tag confirmed to match the npm package version)
 - Node: 24.x LTS (typegen container and later client build containers only — never a host install)
 - TypeScript: 5.9.x in `tools/typegen` (openapi-typescript's peer range is `^5.x`; do not take the current TypeScript 7.x there)
 - openapi-typescript: 7.13.0
@@ -113,8 +115,9 @@ Every interactive or asserted element has a `data-testid` taken from `spec.md`. 
 - `docker-compose.yml` runs the API and all three clients. SQLite lives on a volume.
 - A test-only reset-and-reseed endpoint exists, enabled only when `ASPNETCORE_ENVIRONMENT=Testing`. The suite calls it before each run.
 - One Playwright suite in `e2e/` runs against any client through a `BASE_URL` variable, using the official Playwright image.
+- `docker-compose.e2e.yml` is a third compose file, layered on top of the default (`docker compose -f docker-compose.yml -f docker-compose.e2e.yml ...`): it sets `ASPNETCORE_ENVIRONMENT=Testing` on the `api` service (the default file runs Production, so the reset endpoint is 404 under a plain `docker compose up` by design) and adds the `e2e` service that runs the Playwright suite.
 
-**Definition of done for a client:** the shared Playwright suite passes against that client's container from a clean `docker compose up --build`, and its entries in `blog-notes.md` are complete.
+**Definition of done for a client:** the shared Playwright suite passes against that client's container from a clean `docker compose -f docker-compose.yml -f docker-compose.e2e.yml up --build`, and its entries in `blog-notes.md` are complete. (A plain `docker compose up --build` with no override is the reader-facing "just run it" path and intentionally can't run the suite — it has no Testing-only reset endpoint to call.)
 
 ## Workflow
 

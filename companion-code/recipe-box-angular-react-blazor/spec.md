@@ -135,11 +135,13 @@ Implemented in C# in `shared/`, ported by hand to TypeScript.
 ### 3. Create and edit form (`/recipes/new`, `/recipes/:id/edit`)
 
 - Fields: title, description, servings, prep and cook minutes, tags (type and press Enter to add, remove with a button), hero image upload.
+- **New-recipe defaults:** Servings 4, PrepMinutes 0, CookMinutes 0, one blank ingredient row, one blank step row. Identical across all three clients.
 - **Ingredients section:** repeating rows (quantity, unit, name). Add row, remove row (keep at least one).
 - **Steps section:** repeating, reorderable with up and down buttons (no drag and drop). Add and remove.
 - Client-side validation mirrors the model rules. Inline errors appear on blur and on submit.
 - Server validation errors (ProblemDetails) are mapped onto the matching fields.
 - Submit: save the recipe as JSON, then upload the image if one was chosen. Show a saving state and prevent double submit. On success, navigate to the detail page.
+  - **If the JSON save succeeds but the image upload then fails** (for example a wrong file type): stay on the form rather than navigating away or silently dropping the image. The recipe already exists at this point, so the form switches to editing that id; the image error shows (keyed `file`) and the user can fix the file and resubmit, which goes through the existing recipe's PUT/image endpoints rather than creating a duplicate.
 - Edit loads the existing recipe. Unsaved changes are not guarded in core scope.
 
 ### 4. Header summary
@@ -155,6 +157,8 @@ Identical in all three clients.
 **Detail:** `detail-title`, `detail-image`, `servings-value`, `servings-minus`, `servings-plus`, `ingredient-quantity-{index}`, `ingredient-name-{index}`, `step-{index}`, `edit-button`, `delete-button`, `delete-confirm-button`, `detail-not-found`, `detail-error`
 
 **Form:** `form-title`, `form-description`, `form-servings`, `form-prep`, `form-cook`, `form-tag-input`, `form-tag-{tag}`, `form-image-input`, `ingredient-row-{index}`, `ingredient-quantity-input-{index}`, `ingredient-unit-input-{index}`, `ingredient-name-input-{index}`, `ingredient-remove-{index}`, `add-ingredient-button`, `step-row-{index}`, `step-input-{index}`, `step-up-{index}`, `step-down-{index}`, `step-remove-{index}`, `add-step-button`, `form-submit`, `form-error-{field}`
+
+`{field}` in `form-error-{field}` is the literal server/client error key from the Validation errors grammar above, reused unmodified — including array brackets and dots where present (for example `form-error-ingredients[0].quantity`, `form-error-tags[1]`, `form-error-file` for image errors). Don't translate or flatten the key into a different test-id shape.
 
 ## Seed data
 
