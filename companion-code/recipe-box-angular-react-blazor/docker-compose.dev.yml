@@ -34,8 +34,39 @@ services:
       # generate.sh resolves "../../api/openapi.json" relative to /app; only
       # this one file (read-only) is exposed, not the whole repo.
       - ./api/openapi.json:/api/openapi.json:ro
+      # Output mount for the Angular client's generated types. Same
+      # "../../" relative-path trick: from /app, "../../clients/angular/..."
+      # resolves to "/clients/angular/...", which this volume backs.
+      - ./clients/angular/src/app/api:/clients/angular/src/app/api
+
+  # Dev-only Angular loop: `docker compose -f docker-compose.yml -f
+  # docker-compose.dev.yml run --rm ng npx ng test --watch=false`, or
+  # `... up ng` to serve with live reload. node_modules and the build
+  # cache live in named volumes nested under the bind mount, so the
+  # `npm ci` already baked into the `deps` image stage at /app/node_modules
+  # seeds the volume on first creation (same trick as the typegen service
+  # above). shared/test-vectors.json is mounted read-only at the exact
+  # relative path quantities.spec.ts expects (4 levels up from
+  # /app/src/app) so it can import the file directly.
+  ng:
+    build:
+      context: ./clients/angular
+      dockerfile: Dockerfile
+      target: deps
+    profiles: ["tools"]
+    working_dir: /app
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./clients/angular:/app
+      - angular-node-modules:/app/node_modules
+      - angular-cache:/app/.angular
+      - ./shared/test-vectors.json:/shared/test-vectors.json:ro
+    command: npx ng serve --host 0.0.0.0 --poll 1000 --proxy-config proxy.conf.json
 
 volumes:
+  angular-node-modules:
+  angular-cache:
   nuget-cache:
   shared-bin:
   shared-obj:

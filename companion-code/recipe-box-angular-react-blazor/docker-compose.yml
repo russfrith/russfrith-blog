@@ -13,5 +13,14 @@ services:
     ports:
       - "5080:8080"
 
+  angular:
+    build:
+      context: ./clients/angular
+      dockerfile: Dockerfile
+    depends_on:
+      - api
+    ports:
+      - "5081:8080"
+
 volumes:
   recipebox-data:
