@@ -1,8 +1,8 @@
 ---
 title: "ASP.NET Core Dropped Its Own Clock Wrapper. You Should Too."
 description: "(Unless It Means Something): why pass-through IClock wrappers are redundant now that TimeProvider is wired into ASP.NET Core Identity, and exactly how far that wiring actually goes as of .NET 11 RC1."
-date: 2026-10-11T00:00:00-04:00
-draft: true
+date: 2026-10-22T09:00:00-04:00
+draft: false
 cover:
   image: pexels-alexasfotos-34067773.jpg
   alt: "Colorful retro alarm clocks lined up in a row"
@@ -61,7 +61,7 @@ Before `TimeProvider`, there wasn't a shared, testable abstraction for "now" in 
 **A short, accurate timeline.** ASP.NET Core marked `ISystemClock` (and `SystemClock`, and the authentication handler constructors that took one) `[Obsolete]` in **.NET 8 Preview 5**[[1](#references)]. That's "obsoleted," not "removed." It still compiles, it still sits in the DI container, it just warns. The same breaking-change doc says Microsoft "may" remove it in a future version; as of the .NET 11 RC1 source I checked, it's still there. Don't read anything stronger into this than what actually happened: one framework-internal interface got a compiler warning, and a new BCL type, `System.TimeProvider`, became the thing ASP.NET Core actually reads time from in several, not all, of its time-dependent components.
 {{< /aside >}}
 
-## The deep dive: TimeProvider, the general case
+## TimeProvider, the general case
 
 `TimeProvider` is the **general-purpose clock abstraction**: anywhere you'd otherwise call `DateTime.UtcNow` or `DateTimeOffset.UtcNow`, from business logic to timers, `TimeProvider` is the injectable, fakeable replacement. It's worth knowing the whole surface because it's smaller than you'd expect, and it quietly plugs into async APIs you already use.
 
