@@ -1,0 +1,90 @@
+services:
+  stub:
+    build:
+      context: .
+      dockerfile: src/StubService/Dockerfile
+    networks: [bench]
+    environment:
+      - STUB_DEFAULT_LATENCY_MS=50
+
+  api:
+    build:
+      context: .
+      dockerfile: src/Api/Dockerfile
+    networks: [bench]
+    depends_on: [stub]
+    environment:
+      - STUB_BASE_URL=http://stub:8080
+    ports:
+      - "5080:8080"
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 2g
+    volumes:
+      - tmp-diag:/tmp
+    cap_add:
+      - SYS_PTRACE
+
+  dotnet-counters:
+    build:
+      context: .
+      dockerfile: src/DiagTools/Dockerfile
+    pid: "service:api"
+    depends_on: [api]
+    volumes:
+      - tmp-diag:/tmp
+      - ./results/raw:/results
+    profiles: ["diag"]
+
+  k6:
+    image: grafana/k6:1.0.0
+    networks: [bench]
+    depends_on: [api]
+    volumes:
+      - ./load:/scripts:ro
+      - ./results/raw:/results
+    profiles: ["load"]
+
+  runner:
+    image: python:3.13.0-slim
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+      - /var/run/docker.sock:/var/run/docker.sock
+    entrypoint: ["sh", "-c"]
+    command:
+      - >
+        apt-get update -qq &&
+        apt-get install -y -qq --no-install-recommends docker.io docker-compose-v2 >/dev/null &&
+        pip install --quiet requests==2.32.3 &&
+        python scripts/run_matrix.py
+    profiles: ["tools"]
+
+  cost-model:
+    image: python:3.13.0-slim
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+    entrypoint: ["sh", "-c"]
+    command:
+      - pip install --quiet requests==2.32.3 && python scripts/cost_model.py
+    profiles: ["tools"]
+
+  charts:
+    image: python:3.13.0-slim
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+    entrypoint: ["sh", "-c"]
+    command:
+      - pip install --quiet matplotlib==3.9.2 pandas==2.2.3 && python scripts/make_charts.py
+    profiles: ["tools"]
+
+networks:
+  bench:
+    driver: bridge
+
+volumes:
+  tmp-diag:
