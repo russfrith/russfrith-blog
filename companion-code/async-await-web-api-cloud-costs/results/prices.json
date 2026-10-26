@@ -1,0 +1,23 @@
+{
+  "fetched_at_utc": "2026-10-26T22:26:52.540036+00:00",
+  "region": {
+    "azure": "eastus",
+    "aws": "us-east-1"
+  },
+  "assumptions": "On-demand / pay-as-you-go list prices, not reserved or savings-plan rates.",
+  "azure_app_service": {
+    "tier": "B1",
+    "vcpu": 1,
+    "ram_gb": 1.75,
+    "hourly_usd": 0.017,
+    "sku": "",
+    "product": "Azure App Service Basic Plan - Linux"
+  },
+  "azure_monthly_usd": 12.419520000000002,
+  "aws_fargate_1vcpu_2gb": {
+    "vcpu_hourly_usd": 0.04048,
+    "gb_hourly_usd": 0.004445,
+    "hourly_usd": 0.049370000000000004,
+    "monthly_usd": 36.06774720000001
+  }
+}
