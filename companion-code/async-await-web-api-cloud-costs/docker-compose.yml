@@ -48,7 +48,7 @@ services:
     profiles: ["load"]
 
   runner:
-    image: python:3.13.0-slim
+    image: docker:27-cli
     working_dir: /workspace
     volumes:
       - .:/workspace
@@ -56,14 +56,13 @@ services:
     entrypoint: ["sh", "-c"]
     command:
       - >
-        apt-get update -qq &&
-        apt-get install -y -qq --no-install-recommends docker.io docker-compose-v2 >/dev/null &&
-        pip install --quiet requests==2.32.3 &&
-        python scripts/run_matrix.py
+        apk add --no-cache python3 py3-pip >/dev/null &&
+        pip install --quiet --break-system-packages requests==2.32.3 &&
+        python3 scripts/run_matrix.py
     profiles: ["tools"]
 
   cost-model:
-    image: python:3.13.0-slim
+    image: python:3.13-slim
     working_dir: /workspace
     volumes:
       - .:/workspace
@@ -73,7 +72,7 @@ services:
     profiles: ["tools"]
 
   charts:
-    image: python:3.13.0-slim
+    image: python:3.13-slim
     working_dir: /workspace
     volumes:
       - .:/workspace

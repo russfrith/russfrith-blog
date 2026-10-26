@@ -5,7 +5,8 @@
 set -euo pipefail
 
 OUT_NAME="${1:-counters}"
-DURATION="${2:-60}"
+DURATION_SECONDS="${2:-60}"
+DURATION=$(printf "00:00:%02d:%02d" $((DURATION_SECONDS / 60)) $((DURATION_SECONDS % 60)))
 
 API_PID=$(pgrep -f "dotnet.*Api.dll" | head -n1)
 if [ -z "$API_PID" ]; then
