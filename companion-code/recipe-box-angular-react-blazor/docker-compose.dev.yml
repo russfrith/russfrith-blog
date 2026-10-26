@@ -40,6 +40,8 @@ services:
       # "../../" relative-path trick: from /app, "../../clients/angular/..."
       # resolves to "/clients/angular/...", which this volume backs.
       - ./clients/angular/src/app/api:/clients/angular/src/app/api
+      # Same trick for the React client's output path.
+      - ./clients/react/src/api:/clients/react/src/api
 
   # Dev-only Angular loop: `docker compose -f docker-compose.yml -f
   # docker-compose.dev.yml run --rm ng npx ng test --watch=false`, or
@@ -66,9 +68,34 @@ services:
       - ./shared/test-vectors.json:/shared/test-vectors.json:ro
     command: npx ng serve --host 0.0.0.0 --poll 1000 --proxy-config proxy.conf.json
 
+  # Dev-only React loop: `docker compose -f docker-compose.yml -f
+  # docker-compose.dev.yml run --rm vite npx vitest run`, or `... up vite`
+  # to serve with live reload. node_modules lives in a named volume nested
+  # under the bind mount (Vite's own cache and tsc -b's build-info file
+  # both live inside node_modules too, so one volume is enough here, unlike
+  # Angular's two). shared/test-vectors.json is mounted read-only at the
+  # exact relative path quantities.test.ts expects (2 levels up from
+  # /app/src) so it can import the file directly. --host/--proxy/--poll
+  # equivalents live in vite.config.ts's `server` block instead of CLI flags.
+  vite:
+    build:
+      context: ./clients/react
+      dockerfile: Dockerfile
+      target: deps
+    profiles: ["tools"]
+    working_dir: /app
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./clients/react:/app
+      - react-node-modules:/app/node_modules
+      - ./shared/test-vectors.json:/shared/test-vectors.json:ro
+    command: npx vite
+
 volumes:
   angular-node-modules:
   angular-cache:
+  react-node-modules:
   nuget-cache:
   shared-bin:
   shared-obj:

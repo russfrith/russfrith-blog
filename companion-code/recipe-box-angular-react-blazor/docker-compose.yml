@@ -31,5 +31,14 @@ services:
     ports:
       - "5082:8080"
 
+  react:
+    build:
+      context: ./clients/react
+      dockerfile: Dockerfile
+    depends_on:
+      - api
+    ports:
+      - "5083:8080"
+
 volumes:
   recipebox-data:
