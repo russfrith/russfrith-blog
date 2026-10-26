@@ -33,19 +33,22 @@ docker compose up --build
 ```
 
 The API listens on `http://localhost:5080`, seeded automatically on first
-start. The Angular client listens on `http://localhost:5081` and the
-Blazor client on `http://localhost:5082` (both proxying `/api` to the
-API). `docker compose down -v` returns to a clean state (fresh reseed on
-the next `up`). The React client is added in a later phase. Port scheme:
-api 5080, angular 5081, blazor 5082, react 5083.
+start. The Angular client listens on `http://localhost:5081`, Blazor on
+`http://localhost:5082`, and React on `http://localhost:5083` (all three
+proxying `/api` to the API). `docker compose down -v` returns to a clean
+state (fresh reseed on the next `up`). Port scheme: api 5080, angular
+5081, blazor 5082, react 5083.
 
 For local iteration (dotnet build/test, EF migrations, typegen, `ng
-serve`/`ng test`), see `docker-compose.dev.yml` — for example:
+serve`/`ng test`, Vite dev server/`vitest`), see `docker-compose.dev.yml`
+— for example:
 
 ```
 docker compose -f docker-compose.yml -f docker-compose.dev.yml run --rm dotnet dotnet build
 docker compose -f docker-compose.yml -f docker-compose.dev.yml run --rm ng npx ng test --watch=false
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up ng
+docker compose -f docker-compose.yml -f docker-compose.dev.yml run --rm vite npx vitest run
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up vite
 ```
 
 Blazor has no equivalent local dev-serve loop (its WASM dev server has no
@@ -64,9 +67,10 @@ docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d --build api
 docker compose -f docker-compose.yml -f docker-compose.e2e.yml run --rm --build e2e
 ```
 
-Swap `angular` for `blazor` (and pass `-e BASE_URL=http://blazor:8080` to
-the final `run`) to test the Blazor client instead — the suite itself
-needs no changes either way.
+Swap `angular` for `blazor` or `react` (and pass
+`-e BASE_URL=http://blazor:8080` or `-e BASE_URL=http://react:8080` to
+the final `run`) to test that client instead — the suite itself needs no
+changes either way.
 
 Screenshots land in `e2e/screenshots/<client>/` (gitignored, overwritten
 each run) for copying into the post.

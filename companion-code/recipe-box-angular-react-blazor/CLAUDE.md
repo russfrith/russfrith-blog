@@ -48,7 +48,7 @@ Pin versions and record them here before writing code. Use current stable releas
 - Test framework: xunit v3 4.0.2, xunit.runner.visualstudio 4.0.1, Microsoft.NET.Test.Sdk 18.3.0
 - Angular: 22.2.3 (`@angular/build:application` esbuild/Vite builder, zoneless, standalone components, built-in `@if`/`@for` control flow)
 - Angular unit tests: Vitest 5.0.5 via the `@angular/build:unit-test` builder (`ng test`)
-- React (and build tool): TBD (Phase 4)
+- React: 19.3.1. Build tool: Vite 8.3.5 (`@vitejs/plugin-react` 6.1.2, scaffolded via `npm create vite@latest -- --template react-ts`). Router: react-router 8.5.0 (declarative `<Routes>`/`<Route>`, not the data/loader API — a second server-state mechanism would conflict with "TanStack Query, and nothing else"). Data fetching/shared state: `@tanstack/react-query` 5.104.5, `QueryClient` configured with `retry: false` (e2e tests 4/14 need the error/not-found state to show well inside Playwright's default timeout; none of the three clients retry). Lint: oxlint 1.88.0 (the create-vite default, not ESLint) — `react/rules-of-hooks` is on by default. Unit tests: Vitest 5.0.5 (no test runner is scaffolded by default; added explicitly, matching Angular's pin)
 - Blazor render mode: standalone WebAssembly. Microsoft.AspNetCore.Components.WebAssembly: 10.0.13 (no `.DevServer` package — Blazor has no local dev-watch loop against the API, see Docker section)
 - Tailwind CSS: 4.3.3 (CSS-first `@theme` config). Angular/React: `@tailwindcss/postcss` 4.3.3. Blazor: the standalone Tailwind CLI (no Node involved), same 4.3.3
 - Playwright: 1.64.1, Docker image `mcr.microsoft.com/playwright:v1.64.1-noble` (tag confirmed to match the npm package version)

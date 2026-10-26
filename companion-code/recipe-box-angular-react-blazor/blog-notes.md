@@ -24,6 +24,7 @@ Running log for the post. Claude Code appends entries as it builds. The author a
 - Node 24 (typegen container only)
 - Blazor: Microsoft.AspNetCore.Components.WebAssembly 10.0.13 (standalone WebAssembly, no server/hosted mode); Tailwind standalone CLI 4.3.3 (no Node involved in Blazor's own styling pipeline)
 - TypeScript 5.9.x, openapi-typescript 7.13.0 (`tools/typegen`)
+- React 19.3.1, Vite 8.3.5 (`@vitejs/plugin-react` 6.1.2), react-router 8.5.0, `@tanstack/react-query` 5.104.5, oxlint 1.88.0, Vitest 5.0.5 (all confirmed via `npm view`/the actual `npm create vite@latest` scaffold output, not assumed)
 
 ## Phase 1: API, shared library, Docker skeleton
 
@@ -124,13 +125,29 @@ Running log for the post. Claude Code appends entries as it builds. The author a
 
 ### Surprises and mistakes
 
-(The author's learner's perspective matters most here. Note where Angular habits misled.)
+- **Where Angular habits misled:** `fetch()` does not reject on 4xx/5xx the way Angular's `HttpClient` does - every response has to be checked with `response.ok` by hand, or a real server error silently "succeeds." Wrapped once in `http.ts`'s `request<T>()` so every call site can just `try`/`catch` like the other two clients do.
+- **Where Angular habits misled:** a controlled `<input type="number">` always yields a *string* in `onChange`, never a parsed number - unlike Angular's `NumberValueAccessor`, which hides that conversion inside `formControlName`. Form state keeps every numeric field as a string (`formValues.ts`) and converts with `Number(...)` only at submit time; `Number('')` conveniently evaluates to `0`, matching the server's own "missing number defaults to 0" rule, so an emptied quantity field still fails the right validation rule instead of silently passing.
+- **Where Angular habits misled:** the reflex to "reset state when a prop changes" is a documented React anti-pattern (react.dev's "You Might Not Need an Effect", checked live rather than assumed) - the fix for the servings scaler isn't a `useEffect` watching the recipe id, it's giving the stateful child component a `key={recipe.id}` so React remounts it fresh on navigation. Same `key` trick turned out to be load-bearing a second time: React Router reuses the same `RecipeForm` instance across `/recipes/new` and `/recipes/:id/edit`, so without `key={id ?? 'new'}` a previous edit's field values leaked straight into a subsequent "New recipe" click.
+- **TanStack Query's default retry behavior (3 retries with backoff, several seconds) would have broken e2e timing** - test 4's forced-500 and test 14's 404 both need the error/not-found UI to appear well inside Playwright's default expect window, but a query that's still silently retrying never reaches its error state in time. Fixed with one `QueryClient` option, `retry: false`, which also brings React in line with Angular's `httpResource` and Blazor's `HttpClient`, neither of which retries either.
+- **Surprise, not a bug:** oxlint (the create-vite scaffold's default linter, not ESLint) already ships `react/rules-of-hooks` as `error` out of the box - nothing extra to configure for the one lint rule that matters most to a React newcomer.
+- **Confirmed before relying on it, not assumed:** declarative `<Routes>`/`<Route>` (not the data-router/`createBrowserRouter`+loaders API) was the deliberate choice, since loaders would be a second server-state mechanism running alongside TanStack Query, which CLAUDE.md's "TanStack Query, and nothing else for server state" rule rules out.
 
 ### Decisions
 
-(TanStack Query, controlled inputs, form approach.)
+- **Decision:** the header count reads the TanStack Query cache directly (`recipeCount.ts`'s `useRecipeCount`, a two-line `useQuery` with a `select`) - no Context provider wraps it. The query cache already is a shared, subscribable store; a Context around it would be the redundant indirection CLAUDE.md's "no abstractions" rule warns about. It uses the exact same query key as the unfiltered recipe list, so on `/` with no filters the two dedupe into a single request automatically, and `queryClient.invalidateQueries({queryKey:['recipes']})` after create/delete is the entire "refresh" story.
+- **Decision:** no form library (no React Hook Form, no Formik) - plain `useState` and controlled inputs throughout, matching CLAUDE.md's silence on a sanctioned React form library (unlike its explicit TanStack Query mandate for data) and keeping the comparison fair against Angular's reactive forms and Blazor's `EditContext`, neither of which pulls in a separate forms package either.
+- **Decision:** server and client validation errors share **one flat dictionary shape**, `Record<string, string[]>` - exactly the server's own `ValidationProblem['errors']` type. Mapping a 400 response is literally `setServerErrors(err.errors)`: no bracket-to-dot-path regex like Angular's `apply-server-errors.ts`, and for a different reason than Blazor's `EditContext.Field(string)` trick - React needs no translation because there's no form model to resolve a path *into* in the first place, just a plain object indexed by the exact string the server sent. `FieldError`'s `data-testid="form-error-{key}"` reuses that same literal key a third time.
+- **Decision:** `validateRecipe()` ports `RecipeValidator.cs`/`RecipeNormalizer.cs` directly from the C# source, not from Angular's existing TypeScript port - Angular's port is missing a per-ingredient-unit length check entirely, and flags *both* sides of a duplicate tag where the server (and this port) only flags the later occurrence. Both gaps are left as Phase 5 parity-pass flags for Angular, not silently fixed here.
+- **Decision:** React takes spec.md's full image-upload path, same as Blazor and Angular before it - confirmed (not assumed) by reading `e2e/tests/image.spec.ts` directly: the shared suite has no reduced/fallback variant of test 12, so the full path was never optional for any client that has to pass this suite unedited.
+- **Decision:** `queryOptions()` factories (`queries.ts`) instead of a custom data-fetching-hooks layer - this is TanStack v5's own documented idiom, not a homemade abstraction, and one definition per resource serves `useQuery`, `setQueryData`, and the header's shared-key trick all at once.
 
 ### Snippet candidates
+
+- `src/quantities.ts` - the third hand-port of `scaledQuantity`/`formatQuantity`, textually close to Angular's, demonstrating the same 4-decimal-rounding-before-snapping step is load-bearing a third time (verified by temporarily removing it and watching the `0.29166` vector fail).
+- `src/recipeCount.ts` - the entire header-count "shared state" solution in three lines; no service, no container, just the query cache.
+- `src/recipe-form/FieldError.tsx` and `recipeRules.ts` - the literal-key error dictionary shared between client and server validation, no path translation at all.
+- `src/recipe-detail/RecipeDetail.tsx` - the `key={recipe.id}` remount line, worth showing directly alongside Angular's `linkedSignal` and Blazor's `OnParametersSetAsync`.
+- `src/recipe-form/RecipeForm.tsx` - the `key={id ?? 'new'}` line, the second place the same remount trick turned out to be load-bearing, this time for route-instance reuse rather than state reset.
 
 ## Cross-framework comparisons
 
@@ -138,21 +155,37 @@ Feature-by-feature notes for the side-by-side sections. Candidates for full side
 
 ### Derived state (servings scaler)
 
+Three different answers to "reset local state when the user navigates to a different recipe," none of them a `useEffect`/lifecycle hack added after the fact:
+- **Angular:** `linkedSignal(() => this.recipe.value()?.servings ?? 1)` - one declarative line, re-derives on its own.
+- **Blazor:** `OnParametersSetAsync` compares the route id against the last-loaded id and explicitly resets state when it changes - no built-in primitive for this, so it's real, visible lifecycle code.
+- **React:** `<RecipeDetailBody key={recipe.id} ... />` - the parent never manages the reset at all; keying the stateful child by id makes React remount (and so reinitialize) it for free.
+
 ### Repeating ingredients form and server error mapping
+
+The same server dictionary (`{"ingredients[0].quantity": ["..."]}`) reaches the UI three different ways:
+- **Angular:** a regex rewrites `ingredients[0].quantity` to `ingredients.0.quantity` and resolves it through `FormGroup#get` - translation is necessary because Angular's reactive forms model is a real nested object graph.
+- **Blazor:** `EditContext.Field("ingredients[0].quantity")` accepts the literal string directly, no translation at all - the form model happens to not require one.
+- **React:** the literal string is just an object key in a plain `Record<string, string[]>` - no translation either, but for a different reason than Blazor: there's no form model to resolve a path *into* in the first place.
 
 ### Fetching with loading, empty, and error states
 
+All three use a resource/query primitive with its own `isLoading`/`isError` flags (`httpResource`, `useQuery`) rather than hand-rolled `useState` + manual fetch effects, so the loading-skeleton/error-with-retry states read almost identically across clients. Blazor is the exception: no equivalent built-in resource primitive, so its data-loading states are hand-written in each screen's code-behind.
+
 ### Shared model and validation (Blazor shared library vs. generated types and re-expressed rules)
 
-Lighter treatment or follow-up posts: routing, header summary (shared state), image upload.
+Blazor references `shared/RecipeBox.Shared` directly - `Quantities`, `RecipeValidator`, and `RecipeNormalizer` are called, not ported, and have zero duplicate logic or duplicate tests. Angular and React each hand-port the same two functions and the same validation rules into TypeScript twice over, independently, against the same `shared/test-vectors.json` oracle - and the two ports already disagree with each other in minor ways (Angular's validation port has gaps React's doesn't - see Phase 4's Decisions). That divergence between two "faithful" ports of the same spec is itself worth a paragraph: duplication isn't just slower to write, it's a second place for drift to quietly creep in.
+
+Lighter treatment or follow-up posts: routing, header summary (shared state - service vs. event container vs. query cache, already covered per-phase in each Decisions section above), image upload.
 
 ## Tailwind notes
 
-(Gotchas that showed up in more than one framework, such as dynamic class names. Record the Tailwind version.)
+Tailwind v4.3.3 throughout, CSS-first `@theme` config, one `theme.css` file copied byte-for-byte into each client (Angular is canonical; Blazor and React each hold their own copy). Angular and React both go through `@tailwindcss/postcss` via a `.postcssrc.json` Vite/Angular both already read natively; Blazor uses the standalone Tailwind CLI binary in its Dockerfile build stage instead, since it has no Node tooling at all. No client builds a Tailwind class name dynamically (a `bg-${color}-500`-style template literal) anywhere - the scanner can't see those, and all three use complete literal class strings or a ternary between two complete strings instead.
 
 ## Docker and Playwright notes
 
-(What it took to get one suite passing against all three containers.)
+The same nginx `client_max_body_size 11m` fix was needed in all three client `nginx.conf` files (nginx's 1 MB default sits below the app's own 5 MB upload cap, so without raising it nginx itself 413s a request the API would have accepted) - caught once in Angular, then checked for and found proactively in both Blazor and React.
+
+The one shared Playwright suite in `e2e/` passed against all three client containers with **zero suite edits**, confirmed by running it fresh against each of `angular`, `blazor`, and `react` in turn after React was built (16/16 every time). The suite is parameterized entirely by `BASE_URL` and selects purely by `data-testid`/role and route URL - nothing framework-specific ever leaked into it. The one true per-client variable is boot time: Blazor's WASM cold-boot is slow enough to occasionally race the `screenshots.spec.ts` navigation (see Phase 3's "documented, not fixed" entry); Angular and React both hydrate fast enough that this never showed up for them.
 
 ## Metrics (optional, with caveats)
 
