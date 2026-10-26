@@ -22,8 +22,12 @@ SURFACE = "#fcfcfb"
 INK = "#0b0b0b"
 MUTED = "#898781"
 GRID = "#e1e0d9"
-CATEGORICAL = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100",
-               "#e87ba4", "#008300", "#4a3aa7", "#e34948"]
+# Derived from the post's cover image (cloud-city-r4vDq.jpg: navy/blue sky,
+# cyan/teal city lights, green data-stream glow), re-stepped and validated
+# with the dataviz skill's validate_palette.js (light mode, surface #fcfcfb):
+# all six categorical checks pass, worst adjacent pair ΔE 10.3 (CVD) / 23.3 (normal).
+CATEGORICAL = ["#1d4ed8", "#d97706", "#0d9488", "#7c3aed",
+               "#16a34a", "#be185d", "#0891b2", "#a16207"]
 
 plt.rcParams.update({
     "figure.facecolor": SURFACE,
