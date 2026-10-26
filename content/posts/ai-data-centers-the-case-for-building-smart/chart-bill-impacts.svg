@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 334" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif">
+  <rect x="0.5" y="0.5" width="719" height="333" rx="12" fill="#fcfcfb" stroke="rgba(11,11,11,0.10)" stroke-width="1"/>
+
+  <text x="28" y="36" font-size="19" font-weight="600" fill="#0b0b0b">What data centers are adding to, or taking off, monthly bills</text>
+  <text x="28" y="57" font-size="13" fill="#52514e">Residential monthly bill impact tied specifically to data center-driven filings</text>
+
+  <!-- gridlines -->
+  <line x1="260" y1="80" x2="260" y2="266" stroke="#e1e0d9" stroke-width="1"/>
+  <line x1="460" y1="80" x2="460" y2="266" stroke="#e1e0d9" stroke-width="1"/>
+  <line x1="560" y1="80" x2="560" y2="266" stroke="#e1e0d9" stroke-width="1"/>
+  <line x1="660" y1="80" x2="660" y2="266" stroke="#e1e0d9" stroke-width="1"/>
+  <!-- zero baseline, emphasized -->
+  <line x1="360" y1="80" x2="360" y2="266" stroke="#c3c2b7" stroke-width="1"/>
+
+  <text x="260" y="280" font-size="11" fill="#898781" text-anchor="middle">-$10</text>
+  <text x="360" y="280" font-size="11" fill="#898781" text-anchor="middle">$0</text>
+  <text x="460" y="280" font-size="11" fill="#898781" text-anchor="middle">$10</text>
+  <text x="560" y="280" font-size="11" fill="#898781" text-anchor="middle">$20</text>
+  <text x="660" y="280" font-size="11" fill="#898781" text-anchor="middle">$30</text>
+
+  <!-- Row 1: Dominion +$10.51 (orange, proposed data center rate class) -->
+  <text x="40" y="104" font-size="13" font-weight="600" fill="#0b0b0b">Dominion Energy (VA)</text>
+  <text x="40" y="118" font-size="11" fill="#52514e">2025 filing, new data center rate class</text>
+  <path d="M 360 98 L 461 98 Q 465 98 465 102 L 465 118 Q 465 122 461 122 L 360 122 Z" fill="#eb6834"/>
+  <text x="473" y="114" font-size="14" font-weight="700" fill="#0b0b0b">+$10.51/mo</text>
+
+  <!-- Row 2: Columbus / AEP Ohio +$27 (orange, already realized) -->
+  <text x="40" y="164" font-size="13" font-weight="600" fill="#0b0b0b">AEP Ohio (Columbus)</text>
+  <text x="40" y="178" font-size="11" fill="#52514e">Summer 2025, already in bills</text>
+  <path d="M 360 158 L 626 158 Q 630 158 630 162 L 630 178 Q 630 182 626 182 L 360 182 Z" fill="#eb6834"/>
+  <text x="638" y="174" font-size="14" font-weight="700" fill="#0b0b0b">+$27/mo</text>
+
+  <!-- Row 3: Georgia Power required relief -$8.50 (blue, pledge tied to data center expansion) -->
+  <text x="40" y="224" font-size="13" font-weight="600" fill="#0b0b0b">Georgia Power</text>
+  <text x="40" y="238" font-size="11" fill="#52514e">Pledged by 2028</text>
+  <path d="M 279 218 L 356 218 Q 360 218 360 222 L 360 238 Q 360 242 356 242 L 279 242 Q 275 242 275 238 L 275 222 Q 275 218 279 218 Z" fill="#2a78d6"/>
+  <text x="267" y="234" font-size="14" font-weight="700" fill="#0b0b0b" text-anchor="end">-$8.50/mo</text>
+
+  <text x="28" y="300" font-size="10" fill="#898781">Sources: WTOP (Dominion); local Columbus reporting (AEP Ohio); Capital B Atlanta / AJC (Georgia Power).</text>
+  <text x="28" y="314" font-size="10" fill="#898781">Georgia Power's separate $43/mo increase since 2022 (Vogtle, fuel costs) is not data center-driven and is excluded here.</text>
+</svg>
