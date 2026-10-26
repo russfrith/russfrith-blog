@@ -22,12 +22,12 @@ SURFACE = "#fcfcfb"
 INK = "#0b0b0b"
 MUTED = "#898781"
 GRID = "#e1e0d9"
-# Derived from the post's cover image (cloud-city-r4vDq.jpg: navy/blue sky,
-# cyan/teal city lights, green data-stream glow), re-stepped and validated
-# with the dataviz skill's validate_palette.js (light mode, surface #fcfcfb):
-# all six categorical checks pass, worst adjacent pair ΔE 10.3 (CVD) / 23.3 (normal).
-CATEGORICAL = ["#1d4ed8", "#d97706", "#0d9488", "#7c3aed",
-               "#16a34a", "#be185d", "#0891b2", "#a16207"]
+# Blue/teal/green/cyan only, matching the post's cover image (cloud-city-r4vDq.jpg:
+# navy/blue sky, cyan/teal city lights, green data-stream glow) with no warm
+# accent hues. Re-stepped and validated with the dataviz skill's
+# validate_palette.js (light mode, surface #fcfcfb, adjacent pairs): all six
+# categorical checks pass, worst adjacent pair ΔE 16.1 (CVD) / 17.4 (normal).
+CATEGORICAL = ["#0d9488", "#1d4ed8", "#16a34a", "#0891b2"]
 
 plt.rcParams.update({
     "figure.facecolor": SURFACE,
