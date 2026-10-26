@@ -3,6 +3,10 @@ title: "Async/Await and What It Actually Costs You in the Cloud"
 description: "A measured benchmark of correct vs. incorrect async/await usage in an ASP.NET Core API, translated into Azure and AWS instance counts and dollars."
 date: 2026-10-26T12:00:00-04:00
 draft: true
+cover:
+  image: cloud-city-r4vDq.jpg
+  alt: "Cloud city with data connections"
+  caption: "Image created by author using [Grok](https://grok.com/)"
 tags: ["dotnet", "csharp", "aspnetcore", "async", "benchmark", "performance", "cloud", "azure", "aws"]
 categories: ["programming"]
 ShowToc: true
@@ -113,7 +117,3 @@ A few signals are worth checking before you assume this is costing you anything:
 This was run on a single development machine, not isolated cloud hardware: the load generator shared the host with the constrained API container, and the numbers reflect one CPU generation under Docker Desktop, not a clean cloud VM. Treat the absolute RPS figures as directional, not a guarantee of what you'll see in production; the *relative* comparison between variants, measured under identical conditions, is the part worth trusting. See `results/environment.md` in the companion repo for exact specs.
 
 This also isn't the full planned benchmark matrix. See the post's methodology section and the companion repo's README for exactly what was reduced and why, and how to run the full matrix yourself.
-
-## Need someone to find this in your system?
-
-I help teams track down exactly this kind of problem: code that works, passes review, and quietly costs three times what it should in cloud spend. If that sounds familiar, get in touch: [CONTACT LINK]
