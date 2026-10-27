@@ -1,8 +1,8 @@
 ---
 title: "Async/Await and What It Actually Costs You in the Cloud"
 description: "A measured benchmark of correct vs. incorrect async/await usage in an ASP.NET Core API, translated into Azure and AWS instance counts and dollars."
-date: 2026-10-26T12:00:00-04:00
-draft: true
+date: 2026-10-27T15:08:50-04:00
+draft: false
 cover:
   image: cloud-city-r4vDq.jpg
   alt: "Cloud city with data connections"
