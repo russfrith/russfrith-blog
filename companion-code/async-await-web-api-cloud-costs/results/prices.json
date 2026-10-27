@@ -1,5 +1,5 @@
 {
-  "fetched_at_utc": "2026-10-26T22:26:52.540036+00:00",
+  "fetched_at_utc": "2026-10-27T17:59:33.083993+00:00",
   "region": {
     "azure": "eastus",
     "aws": "us-east-1"
@@ -19,5 +19,12 @@
     "gb_hourly_usd": 0.004445,
     "hourly_usd": 0.049370000000000004,
     "monthly_usd": 36.06774720000001
+  },
+  "aws_lightsail_2gb": {
+    "vcpu": 2.0,
+    "memory": "2GB",
+    "hourly_usd": 0.01612,
+    "monthly_usd": 11.7766272,
+    "note": "Closest standard Linux bundle by RAM; it's 2 vCPU, not 1, so this is generous to Lightsail versus the benchmark's 1 vCPU container."
   }
 }

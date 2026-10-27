@@ -92,6 +92,48 @@ def pick_azure_plan(items):
     }
 
 
+def fetch_aws_lightsail_prices():
+    """Downloads the AWS Lightsail (AmazonLightsail) region price index for us-east-1."""
+    index_url = "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonLightsail/current/region_index.json"
+    r = requests.get(index_url, timeout=30)
+    r.raise_for_status()
+    region_file = r.json()["regions"][AWS_REGION]["currentVersionUrl"]
+    r2 = requests.get(f"https://pricing.us-east-1.amazonaws.com{region_file}", timeout=60)
+    r2.raise_for_status()
+    return r2.json()
+
+
+def extract_lightsail_rate(price_data):
+    """Finds the standard Linux Lightsail instance bundle closest to 2GB RAM.
+
+    As of late 2026, AWS's smallest standard Lightsail Linux bundles are all
+    2 vCPU (burstable), not 1 vCPU; there is no exact 1 vCPU / 2GB bundle
+    published. The "2GB" bundle (2 vCPU, 2GB RAM) is the closest RAM match,
+    so this is a generous comparison for Lightsail: more CPU than the
+    benchmark's 1 vCPU container for the same price.
+    """
+    products = price_data["products"]
+    terms = price_data["terms"]["OnDemand"]
+    for sku, product in products.items():
+        attrs = product.get("attributes", {})
+        if attrs.get("servicecode") != "AmazonLightsail":
+            continue
+        if attrs.get("group") != "Lightsail Instance":
+            continue
+        if attrs.get("operatingSystem") != "Linux":
+            continue
+        if attrs.get("usagetype") != "USE1-BundleUsage:2GB":
+            continue
+        for _, term in terms.get(sku, {}).items():
+            for _, dim in term["priceDimensions"].items():
+                return {
+                    "vcpu": float(attrs.get("vcpu", 0)),
+                    "memory": attrs.get("memory"),
+                    "hourly_usd": float(dim["pricePerUnit"]["USD"]),
+                }
+    return None
+
+
 def extract_fargate_rates(price_data):
     products = price_data["products"]
     terms = price_data["terms"]["OnDemand"]
@@ -135,7 +177,7 @@ def max_sustainable_rps_per_variant(rows):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--target-rps", default="1000,5000,20000")
+    parser.add_argument("--target-rps", default="1000,2000,5000,20000")
     parser.add_argument("--headroom", type=float, default=0.65)
     args = parser.parse_args()
     targets = [int(x) for x in args.target_rps.split(",")]
@@ -150,6 +192,11 @@ def main():
     fargate_hourly = (vcpu_rate or 0) * 1 + (mem_rate or 0) * 2  # 1 vCPU, 2 GB
     fargate_monthly = fargate_hourly * 24 * 30.44
 
+    print("Fetching live AWS Lightsail prices...")
+    lightsail_data = fetch_aws_lightsail_prices()
+    lightsail = extract_lightsail_rate(lightsail_data)
+    lightsail_monthly = (lightsail["hourly_usd"] * 24 * 30.44) if lightsail else None
+
     prices = {
         "fetched_at_utc": datetime.now(timezone.utc).isoformat(),
         "region": {"azure": REGION, "aws": AWS_REGION},
@@ -162,10 +209,17 @@ def main():
             "hourly_usd": fargate_hourly,
             "monthly_usd": fargate_monthly,
         },
+        "aws_lightsail_2gb": {
+            **(lightsail or {}),
+            "monthly_usd": lightsail_monthly,
+            "note": "Closest standard Linux bundle by RAM; it's 2 vCPU, not 1, so this "
+                    "is generous to Lightsail versus the benchmark's 1 vCPU container.",
+        },
     }
     (RESULTS / "prices.json").write_text(json.dumps(prices, indent=2))
     print(f"Saved results/prices.json (Azure {azure_plan['tier'] if azure_plan else 'N/A'}, "
-          f"${prices['azure_monthly_usd']:.2f}/mo; Fargate ${fargate_monthly:.2f}/mo)")
+          f"${prices['azure_monthly_usd']:.2f}/mo; Fargate ${fargate_monthly:.2f}/mo; "
+          f"Lightsail ${lightsail_monthly:.2f}/mo)")
 
     rows = load_summary()
     sustainable_rps = max_sustainable_rps_per_variant(rows)
@@ -173,6 +227,14 @@ def main():
 
     lines = ["# Cost table", "", f"Prices fetched {prices['fetched_at_utc']}, "
              f"region: Azure {REGION} / AWS {AWS_REGION}, on-demand rates only.", "",
+             f"Azure App Service: {azure_plan['tier'] if azure_plan else 'N/A'} "
+             f"({azure_plan['vcpu'] if azure_plan else '?'} vCPU, {azure_plan['ram_gb'] if azure_plan else '?'}GB), "
+             "the closest published tier to 1 vCPU / 2GB. "
+             f"AWS Fargate: exact 1 vCPU / 2GB task. "
+             f"AWS Lightsail: the \"2GB\" standard Linux bundle "
+             f"({lightsail['vcpu'] if lightsail else '?'} vCPU, {lightsail['memory'] if lightsail else '?'}) "
+             "is the closest published bundle by RAM, but it's 2 vCPU, not 1, so it's a generous "
+             "comparison point for Lightsail, not an exact match.", "",
              f"Headroom factor: {args.headroom} (instances = ceil(target_rps / (sustainable_rps_per_instance * headroom))).",
              ""]
 
@@ -180,19 +242,20 @@ def main():
         lines.append(f"## Target: {target:,} RPS")
         lines.append("")
         lines.append("| Endpoint | Stub latency | Sustainable RPS/instance | Instances needed | "
-                      "Azure $/mo | AWS Fargate $/mo | Ratio vs best |")
-        lines.append("|---|---|---|---|---|---|---|")
+                      "Azure App Service $/mo | AWS Fargate $/mo | AWS Lightsail $/mo | Ratio vs best |")
+        lines.append("|---|---|---|---|---|---|---|---|")
         for (endpoint, latency), rps in sorted(sustainable_rps.items(), key=lambda kv: -kv[1]):
             if rps <= 0:
                 continue
             import math
             instances = math.ceil(target / (rps * args.headroom))
             azure_cost = instances * (prices["azure_monthly_usd"] or 0)
-            aws_cost = instances * fargate_monthly
+            fargate_cost = instances * fargate_monthly
+            lightsail_cost = instances * (lightsail_monthly or 0)
             best_instances = math.ceil(target / (best_rps * args.headroom))
             ratio = instances / best_instances if best_instances else None
             lines.append(f"| {endpoint} | {latency}ms | {rps:.1f} | {instances} | "
-                          f"${azure_cost:,.0f} | ${aws_cost:,.0f} | {ratio:.1f}x |")
+                          f"${azure_cost:,.0f} | ${fargate_cost:,.0f} | ${lightsail_cost:,.0f} | {ratio:.1f}x |")
         lines.append("")
 
     (RESULTS / "cost_table.md").write_text("\n".join(lines))

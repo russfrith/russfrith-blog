@@ -131,13 +131,15 @@ def chart_cost_per_1000_rps():
     for line in lines:
         if line.startswith("| ") and "Instances needed" not in line and "---" not in line:
             parts = [p.strip() for p in line.strip("|").split("|")]
-            if len(parts) >= 6:
+            if len(parts) >= 8:
                 try:
                     rows.append({
                         "endpoint": parts[0],
                         "latency": parts[1],
                         "instances": int(parts[3]),
                         "azure": float(parts[4].replace("$", "").replace(",", "")),
+                        "fargate": float(parts[5].replace("$", "").replace(",", "")),
+                        "lightsail": float(parts[6].replace("$", "").replace(",", "")),
                     })
                 except ValueError:
                     continue
@@ -147,17 +149,21 @@ def chart_cost_per_1000_rps():
     df = pd.DataFrame(rows).drop_duplicates(subset=["endpoint", "latency"])
     df = df.sort_values("instances")
 
-    fig, ax1 = plt.subplots(figsize=(10, 6))
+    providers = [("azure", "Azure App Service (B1)"), ("fargate", "AWS Fargate (1 vCPU/2GB)"),
+                 ("lightsail", "AWS Lightsail (2GB bundle)")]
+    fig, ax = plt.subplots(figsize=(11, 6))
     labels = [f"{r.endpoint}\n({r.latency})" for r in df.itertuples()]
-    x = range(len(df))
-    ax1.bar(x, df["instances"], color=CATEGORICAL[0])
-    ax1.set_ylabel("Instances needed per 1,000 RPS")
-    ax1.set_xticks(list(x))
-    ax1.set_xticklabels(labels, rotation=40, ha="right", fontsize=8)
-    ax1.set_title("Instances and Azure monthly cost per 1,000 RPS, by variant")
-    for i, v in enumerate(df["azure"]):
-        ax1.annotate(f"${v:,.0f}/mo", (i, df["instances"].iloc[i]),
-                     textcoords="offset points", xytext=(0, 4), ha="center", fontsize=7, color=MUTED)
+    x = list(range(len(df)))
+    width = 0.26
+    for i, (col, label) in enumerate(providers):
+        offset = (i - 1) * width
+        ax.bar([xi + offset for xi in x], df[col], width,
+               label=label, color=CATEGORICAL[i % len(CATEGORICAL)])
+    ax.set_ylabel("Monthly cost per 1,000 RPS ($)")
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels, rotation=40, ha="right", fontsize=8)
+    ax.set_title("Monthly cost per 1,000 RPS, by variant and provider")
+    ax.legend(frameon=False)
     fig.tight_layout()
     fig.savefig(CHARTS / "cost_per_1000_rps.png", dpi=150)
     plt.close(fig)
