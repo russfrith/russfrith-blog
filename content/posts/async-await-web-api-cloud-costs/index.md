@@ -16,7 +16,7 @@ ShowToc: true
 
 I ran into this years ago, when Node.js was still new. A developer I was talking with was genuinely puzzled: his Node service handled concurrent traffic far better than the full-framework ASP.NET projects he'd been building. It wasn't that Node was some faster runtime working magic under the hood; it was the non-blocking model. His process kept the event loop free while waiting on I/O, while much of the .NET code from that era (classic ASP.NET on IIS and the full .NET Framework, not today's ASP.NET Core) was still blocking threads on database calls and HTTP requests without anyone quite noticing. That conversation stuck with me, because the same principle is exactly what async/await, and the leaner minimal API style in modern ASP.NET Core, make easy and idiomatic in C# today. The win was never that any single request got faster; it's that the same handful of threads can serve far more requests at once, which is the whole game once you're paying for compute by the container. Here's what that actually costs you when you get it wrong.
 
-![Max sustainable requests per second per endpoint variant, grouped by downstream latency](images/max_sustainable_rps.png)
+![Max sustainable requests per second per endpoint variant, grouped by downstream latency](max_sustainable_rps.png)
 
 ## The benchmark
 
@@ -58,11 +58,11 @@ At low concurrency (50 virtual users) this barely shows: `sync-over-async` still
 
 Interestingly, the naive `blocking-sync` variant (a genuinely synchronous HTTP call, no `async` anywhere) never collapsed as completely as `sync-over-async` did, it just stayed slow (p95 over 800ms even at 50 concurrent users, never meeting the threshold). It ties up one real OS thread per request rather than compounding thread pool starvation the way sync-over-async does, so it's bad from the start but doesn't have the same catastrophic cliff. Both are wrong; they're wrong in different ways.
 
-![p95 latency vs. concurrent users for async-correct, sync-over-async, and blocking-sync at both stub latencies](images/latency_vs_concurrency.png)
+![p95 latency vs. concurrent users for async-correct, sync-over-async, and blocking-sync at both stub latencies](latency_vs_concurrency.png)
 
 Watching `System.Runtime`'s thread pool counters during a saturating `sync-over-async` run shows exactly what's happening server-side: queue length spikes hard as the thread pool scrambles to inject threads fast enough, then drains once it catches up (or once k6 backs off).
 
-![Thread pool queue length over roughly 30 seconds of a sync-over-async saturation run](images/threadpool_queue_length.png)
+![Thread pool queue length over roughly 30 seconds of a sync-over-async saturation run](threadpool_queue_length.png)
 
 ### Unbounded fan-out
 
@@ -112,7 +112,7 @@ AWS Lightsail isn't a close equivalent to Fargate or Azure App Service (it's an 
 
 `blocking-sync`, `cpu-bound`, and both cancellation variants don't appear here: none of them hit a sustainable data point anywhere in the tested concurrency range, so there's no "RPS per instance" to price. That's itself informative. See [`results/cost_table.md`](https://github.com/russfrith/russfrith-blog/blob/master/companion-code/async-await-web-api-cloud-costs/results/cost_table.md) and [`results/summary.csv`](https://github.com/russfrith/russfrith-blog/blob/master/companion-code/async-await-web-api-cloud-costs/results/summary.csv) in the companion repo for the full table at 1,000, 5,000, and 20,000 RPS targets too, and every underlying number.
 
-![Monthly cost per 1,000 RPS, by variant and provider](images/cost_per_1000_rps.png)
+![Monthly cost per 1,000 RPS, by variant and provider](cost_per_1000_rps.png)
 
 To be clear about what's measured and what's estimated here: the instance counts above are an estimate, not a cloud deployment test. I took the sustainable-RPS-per-instance numbers measured on local Docker containers (see ["Caveats"](#caveats) below) and divided them into a target request rate; no code in this benchmark ever ran on Azure or AWS. Only the dollar figures are live: prices were fetched from the Azure Retail Prices API and AWS's public Fargate and Lightsail price lists on 2026-10-27, region `eastus` (Azure) / `us-east-1` (AWS), on-demand rates only, not reserved instances or savings plans. The Azure comparison uses a Basic B1 Linux plan (1 vCPU, 1.75GB), the closest published tier to the benchmark's 1 vCPU / 2GB container and a tier a small team would plausibly actually run. AWS Fargate is priced for an exact 1 vCPU / 2GB task. AWS Lightsail is priced using its "2GB" standard Linux bundle, the closest published bundle by RAM; as of this writing AWS's smallest standard Lightsail bundles are all 2 vCPU rather than 1, so that comparison is generous to Lightsail, not an exact match. See [`results/prices.json`](https://github.com/russfrith/russfrith-blog/blob/master/companion-code/async-await-web-api-cloud-costs/results/prices.json) in the companion repo for the raw data.
 

@@ -77,7 +77,7 @@ docker run --rm -v "${PWD}:/workspace" -w /workspace python:3.13-slim sh -c \
 docker compose --profile tools run --rm charts
 ```
 
-Writes PNGs to `results/charts/`, copied into the post's `images/` folder.
+Writes PNGs to `results/charts/`, copied into the post's folder (`content/posts/async-await-web-api-cloud-costs/`), flat alongside `index.md`, matching this blog's convention.
 
 ## Last known-good run
 
