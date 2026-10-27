@@ -64,7 +64,7 @@ The `dotnet-counters` sidecar is not wired into every matrix iteration (early te
 docker compose --profile tools run --rm cost-model
 ```
 
-Fetches current Azure and AWS list prices live (needs outbound network access; this is the only stage that does), saves them to `results/prices.json`, and writes `results/cost_table.md` from `results/summary.csv`. Defaults to target RPS values of 1,000 / 5,000 / 20,000 and a 0.65 headroom factor. To use different targets, run the script directly with its CLI flags instead of through the fixed compose command, e.g.:
+Fetches current Azure App Service, AWS Fargate, and AWS Lightsail list prices live (needs outbound network access; this is the only stage that does), saves them to `results/prices.json`, and writes `results/cost_table.md` from `results/summary.csv`. Defaults to target RPS values of 1,000 / 2,000 / 5,000 / 20,000 and a 0.65 headroom factor. To use different targets, run the script directly with its CLI flags instead of through the fixed compose command, e.g.:
 
 ```
 docker run --rm -v "${PWD}:/workspace" -w /workspace python:3.13-slim sh -c \
