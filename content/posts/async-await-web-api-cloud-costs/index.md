@@ -14,19 +14,29 @@ ShowToc: true
 
 **TL;DR for leaders:** on the same 1 vCPU / 2GB container, an ASP.NET Core endpoint written with correct async/await sustained roughly 9 times the request rate of an identical endpoint that blocks on the same call (`.GetAwaiter().GetResult()` instead of `await`), before the bad version collapsed entirely under load. At 2,000 requests/second, that's the difference between 1 container and 9, or roughly $25/month versus $112/month on Azure App Service for the compute alone, scaling worse the more traffic you add. The code difference between the good and bad versions is a single line. This is a measured result from a benchmark you can run yourself, not a vendor estimate; see "Caveats" below for what it does and doesn't tell you about your own system.
 
+I ran into this secondhand years ago, when Node.js was still new. A developer I was talking with was genuinely puzzled: his Node service handled concurrent traffic far better than the full-framework ASP.NET projects he'd been building. It wasn't that Node was some faster runtime working magic under the hood, it was the non-blocking model. His process kept the event loop free while waiting on I/O, while much of the .NET code from that era (classic ASP.NET on IIS and the full .NET Framework, not today's ASP.NET Core) was still blocking threads on database calls and HTTP requests without anyone quite noticing. That conversation stuck with me, because the same principle is exactly what async/await, and the leaner minimal API style in modern ASP.NET Core, make easy and idiomatic in C# today. The win was never that any single request got faster; it's that the same handful of threads can serve far more requests at once, which is the whole game once you're paying for compute by the container. Here's what that actually costs you when you get it wrong.
+
 ![Max sustainable requests per second per endpoint variant, grouped by downstream latency](images/max_sustainable_rps.png)
 
 ## The benchmark
 
 The API is an ASP.NET Core 10 minimal API with eight endpoints, each doing identical business logic (one downstream HTTP call, or in the fan-out cases, several) but handling concurrency differently: `async-correct`, `sync-over-async`, `blocking-sync`, `fanout-unbounded`, `fanout-bounded`, `async-no-cancellation`, `async-with-cancellation`, and a `cpu-bound` control that does no I/O at all. A separate stub service simulates a downstream dependency with a fixed, configurable latency (50ms or 200ms). The API container is constrained to 1 vCPU / 2GB; the stub is unconstrained.
 
-I defined "sustainable" the same way everywhere: p95 latency under (stub latency + 250ms) and an error rate under 1%, both checked with k6. For the 50ms stub that's p95 under 300ms; for 200ms, under 450ms. Load ramps through a set of concurrency steps and I took the highest step that still met the rule as the max sustainable RPS for that variant.
+- **async-correct**: awaits the downstream call properly; the baseline everything else is measured against.
+- **sync-over-async**: calls the same async client but blocks on it (`.GetAwaiter().GetResult()`).
+- **blocking-sync**: a genuinely synchronous HTTP call, no async anywhere.
+- **fanout-unbounded**: fans out 10 downstream calls at once with `Task.WhenAll`, no cap.
+- **fanout-bounded**: same fan-out, capped at 4 concurrent calls with a `SemaphoreSlim`.
+- **async-no-cancellation** / **async-with-cancellation**: same async call, with and without passing the request's cancellation token through.
+- **cpu-bound**: a control endpoint doing fixed CPU work, no I/O at all.
 
-**Honest scope note:** the plan going in called for five concurrency steps (50/100/250/500/1000 virtual users) and three repetitions per endpoint/latency combination. What's actually behind the numbers in this post is a reduced run, three concurrency steps (50/200/500 VUs) and one repetition each, done in a single sitting on a shared development machine. The orchestration script (`scripts/run_matrix.ps1` / `run_matrix.py`) takes the step list and repetition count as constants, so reproducing the full matrix is a config change, not a rewrite, it just takes a few hours instead of under one. One concrete consequence: `async-correct` never actually hit its ceiling in this reduced range (it was still comfortably "sustainable" at 500 VUs), so its true maximum sustainable RPS, and therefore the real gap versus the broken variants, is understated below, not overstated.
+I defined "sustainable" the same way everywhere: p95 latency (the latency 95% of requests beat; a cleaner read on real user pain than an average, which gets washed out by the fast majority) under (stub latency + 250ms) and an error rate under 1%, both checked with k6. For the 50ms stub that's p95 under 300ms; for 200ms, under 450ms. Load ramps through a set of concurrency steps and I took the highest step that still met the rule as the max sustainable RPS for that variant.
+
+**Honest scope note:** the plan going in called for five concurrency steps (50/100/250/500/1000 virtual users) and three repetitions per endpoint/latency combination. What's actually behind the numbers in this post is a reduced run: three concurrency steps (50/200/500 VUs), one repetition each, done in a single sitting on a shared development machine. Reproducing the full matrix is just a config change, not a rewrite: the orchestration script (`scripts/run_matrix.ps1` / `run_matrix.py`) takes the step list and repetition count as constants, so running it only takes a few hours instead of under one. One concrete consequence of the reduced range: `async-correct` never actually hit its ceiling here, it was still comfortably "sustainable" at 500 VUs. Its true maximum sustainable RPS, and therefore the real gap versus the broken variants, is understated below, not overstated.
 
 The load generator (k6, in its own container) ran on the same physical host as the constrained API container, not on separate hardware. That's a real limitation; see "Caveats."
 
-Full companion code, including the orchestration scripts, cost model, and raw results, is at `companion-code/async-await-web-api-cloud-costs/` in this blog's repository. Everything runs in Docker; no local .NET SDK, k6, or Python install is required.
+Full companion code, including the orchestration scripts, cost model, and raw results, is at [`companion-code/async-await-web-api-cloud-costs/`](https://github.com/russfrith/russfrith-blog/tree/master/companion-code/async-await-web-api-cloud-costs/) in this blog's repository. Everything runs in Docker; no local .NET SDK, k6, or Python install is required.
 
 ## The code
 
@@ -82,21 +92,23 @@ To make the cost of ignoring cancellation visible, k6 aborted 20% of requests mi
 
 Translating sustainable RPS into instance counts and dollars, at a target of 2,000 requests/second:
 
-| Endpoint | Stub latency | Sustainable RPS/instance | Instances needed | Azure App Service $/mo | AWS Fargate $/mo | Ratio vs. best |
-|---|---|---|---|---|---|---|
-| async-correct | 50ms | 3,298.1 | 1 | $12 | $36 | 1.0x |
-| async-correct | 200ms | 1,861.4 | 2 | $25 | $72 | 2.0x |
-| fanout-unbounded | 50ms | 500.6 | 7 | $87 | $252 | 7.0x |
-| sync-over-async | 50ms | 367.4 | 9 | $112 | $325 | 9.0x |
-| fanout-bounded | 50ms | 281.6 | 11 | $137 | $397 | 11.0x |
-| fanout-unbounded | 200ms | 199.0 | 16 | $199 | $577 | 16.0x |
-| sync-over-async | 200ms | 135.0 | 23 | $286 | $830 | 23.0x |
+| Endpoint | Stub latency | Sustainable RPS/instance | Instances needed | Azure App Service $/mo | AWS Fargate $/mo | AWS Lightsail $/mo | Ratio vs. best |
+|---|---|---|---|---|---|---|---|
+| async-correct | 50ms | 3,298.1 | 1 | $12 | $36 | $12 | 1.0x |
+| async-correct | 200ms | 1,861.4 | 2 | $25 | $72 | $24 | 2.0x |
+| fanout-unbounded | 50ms | 500.6 | 7 | $87 | $252 | $82 | 7.0x |
+| sync-over-async | 50ms | 367.4 | 9 | $112 | $325 | $106 | 9.0x |
+| fanout-bounded | 50ms | 281.6 | 11 | $137 | $397 | $130 | 11.0x |
+| fanout-unbounded | 200ms | 199.0 | 16 | $199 | $577 | $188 | 16.0x |
+| sync-over-async | 200ms | 135.0 | 23 | $286 | $830 | $271 | 23.0x |
 
-`blocking-sync`, `cpu-bound`, and both cancellation variants don't appear here: none of them hit a sustainable data point anywhere in the tested concurrency range, so there's no "RPS per instance" to price. That's itself informative. See `results/cost_table.md` and `results/summary.csv` in the companion repo for the full table at 500 and 10,000 RPS targets too, and every underlying number.
+AWS Lightsail isn't Fargate's closest equivalent (it's an unmanaged VM you patch yourself, not a managed container platform), but it's worth including so this doesn't read as "AWS is expensive": Fargate is priced for an exact 1 vCPU/2GB task, while Lightsail's cheapest bundle that matches on RAM actually ships with 2 vCPU for roughly the same money as the Azure plan, undercutting Fargate by a wide margin. The gap above is about managed-container pricing specifically, not AWS versus Azure.
 
-![Instances needed and Azure monthly cost per 1,000 RPS, by variant](images/cost_per_1000_rps.png)
+`blocking-sync`, `cpu-bound`, and both cancellation variants don't appear here: none of them hit a sustainable data point anywhere in the tested concurrency range, so there's no "RPS per instance" to price. That's itself informative. See `results/cost_table.md` and `results/summary.csv` in the companion repo for the full table at 1,000, 5,000, and 20,000 RPS targets too, and every underlying number.
 
-Prices were fetched live from the Azure Retail Prices API and AWS's public Fargate price list on 2026-10-26, region `eastus` (Azure) / `us-east-1` (AWS), on-demand rates only, not reserved instances or savings plans. The Azure comparison uses a Basic B1 Linux plan (1 vCPU, 1.75GB), the closest published tier to the benchmark's 1 vCPU / 2GB container and a tier a small team would plausibly actually run; AWS Fargate is priced for an exact 1 vCPU / 2GB task. See `results/prices.json` in the companion repo for the raw data.
+![Monthly cost per 1,000 RPS, by variant and provider](images/cost_per_1000_rps.png)
+
+To be clear about what's measured and what's estimated here: the instance counts above are an estimate, not a cloud deployment test. I took the sustainable-RPS-per-instance numbers measured on local Docker containers (see ["Caveats"](#caveats) below) and divided them into a target request rate; no code in this benchmark ever ran on Azure or AWS. Only the dollar figures are live: prices were fetched from the Azure Retail Prices API and AWS's public Fargate and Lightsail price lists on 2026-10-27, region `eastus` (Azure) / `us-east-1` (AWS), on-demand rates only, not reserved instances or savings plans. The Azure comparison uses a Basic B1 Linux plan (1 vCPU, 1.75GB), the closest published tier to the benchmark's 1 vCPU / 2GB container and a tier a small team would plausibly actually run. AWS Fargate is priced for an exact 1 vCPU / 2GB task. AWS Lightsail is priced using its "2GB" standard Linux bundle, the closest published bundle by RAM; as of this writing AWS's smallest standard Lightsail bundles are all 2 vCPU rather than 1, so that comparison is generous to Lightsail, not an exact match. See `results/prices.json` in the companion repo for the raw data.
 
 ## When it doesn't help
 
