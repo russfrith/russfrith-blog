@@ -45,9 +45,14 @@ with a stale or blank snippet.
 {{- $lang := $langOverride -}}
 {{- if not $lang -}}
   {{- $ext := path.Ext $file -}}
-  {{- $extMap := dict ".py" "python" ".go" "go" ".rs" "rust" ".ts" "typescript" ".kt" "kotlin" ".c" "c" ".h" "c" ".sh" "bash" ".ps1" "powershell" ".yml" "yaml" ".yaml" "yaml" ".txt" "text" -}}
+  {{- $extMap := dict ".py" "python" ".go" "go" ".rs" "rust" ".ts" "typescript" ".kt" "kotlin" ".cs" "csharp" ".csproj" "xml" ".c" "c" ".h" "c" ".sh" "bash" ".ps1" "powershell" ".yml" "yaml" ".yaml" "yaml" ".txt" "text" ".md" "text" -}}
   {{- $lang = or (index $extMap $ext) "text" -}}
 {{- end -}}
-```{{ $lang }}
-{{ $body }}
-```
+{{- /*
+{{< ... >}} (angle-bracket) shortcode output is inserted verbatim, NOT passed
+back through Goldmark -- so a hand-written ``` fence here would render as
+literal backtick text, not a highlighted code block. Hugo's `highlight`
+template function runs the same Chroma highlighter real fenced code blocks use
+and returns already-rendered, already-safe HTML, which is what belongs here.
+*/ -}}
+{{ highlight $body $lang "" }}

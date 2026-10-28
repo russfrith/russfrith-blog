@@ -1,8 +1,8 @@
 """Scenario 7 fixed: run the CPU-bound call in a thread pool executor via
 loop.run_in_executor, so the event loop thread stays free to run the heartbeat.
-Note this still shares the GIL with the heartbeat task in the default build --
-it helps because asyncio can poll/schedule around it, not because of true
-parallelism. See the free-threaded (3.14t) comparison in output.txt."""
+Note this still shares the GIL with the heartbeat task in the default (GIL)
+build used for every Python result in this post -- it helps because asyncio can
+poll/schedule around the executor thread, not because of true parallelism."""
 import asyncio
 import math
 import sys

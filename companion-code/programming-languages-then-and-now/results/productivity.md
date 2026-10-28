@@ -1,11 +1,10 @@
 # Productivity observations (scenarios 9-11)
 
-Re-measured in Phase 1b (B3) for all six core languages, back to back in one
-session, three runs each, on one development machine (Windows 11 Pro, Docker
-Desktop/WSL2, host otherwise idle), 2026-10-28. Median and range reported, still
-labeled observations, not benchmarks -- no isolated hardware, no repeated trials
-beyond these three, no warm-vs-cold-cache control beyond what's noted below.
-Reproduce with:
+Measured for all six core languages, back to back in one session, three runs
+each, on one development machine (Windows 11 Pro, Docker Desktop/WSL2, host
+otherwise idle), 2026-10-28. Median and range reported, labeled observations,
+not benchmarks -- no isolated hardware, no repeated trials beyond these three,
+no warm-vs-cold-cache control beyond what's noted below. Reproduce with:
 
 ```
 docker compose build --no-cache <service>   # clean
@@ -58,7 +57,7 @@ transitive crates from source every time.
 | TypeScript | 349 MB | `node:26-bookworm-slim` (full Node runtime, in both build and final stages) |
 | Kotlin | 481 MB | `eclipse-temurin:25-jre` (JRE) + the shadow jar |
 
-### C# image-size variants (B3)
+### C# image-size variants
 
 All three built from the same `Program.cs`/`wordfreq.csproj`, varying only the
 publish mode:

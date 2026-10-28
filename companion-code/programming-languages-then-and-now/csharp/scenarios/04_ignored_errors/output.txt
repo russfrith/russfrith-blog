@@ -8,15 +8,3 @@ file not found: Could not find a part of the path '/no/such/path.txt'.
 task exception observed and handled: thrown inside an awaited Task
 
 SDK: .NET 10.0.402 (mcr.microsoft.com/dotnet/sdk:10.0)
-Confirms the prediction for the fire-and-forget Task: unlike Node's default
-unhandled-promise-rejection-is-fatal behavior, an exception thrown inside a
-`Task.Run(...)` that is never awaited, stored, or observed does NOT crash the
-.NET process -- it is silently absorbed (no stack trace, no crash, program exits 0
-normally). This is a genuine behavioral difference from the TypeScript/Node
-result in scenario 4, not an assumption -- verified by actually running it.
-Deviation from the first draft: `File.ReadAllText("/no/such/path.txt")` throws
-`DirectoryNotFoundException` here, not `FileNotFoundException`, because the parent
-directory `/no/` doesn't exist either -- the fixed version now catches the common
-base class `IOException` to cover both, same fix style as Kotlin's output
-(`FileNotFoundException`, a case where Java/Kotlin's exception for this exact path
-happened to match the narrower type and C#'s didn't).

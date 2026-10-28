@@ -15,7 +15,4 @@ $ npx tsc --noEmit --strict --target ES2023 --module NodeNext --moduleResolution
 (no errors)
 EXIT:0
 
-Type checker: TypeScript 5.9.3. Confirmed with the real compiler, not just by Node
-executing it without complaint: `tsc` reports zero errors on broken.ts for either
-call -- the declared `Item` type is simply wrong at runtime in both cases, and
-nothing catches it until the value is printed.
+Type checker: TypeScript 5.9.3.

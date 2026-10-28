@@ -22,7 +22,4 @@ $ npx tsc --noEmit --strict --target ES2023 --module NodeNext --moduleResolution
 (no errors)
 EXIT:0
 
-Type checker: TypeScript 5.9.3. Confirmed with the real compiler: `tsc` reports
-zero type errors on broken.ts -- the `as User` assertion is syntactically valid and
-type-checks cleanly. The failure only shows up at runtime, and only once the
-lied-about field is actually used.
+Type checker: TypeScript 5.9.3.

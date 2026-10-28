@@ -45,5 +45,3 @@ counter = 400000 (expected 400000)
 EXIT:0
 
 Toolchain: go1.26.4 (golang:1.26.4-bookworm)
-Note: 322288 is this run's actual wrong total, nondeterministic by nature -- not a
-representative figure.

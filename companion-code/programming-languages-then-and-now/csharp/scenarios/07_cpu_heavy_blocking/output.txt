@@ -1,32 +1,33 @@
-Workload: 300,000,000 sqrt additions, same as every other language in this
-scenario; result printed.
-
-$ dotnet run   (broken/ -- CpuBound() called directly, no Task.Run)
+$ dotnet run   (broken/ -- CpuBound() called directly, no Task.Run; Debug config, dotnet run's default)
 starting CPU-bound work directly (no Task.Run)...
 heartbeat tick 1
 ...
 heartbeat tick 10
 CPU-bound work finished after 1003ms, heartbeat ticks seen: 10, result: 3464101606477.5415
 
-$ dotnet run   (fixed/ -- Task.Run)
+$ dotnet run   (fixed/ -- Task.Run; Debug config)
 starting CPU-bound work via Task.Run...
 heartbeat tick 1
 ...
 heartbeat tick 9
 CPU-bound work finished after 956ms, heartbeat ticks seen: 9, result: 3464101606477.5415
 
-SDK: .NET 10.0.402 (mcr.microsoft.com/dotnet/sdk:10.0)
-Confirms the prediction exactly: .NET has no single-threaded event loop. The
-heartbeat (a separate `Task.Run` with its own thread-pool worker thread) keeps
-ticking on schedule WHILE the CPU-bound loop runs synchronously on the thread
-that called it directly -- because that thread is a different one than the
-heartbeat's. This pattern-matches Go/Rust's multi-thread-runtime/Kotlin's
-Dispatchers.Default result (heartbeat unaffected), not Node/Python's
-single-threaded stall (0 ticks). There is effectively no behavioral difference
-between calling `CpuBound()` directly and wrapping it in `Task.Run` here, because
-neither one shares a thread with the heartbeat task in this program's shape --
-`Task.Run` only matters when the caller needs ITS OWN thread free for other work,
-which this minimal demo doesn't exercise.
-Observation, not investigated further (not an order-of-magnitude gap): this took
-~1000ms versus Go/Node's ~400ms for the identical 300,000,000-iteration workload --
-noted as a fact, not benchmarked or explained.
+$ dotnet run -c Release   (broken/)
+starting CPU-bound work directly (no Task.Run)...
+heartbeat tick 1
+heartbeat tick 2
+heartbeat tick 3
+heartbeat tick 4
+CPU-bound work finished after 402ms, heartbeat ticks seen: 4, result: 3464101606477.5415
+
+$ dotnet run -c Release   (fixed/)
+starting CPU-bound work via Task.Run...
+heartbeat tick 1
+heartbeat tick 2
+heartbeat tick 3
+heartbeat tick 4
+CPU-bound work finished after 407ms, heartbeat ticks seen: 4, result: 3464101606477.5415
+
+SDK: .NET 10.0.402 (mcr.microsoft.com/dotnet/sdk:10.0). Build configuration: Debug
+(dotnet run's default, no -c flag) for the first pair, Release (-c Release) for
+the second pair -- both shown, see NOTES.md.

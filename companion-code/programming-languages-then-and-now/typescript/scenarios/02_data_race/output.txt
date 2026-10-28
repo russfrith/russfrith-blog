@@ -7,11 +7,6 @@ counter = 400000 (expected 400000)
 EXIT:0
 
 Runtime: Node.js v26.12.1 (node:26-bookworm-slim)
-Note: ordinary JS/TS objects can't race (single-threaded); this uses worker_threads
-+ SharedArrayBuffer, the one place real shared-memory concurrency exists in Node.
-Unlike the Python/Rust tight-loop cases, this raced reliably on the first run with
-no artificial delay needed -- the two workers run genuinely concurrently on separate
-OS threads, not cooperatively scheduled on one.
 
 $ npx tsc --noEmit --strict --target ES2023 --module NodeNext --moduleResolution NodeNext --esModuleInterop --skipLibCheck --types node broken.ts
 (no errors)

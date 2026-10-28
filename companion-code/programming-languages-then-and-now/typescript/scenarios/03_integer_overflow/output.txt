@@ -5,9 +5,6 @@ BigInt(MAX_SAFE_INTEGER) + 2n = 9007199254740993
 EXIT:0
 
 Runtime: Node.js v26.12.1 (node:26-bookworm-slim)
-Note: "+1" and "+2" print the SAME value -- this is silent precision loss, not
-wraparound. No broken/fixed pair: ordinary `number` has no fix for itself; BigInt is
-a different, exact type you must opt into deliberately.
 
 $ npx tsc --noEmit --strict --target ES2023 --module NodeNext --moduleResolution NodeNext --esModuleInterop --skipLibCheck --types node demo.ts
 (no errors)

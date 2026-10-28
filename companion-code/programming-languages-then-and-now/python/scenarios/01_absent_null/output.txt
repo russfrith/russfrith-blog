@@ -1,7 +1,7 @@
 $ python broken.py
 [python 3.14.8, gil_enabled=True]
 Traceback (most recent call last):
-  File "/src/broken.py", line 4, in <module>
+  File "/src/broken.py", line 7, in <module>
     print(record["count"])
           ~~~~~~^^^^^^^^^
 KeyError: 'count'
@@ -13,4 +13,3 @@ count absent
 EXIT:0
 
 Interpreter: Python 3.14.8 (python:3.14.8-slim), default GIL build (confirmed by
-the printed sys.version / sys._is_gil_enabled() above -- A8 fix)

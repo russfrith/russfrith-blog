@@ -4,6 +4,3 @@ sys.maxsize + 1 = 9223372036854775808
 EXIT:0
 
 Interpreter: Python 3.14.8 (python:3.14.8-slim), default GIL build (confirmed by
-the printed sys.version / sys._is_gil_enabled() above -- A8 fix)
-No broken/fixed pair: Python ints are arbitrary-precision, so there is nothing to
-overflow and nothing to fix.

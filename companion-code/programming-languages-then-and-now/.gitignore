@@ -1,30 +1,45 @@
 # Build output only -- source stays committed.
 #
-# NOTE: "broken"/"fixed" are compiled-binary names (no extension) for C and Rust
-# scenarios, but they are also legitimate SOURCE directory names for C# scenarios
-# (csharp/scenarios/*/broken/Program.cs etc.) -- these patterns are deliberately
-# scoped to c/ and rust/ only so they never match the C# directories.
+# Every pattern below is scoped to the specific directories that actually
+# produce that kind of build output. Bare patterns (bin/, obj/, broken, fixed)
+# previously matched unrelated SOURCE directories/files by the same name --
+# rust/scenarios/*/src/bin/ (source) and csharp/scenarios/*/broken/ (source) --
+# and silently excluded them from git. See C4 in the post's companion-code
+# history for the recovery. Never add a bare bin/, obj/, broken, or fixed
+# pattern here again; always scope it to the producing language's tree.
+
 target/
-dist/
-build/
-bin/
-obj/
 *.so
-coroutines.jar
-serialization-*.jar
-*.jar
-__pycache__/
-*.pyc
-node_modules/
 *.class
 *.exe
 .hugo_build_test/
 
-c/scenarios/*/broken
-c/scenarios/*/fixed
-c/scenarios/*/broken_debug
-c/scenarios/*/broken_asan
+# Rust: cargo build output only (never matches src/bin/, which is source)
+rust/**/target/
 rust/scenarios/*/broken
 rust/scenarios/*/fixed
 rust/scenarios/*/out1
 rust/scenarios/*/out2
+
+# C#: dotnet build output only (bin/obj appear next to every .csproj)
+csharp/**/bin/
+csharp/**/obj/
+
+# C: compiled binaries with no extension, alongside their .c source
+c/scenarios/*/broken
+c/scenarios/*/fixed
+c/scenarios/*/broken_debug
+c/scenarios/*/broken_asan
+
+# TypeScript: tsc/npm output
+typescript/**/dist/
+typescript/**/node_modules/
+
+# Python: interpreter cache
+**/__pycache__/
+*.pyc
+
+# Kotlin: compiled jars (kotlinc -include-runtime output; never a source file)
+kotlin/**/*.jar
+coroutines.jar
+serialization-*.jar

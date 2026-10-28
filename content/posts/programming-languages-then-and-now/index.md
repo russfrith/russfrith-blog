@@ -60,9 +60,17 @@ wordfreq --top N --concurrency N --timeout SECONDS urls.txt
 
 It fetches the listed URLs concurrently (bounded by `--concurrency`), lowercases the combined text, splits on runs of non-ASCII-letter characters, drops empty tokens, and prints the top N words by count (descending, then alphabetical) to stdout. Per-URL failures and timing go to stderr. Exit codes: `0` everything succeeded, `1` partial failure, `2` bad arguments or a missing input file.
 
-Everything runs in Docker containers pinned to specific versions (full list and lookup sources in `companion-code/programming-languages-then-and-now/VERSIONS.md`, looked up 2026-10-28):
+Everything runs in Docker containers pinned to specific versions, looked up 2026-10-28 (full detail and sources in `companion-code/programming-languages-then-and-now/VERSIONS.md`):
 
-{{< snippet file="VERSIONS.md" lang="text" >}}
+| Language | Version | Base image |
+|---|---|---|
+| Python | 3.14.8 | `python:3.14.8-slim` |
+| Go | 1.26.4 | `golang:1.26.4-bookworm` |
+| Rust | 1.96.1 | `rust:1.96.1-slim-bookworm` |
+| TypeScript (on Node) | Node 26 LTS | `node:26-bookworm-slim` |
+| Kotlin | 2.4.0 (JVM: Eclipse Temurin 25, build 25.0.4.1+1) | compiled on JDK |
+| C# | .NET 10 SDK 10.0.402 (LTS) | `mcr.microsoft.com/dotnet/sdk:10.0` |
+| C (baseline) | GCC 16.2 | `gcc:16.2-bookworm` |
 
 A shared mock HTTP server (Python stdlib `http.server`, no third-party dependencies) serves fixed pages, a 404, an endpoint that hangs, a large page, and two JSON endpoints with a missing field and a wrong-typed field, respectively. A connection-refused case is tested by pointing at an unused port. Nothing ever touches the live internet. A shared acceptance script runs every implementation against the same fixtures and diffs stdout against one expected-output file per fixture; all six core languages (Python, Go, Rust, TypeScript, Kotlin, C#) pass it as of this writing. That expected output was also recomputed independently, with a coreutils-only pipeline (`curl`/`tr`/`sort`/`uniq`/`head`) that shares no code with any of the six implementations, and matched exactly -- see `shared/acceptance/README.md`.
 
@@ -75,7 +83,7 @@ A shared mock HTTP server (Python stdlib `http.server`, no third-party dependenc
 Ten fixed scenarios, grouped by theme, plus one signature footgun per language. C serves as a baseline for the five safety scenarios only (no full CLI). For each scenario, languages where something notable happened get full detail; the rest get a line or a table row.
 
 {{< aside >}}
-**A1/A3 verification note:** two claims in this post were specifically checked, not assumed. First, the expected CLI output was independently recomputed with a coreutils-only pipeline sharing no code with any implementation, and matched exactly (`shared/acceptance/README.md`). Second, scenario 7's original ~8x Go-vs-Node gap was investigated rather than reported at face value, and turned out to be invalid -- Go's unused loop result let the compiler eliminate it as dead code (full investigation under scenario 7 below).
+**Verification note:** two claims in this post were specifically checked, not assumed. First, the expected CLI output was independently recomputed with a coreutils-only pipeline sharing no code with any implementation, and matched exactly (`shared/acceptance/README.md`). Second, scenario 7's original ~8x Go-vs-Node gap was investigated by inspecting the compiler's actual assembly output, not just re-run -- it turned out to be dead-store elimination removing unused work, not a real language difference (full investigation under scenario 7 below).
 {{< /aside >}}
 
 ### Safety
@@ -286,7 +294,7 @@ Go's counterexample needed no fix at all: a heartbeat goroutine keeps ticking on
 
 {{< snippet file="go/scenarios/07_cpu_heavy_blocking/output.txt" lang="text" >}}
 
-**Investigation, not just a result:** the first draft of this scenario reported Go finishing the same workload roughly 8x faster than Node, which turned out to be invalid -- the Go version's loop result was never used, so the compiler eliminated it as dead code and the "benchmark" measured almost nothing. Printing the result (as every language here now does) made Go and Node land within 2% of each other. That investigation, and the corrected numbers, are in the output above.
+**Investigation, not just a result:** the first draft of this scenario reported Go finishing the same workload roughly 8x faster than Node, which turned out to be invalid. Inspecting `go build -gcflags=-S` on a reconstruction of that version confirms the exact mechanism: the compiler inlined the loop into `main`, proved the accumulated sum was never read, and deleted the floating-point work entirely, leaving only an empty counting loop -- not a measurement bug, and not unique to this run. Printing the result (as every language here now does, so no compiler can prove it unused) made Go and Node land within 2% of each other. The assembly evidence and the corrected numbers are in `go/scenarios/07_cpu_heavy_blocking/NOTES.md`.
 
 Rust (tokio) and Kotlin (coroutines) both show the same two-part result once actually run, which only partly matched the prediction: a single-threaded runtime/dispatcher stalls completely (0 ticks, matching Node/Python), but simply running the SAME unfixed code on the default multi-thread runtime / `Dispatchers.Default` did **not** stall either -- this machine's thread pool had a spare thread for the heartbeat even without `spawn_blocking`/`withContext` applied. That is not evidence the mistake is harmless in general; both ecosystems' own documentation recommends the explicit fix specifically because a saturated pool would show the stall this single demo didn't:
 
@@ -294,7 +302,7 @@ Rust (tokio) and Kotlin (coroutines) both show the same two-part result once act
 
 {{< snippet file="kotlin/scenarios/07_cpu_heavy_blocking/output.txt" lang="text" >}}
 
-C# needed no fix either, for a related but distinct reason: there is no single-threaded event loop to block in the first place -- `async`/`await` runs on the thread pool, which has multiple worker threads by default, so a heartbeat `Task` keeps ticking regardless of whether the CPU-bound call is wrapped in `Task.Run` or called directly:
+C# needed no fix either, for a related but distinct reason: there is no single-threaded event loop to block in the first place -- `async`/`await` runs on the thread pool, which has multiple worker threads by default, so a heartbeat `Task` keeps ticking regardless of whether the CPU-bound call is wrapped in `Task.Run` or called directly. The first run used `dotnet run`'s default Debug configuration and took roughly 1000ms, versus Go/Node's ~400ms -- a gap that, like the Go case above, turned out to be a build-configuration artifact rather than a real language difference. Re-running with `dotnet run -c Release` dropped it to ~400-407ms, matching Go and Node closely:
 
 {{< snippet file="csharp/scenarios/07_cpu_heavy_blocking/output.txt" lang="text" >}}
 
@@ -351,9 +359,46 @@ C#'s `System.Text.Json` splits exactly like Go for a plain property: silent zero
 
 #### 11. Final container image size
 
-Measured three times each, back to back, on one development machine, 2026-10-28; median and range reported. Full methodology and the "reproduce this" commands are in `companion-code/programming-languages-then-and-now/results/productivity.md`, including C#'s three image-size variants (framework-dependent, self-contained, Native AOT).
+Measured three times each, back to back, on one development machine, 2026-10-28; median reported, range in parentheses. Full methodology and the "reproduce this" commands are in `companion-code/programming-languages-then-and-now/results/productivity.md`.
 
-{{< snippet file="results/productivity.md" lang="text" >}}
+**9. CLI size and dependency count**
+
+| Language | Lines of code (wordfreq only) | Direct third-party dependencies |
+|---|---|---|
+| Python | 56 | 0 (stdlib only) |
+| Kotlin | 85 | 1 (`kotlinx-coroutines-core`) + its transitive deps |
+| Rust | 101 | 2 (`ureq`, `clap`) -- ~30 transitive crates |
+| TypeScript | 113 | 2 dev-only (`typescript`, `@types/node`); 0 runtime deps |
+| Go | 137 | 0 (stdlib only) |
+| C# | 91 | 0 (BCL only) |
+
+**10. Clean build vs. incremental rebuild time**
+
+| Language | Clean build (`--no-cache`) | Incremental rebuild (layer cache warm) |
+|---|---|---|
+| Python | 1.6s (1.5-1.7s) | 1.1s (1.1-1.2s) |
+| C# | 4.5s (4.4-4.8s) | 1.3s (1.2-1.4s) |
+| TypeScript | 4.6s (4.5-5.5s) | 1.0s (0.9-1.0s) |
+| Go | 6.2s (6.2-6.9s) | 1.2s (1.2-1.2s) |
+| Rust | 14.0s (12.7-14.3s) | 1.1s (1.1-1.2s) |
+| Kotlin | 66.4s (66.1-70.6s) | 1.0s (1.0-1.2s) |
+
+Incremental rebuild times converge to roughly the same ~1-1.4s across all six once the Docker layer cache is warm and nothing in the source changed; the spread is in the clean build. Kotlin's clean build downloads Gradle 9.5.0 inside the build stage every time `--no-cache` is used. Rust's clean build compiles ~30 transitive crates from source every time.
+
+**11. Final image size (idiomatic multi-stage build)**
+
+| Language | Final image size | Base |
+|---|---|---|
+| Go | 19.5 MB | `gcr.io/distroless/static-debian12` |
+| Rust | 129 MB | `debian:bookworm-slim` + `ca-certificates` |
+| Python | 178 MB | `python:3.14.8-slim` |
+| C# (Native AOT) | 207 MB | `runtime-deps:10.0` + native binary, no managed runtime |
+| C# (self-contained) | 300 MB | `runtime-deps:10.0` + bundled private runtime copy |
+| C# (framework-dependent, used elsewhere in this post) | 301 MB | `runtime:10.0` (shared runtime) |
+| TypeScript | 349 MB | `node:26-bookworm-slim` |
+| Kotlin | 481 MB | `eclipse-temurin:25-jre` + shadow jar |
+
+All three C# variants build from the same `Program.cs`/`wordfreq.csproj`, varying only the publish mode (`dotnet publish -c Release`, `... --self-contained true -r linux-x64`, `... -p:PublishAot=true -r linux-x64`). Framework-dependent and self-contained landed almost identical in size -- the bundled private runtime in the self-contained build is roughly the same size as the shared runtime layer it replaces. Native AOT, the smallest of the three, built successfully with only `clang`/`zlib1g-dev` added to the build stage -- no separate toolchain install was needed -- and was verified to produce byte-identical `wordfreq` output to the other two variants.
 
 ### One footgun per language
 
@@ -505,3 +550,4 @@ A factual summary, drawn only from the recorded results above and in the compani
 **Reproduce this**: clone the repo, `cd companion-code/programming-languages-then-and-now`, `docker compose up -d mockserver`, then `docker compose run --rm <language> --top N --concurrency N --timeout SECONDS /data/urls-happy.txt` for any of `python`, `go`, `rust`, `typescript`, `kotlin`, `csharp`. `./scripts/run-acceptance.ps1` runs the full acceptance suite across all six, plus the independent coreutils-only verification. Each language's `scenarios/` folder has its own broken/fixed pairs with instructions in that folder's README.
 
 **Versions and sources**: `companion-code/programming-languages-then-and-now/VERSIONS.md` (this post's version pins and lookup sources), `PREDICTIONS.md` (predictions recorded before each run, with mismatches flagged), `REVIEW.md` (claims that didn't clear the bar for this post as stated fact).
+

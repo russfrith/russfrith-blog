@@ -9,6 +9,3 @@ file not found: [Errno 2] No such file or directory: '/no/such/path.txt'
 EXIT:0
 
 Interpreter: Python 3.14.8 (python:3.14.8-slim), default GIL build (confirmed by
-the printed sys.version / sys._is_gil_enabled() above -- A8 fix)
-Note: broken.py exits 0 and prints "done" -- the bare except swallowed the error so
-completely that nothing at all signals a problem happened.

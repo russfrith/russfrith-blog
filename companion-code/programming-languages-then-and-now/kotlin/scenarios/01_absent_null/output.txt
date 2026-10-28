@@ -1,6 +1,6 @@
 $ kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar
 Exception in thread "main" java.lang.NullPointerException
-	at BrokenKt.main(Broken.kt:7)
+	at BrokenKt.main(Broken.kt:8)
 	at BrokenKt.main(Broken.kt)
 EXIT:1
 
