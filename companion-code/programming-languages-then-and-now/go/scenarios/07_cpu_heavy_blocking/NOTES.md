@@ -2,8 +2,8 @@ Confirms the prediction: the heartbeat goroutine keeps ticking on schedule (ever
 ~100ms) WHILE the CPU-bound loop runs on the main goroutine, with no explicit
 offloading needed.
 
-A3 investigation note -- an order-of-magnitude discrepancy found and corrected:
-the original (Phase 1) version of this file called `cpuBound(2_000_000_000)` and
+Investigation note -- an order-of-magnitude discrepancy found and corrected:
+the original version of this file called `cpuBound(2_000_000_000)` and
 discarded the return value, printing only the elapsed time. That version reported
 332ms for 2,000,000,000 iterations. Re-running the SAME 2,000,000,000-iteration
 workload with the result printed (so the loop can't be proven dead and removed)
@@ -17,7 +17,7 @@ heartbeat tick 1 at 2026-10-28T05:21:11.486640512Z
 heartbeat tick 27 at 2026-10-28T05:21:14.086673199Z
 CPU-bound work finished after 2.74203249s, heartbeat ticks seen: 27, result: 59628479377633.976562
 
-Conclusion, verified against the actual compiler output (C6) rather than assumed:
+Conclusion, verified against the actual compiler output rather than assumed:
 the original Go result was invalid. Inspecting `go build -gcflags=-S` on a
 reconstruction of the original unused-result call confirms the mechanism exactly:
 the compiler inlined `cpuBound` into `main` and then proved the accumulated

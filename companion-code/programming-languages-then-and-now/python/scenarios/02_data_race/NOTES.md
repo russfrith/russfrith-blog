@@ -1,4 +1,4 @@
-the printed sys.version / sys._is_gil_enabled() above -- A8 fix; no free-threaded
+the printed sys.version / sys._is_gil_enabled() above -- corrected after an audit; no free-threaded
 run was performed, see VERSIONS.md for why)
 Mismatch with prediction: a plain `counter += 1` loop (200,000 iterations, no
 artificial delay) did NOT reproduce a lost update in this container, even with

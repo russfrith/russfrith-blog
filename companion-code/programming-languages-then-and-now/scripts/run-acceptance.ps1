@@ -50,7 +50,7 @@ foreach ($lang in $languages) {
     $resultLines += ""
 }
 
-# Independent recomputation (A1/B1): a coreutils-only pipeline that shares no
+# Independent recomputation: a coreutils-only pipeline that shares no
 # code with any implementation above, reading the same fixtures.
 $resultLines += "## independent verification (verify-expected, coreutils only)"
 $resultLines += ""

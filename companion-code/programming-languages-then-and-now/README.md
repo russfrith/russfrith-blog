@@ -13,7 +13,7 @@ Everything runs in Docker. No local Python/Go/Rust/Node/JVM/.NET install is requ
 - `scripts/run-acceptance.ps1` -- runs every core language's CLI against the shared fixtures, diffs stdout, and re-checks the happy-path fixture with the independent coreutils pipeline.
 - `results/productivity.md` -- measured (not benchmarked) CLI size, build time, and image size figures for scenarios 9-11.
 - `VERSIONS.md`, `PREDICTIONS.md`, `REVIEW.md` -- version pins with lookup sources, pre-run predictions with recorded mismatches, and claims held back from the post pending a better source.
-- `zig/`, `mojo/` -- not yet implemented; Phase 2, pending approval.
+- `zig/`, `mojo/` -- not yet implemented, pending approval.
 
 ## Running the shared CLI
 

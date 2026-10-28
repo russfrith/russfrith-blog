@@ -9,7 +9,7 @@ docker run --rm -v "${PWD}/01_absent_null:/src" -w /src node:26-bookworm-slim no
 ```
 
 Type stripping does NOT type-check. Every scenario's `output.txt` also includes a
-real `tsc --noEmit --strict` run (A2) using the exact TypeScript/@types/node
+real `tsc --noEmit --strict` run using the exact TypeScript/@types/node
 versions pinned in `package.json` here:
 
 ```

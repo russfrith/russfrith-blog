@@ -13,7 +13,7 @@ neither one shares a thread with the heartbeat task in this program's shape --
 `Task.Run` only matters when the caller needs ITS OWN thread free for other work,
 which this minimal demo doesn't exercise.
 
-Build-configuration finding (C5): the original run used `dotnet run` with no `-c`
+Build-configuration finding: the original run used `dotnet run` with no `-c`
 flag, which defaults to Debug -- ~1000ms for the workload, versus Go/Node's
 ~400ms. That gap was NOT a genuine C#-vs-Go/Node difference: it was comparing an
 unoptimized Debug build of C# against release-mode Go and Node. Re-running with

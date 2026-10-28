@@ -1,1 +1,1 @@
-the printed sys.version / sys._is_gil_enabled() above -- A8 fix)
+the printed sys.version / sys._is_gil_enabled() above -- corrected after an audit)

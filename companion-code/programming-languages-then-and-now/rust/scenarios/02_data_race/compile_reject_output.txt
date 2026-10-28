@@ -1,4 +1,4 @@
-A7 -- demonstrating that safe Rust rejects data-race-shaped code at compile time,
+Demonstrating that safe Rust rejects data-race-shaped code at compile time,
 not just that the existing `unsafe`/`static mut` example needs `unsafe` to work.
 
 $ rustc compile_reject_plain_mut.rs -o out1

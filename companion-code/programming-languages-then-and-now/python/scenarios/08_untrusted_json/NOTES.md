@@ -1,7 +1,7 @@
-the printed sys.version / sys._is_gil_enabled() above -- A8 fix)
+the printed sys.version / sys._is_gil_enabled() above -- corrected after an audit)
 Note: broken.py crashes on the FIRST url (missing-field) and never even reaches the
 wrong-type url, which is itself informative -- an unhandled KeyError on one bad
 payload takes down the whole batch, unlike Go's silent per-item zero-fill.
-Rust (serde with #[serde(default)] for the field, see A6) and Kotlin
-(kotlinx.serialization with a default value, see A6) behave like the fixed
+Rust (serde with #[serde(default)] for the field) and Kotlin
+(kotlinx.serialization with a default value) behave like the fixed
 Python/TypeScript versions here when written defensively.

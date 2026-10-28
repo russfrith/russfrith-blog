@@ -308,7 +308,7 @@ C# needed no fix either, for a related but distinct reason: there is no single-t
 
 <!-- AUTHOR-TODO: candidate observation -- Python's officially-supported
 free-threaded build (3.14t, PEP 779) was looked up for this scenario but never
-actually built or run (see VERSIONS.md, corrected in Phase 1b) -- every Python
+actually built or run (see VERSIONS.md, corrected after an earlier pass) -- every Python
 result in this post is the default GIL build, confirmed by the printed
 sys._is_gil_enabled() in each output. A genuine free-threaded run against this
 scenario is a real candidate for "what I'd learn next," not something to assume. -->

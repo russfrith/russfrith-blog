@@ -4,7 +4,7 @@
 # produce that kind of build output. Bare patterns (bin/, obj/, broken, fixed)
 # previously matched unrelated SOURCE directories/files by the same name --
 # rust/scenarios/*/src/bin/ (source) and csharp/scenarios/*/broken/ (source) --
-# and silently excluded them from git. See C4 in the post's companion-code
+# and silently excluded them from git. See the companion-code git
 # history for the recovery. Never add a bare bin/, obj/, broken, or fixed
 # pattern here again; always scope it to the producing language's tree.
 
