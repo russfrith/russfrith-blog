@@ -1,4 +1,9 @@
 # Build output only -- source stays committed.
+#
+# NOTE: "broken"/"fixed" are compiled-binary names (no extension) for C and Rust
+# scenarios, but they are also legitimate SOURCE directory names for C# scenarios
+# (csharp/scenarios/*/broken/Program.cs etc.) -- these patterns are deliberately
+# scoped to c/ and rust/ only so they never match the C# directories.
 target/
 dist/
 build/
@@ -12,9 +17,14 @@ __pycache__/
 *.pyc
 node_modules/
 *.class
-broken
-fixed
-broken_debug
-broken_asan
 *.exe
 .hugo_build_test/
+
+c/scenarios/*/broken
+c/scenarios/*/fixed
+c/scenarios/*/broken_debug
+c/scenarios/*/broken_asan
+rust/scenarios/*/broken
+rust/scenarios/*/fixed
+rust/scenarios/*/out1
+rust/scenarios/*/out2
