@@ -5,3 +5,7 @@ not a build error -- the project still compiles and runs, and the null only
 surfaces as a crash at the actual point of use. Dictionary's indexer throws
 KeyNotFoundException on a missing key; TryGetValue returns false with no
 exception, same two-styles-of-absence pattern as Python's `d[k]` vs `d.get(k)`.
+
+The broken run's exit code is 134, not a plain 1 -- 134 is SIGABRT, which is what
+an unhandled .NET exception actually terminates the process with. Build itself
+succeeded despite the CS8603 warning; only the run crashed.

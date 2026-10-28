@@ -6,7 +6,7 @@ Unhandled exception. System.InvalidOperationException: thrown inside async void
    at System.Threading.ThreadPoolWorkQueue.Dispatch()
    at System.Threading.PortableThreadPool.WorkerThread.WorkerThreadStart()
    at System.Threading.Thread.StartCallback()
-EXIT:1 (process crashes)
+EXIT:134
 
 $ dotnet run   (fixed/)
 caught: thrown inside async Task

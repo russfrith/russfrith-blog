@@ -1,35 +1,43 @@
 # One-command reproduction of every scenario in this post, run in the pinned
-# containers, with results written to a temp directory and diffed against the
-# committed output.txt files. Nondeterministic text (timings, addresses, thread
-# ids, race totals) is normalized before comparing -- see $normalizers below.
+# containers. Two kinds of checks:
+#
+#   1. Output-diff scenarios: run the real commands, synthesize the same
+#      "$ command" / output / "EXIT:N" structure the committed output.txt uses,
+#      normalize nondeterministic text (timings, addresses, thread ids, tick
+#      counts), then compare BOTH directions -- lines missing from the actual
+#      run AND lines in the actual run that aren't in the committed file. A
+#      small, explicit set of lines (toolchain/version metadata that was never
+#      "captured output" in the first place, plus one documented bash
+#      job-control artifact) is excluded from BOTH sides before comparing.
+#
+#   2. Property scenarios: for things where matching one committed transcript
+#      byte-for-byte is the wrong test (data races, timing-sensitive heartbeat
+#      counts, "this must fail to compile with error E0499"), run the real
+#      thing and assert a property instead.
 #
 # Usage (from companion-code/programming-languages-then-and-now):
 #   docker compose up -d mockserver
-#   ./scripts/run-scenarios.ps1
+#   ./scripts/run-scenarios.ps1                 # check mode (default)
+#   ./scripts/run-scenarios.ps1 -Update          # regenerate output.txt files
+#                                                 # listed in $updateTargets from
+#                                                 # a real run (use after a
+#                                                 # deliberate source change --
+#                                                 # never hand-edit output.txt)
 #
-# Exits non-zero (and lists every scenario) if any normalized diff fails.
+# Exits non-zero (and lists every failure) in check mode.
 #
-# NOT covered by this script (documented, not silently skipped -- run these by
-# hand per each language's scenarios/README.md):
-#   - TypeScript's tsc --noEmit checks (check-all.sh) -- type-checking, not a
-#     timed/nondeterministic run, nothing to normalize.
-#   - Scenario 2 (data race) in every language -- the whole point is a
-#     nondeterministic wrong total; "reproducing" it means confirming it's wrong
-#     and the fix is right, not matching one committed number. Spot-check by eye.
-#   - Scenario 6 (hung/cancellation) -- a cross-language docker-compose run
-#     against the mock server, not a single-container scenario; see
-#     shared/scenarios/06_hung_cancellation/README.md.
-#   - Scenario 7 (CPU-heavy blocking) in every language -- timed, workload-equalized,
-#     and (for C#) deliberately run in two build configurations; spot-check by eye
-#     against each output.txt rather than an automated byte-for-byte diff.
-#   - Rust/Kotlin scenario 8 (serde/kotlinx.serialization) and Rust scenario 7
-#     (tokio) -- multi-binary Cargo projects / multi-jar classpaths; see each
-#     README.md for the exact build+run sequence.
-#   - C#'s indexer_demo/ and checked_project/ supplementary comparisons.
-#   - Rust's compile_reject_*.rs files (expected to FAIL to compile; "reproducing"
-#     them means confirming the same compiler error, not diffing stdout).
-#   - C's -fsanitize=address leak-detector run for scenario 5 (a second build of
-#     the same source with different flags).
+# STILL NOT COVERED (documented, not silently skipped):
+#   - C#'s indexer_demo/ and checked_project/ supplementary comparisons, and
+#     the Debug-vs-Release scenario 7 pair -- both are secondary evidence
+#     already spot-checked by eye in NOTES.md, not re-verified here.
+#   - Rust's exact "Segmentation fault (core dumped)" message text for C
+#     scenarios 1 and 4 is excluded from the diff (see $bothSidesExclude) --
+#     it's a bash job-control artifact that depends on whether bash forks or
+#     execs for the dying process, not reliably reproducible byte-for-byte.
+
+param(
+    [switch]$Update
+)
 
 $ErrorActionPreference = "Continue"
 $root = Split-Path -Parent $PSScriptRoot
@@ -47,79 +55,137 @@ if (-not $kotlincImage) {
     Write-Host "Building kotlinc-2.4.0 helper image (one-time)..." -ForegroundColor Cyan
     docker build -t kotlinc-2.4.0 -f "$root/kotlin/scenarios/Dockerfile.kotlinc" "$root/kotlin/scenarios" | Out-Null
 }
+if (-not (Test-Path "$root/kotlin/scenarios/07_cpu_heavy_blocking/coroutines.jar") -or
+    -not (Test-Path "$root/kotlin/scenarios/08_untrusted_json/serialization-core.jar")) {
+    Write-Host "Fetching Kotlin scenario jars (one-time)..." -ForegroundColor Cyan
+    & "$root/kotlin/scenarios/fetch-jars.ps1"
+}
 
-# Regex replacements applied to BOTH actual and expected text before diffing,
-# in order. Each collapses one class of nondeterministic output to a fixed token.
+# --- normalization: collapses one class of nondeterministic output to a fixed token ---
 $normalizers = @(
-    @{ Pattern = '\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z?'; Replace = '<TIMESTAMP>' }     # ISO8601 goroutine/async timestamps
-    @{ Pattern = '\b1[78]\d{11}\b'; Replace = '<EPOCH_MS>' }                                  # Node Date.now() epoch millis
-    @{ Pattern = '\b\d+(\.\d+)?ms\b'; Replace = '<DURATION_MS>' }                              # "404.469077ms", "402ms"
-    @{ Pattern = '\b\d+(\.\d+)?s\b'; Replace = '<DURATION_S>' }                                 # "2.016s", "13.601s"
-    @{ Pattern = '0x[0-9a-fA-F]+'; Replace = '<ADDR>' }                                         # memory addresses
-    @{ Pattern = '(?i)\bgoroutine \d+\b'; Replace = 'goroutine <N>' }                           # Go goroutine ids
-    @{ Pattern = "(?i)\bthread '[^']*' \(\d+\)"; Replace = "thread '<T>' (<N>)" }               # Rust thread ids
-    @{ Pattern = 'heartbeat tick \d+'; Replace = 'heartbeat tick <N>' }                          # tick counts depend on wall-clock scheduling
+    @{ Pattern = '\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z?'; Replace = '<TIMESTAMP>' }
+    @{ Pattern = '\b1[78]\d{11}\b'; Replace = '<EPOCH_MS>' }
+    @{ Pattern = '\b\d+(\.\d+)?ms\b'; Replace = '<DURATION_MS>' }
+    @{ Pattern = '\b\d+(\.\d+)?s\b'; Replace = '<DURATION_S>' }
+    @{ Pattern = '0x[0-9a-fA-F]+'; Replace = '<ADDR>' }
+    @{ Pattern = '(?i)\bgoroutine \d+\b'; Replace = 'goroutine <N>' }
+    @{ Pattern = "(?i)\bthread '[^']*' \(\d+\)"; Replace = "thread '<T>' (<N>)" }
+    @{ Pattern = 'heartbeat tick \d+'; Replace = 'heartbeat tick <N>' }
     @{ Pattern = 'ticks seen: \d+'; Replace = 'ticks seen: <N>' }
-    @{ Pattern = 'at \d+\.\d+'; Replace = 'at <T>' }                                            # Python/relative timestamps in heartbeat lines
+    @{ Pattern = 'at \d+\.\d+'; Replace = 'at <T>' }
+    @{ Pattern = '\bPID \d+\b'; Replace = 'PID <N>' }
+    @{ Pattern = 'line \d+:\s+\d+ Segmentation fault'; Replace = 'Segmentation fault' }  # bash job-control PID noise
 )
 
 function Normalize([string]$text) {
-    foreach ($n in $normalizers) {
-        $text = [regex]::Replace($text, $n.Pattern, $n.Replace)
-    }
+    foreach ($n in $normalizers) { $text = [regex]::Replace($text, $n.Pattern, $n.Replace) }
     return $text
 }
 
-# $steps is an array of @{ Dir = "..."; Image = "..."; Cmd = "..."; Net = $bool }
-# run in order; their stdout/stderr is concatenated before diffing against
-# $expectedFile (one output.txt covering every step for that scenario).
-function Test-Scenario($name, $steps, $expectedFile, $skipLinePattern) {
-    $actual = ""
-    foreach ($step in $steps) {
-        $hostDir = Join-Path $root $step.Dir
-        $networkArgs = @()
-        if ($step.Net) { $networkArgs = @("--network", $network) }
-        $stepOut = docker run --rm @networkArgs -v "${hostDir}:/src" -w /src $step.Image bash -c $step.Cmd 2>&1 | Out-String
-        $actual += $stepOut
+# Lines excluded from BOTH sides before the bidirectional compare: documented,
+# not silently dropped. These are things that were never "captured output" in
+# the first place (toolchain/version metadata lines this script doesn't
+# re-derive) or one specific known-nondeterministic bash artifact.
+$bothSidesExclude = @(
+    '^(Toolchain|Interpreter|SDK|Runtime|Compiler|Type checker):',
+    'Segmentation fault'
+)
+
+function Filter-Lines($lines) {
+    # Two passes: (1) drop a whole "$ npx tsc ..." command block (that command
+    # plus every line up to the next "$ " prompt or metadata line) -- tsc
+    # checks are covered separately as a property scenario, not re-run as part
+    # of every scenario's output-diff. (2) drop the simple per-line exclusions.
+    $out = @()
+    $inTscBlock = $false
+    foreach ($line in $lines) {
+        if ($line -match '^\$ npx tsc') { $inTscBlock = $true; continue }
+        if ($inTscBlock) {
+            if ($line -match '^\$ ' -or $line -match '^(Toolchain|Interpreter|SDK|Runtime|Compiler|Type checker):') {
+                $inTscBlock = $false
+            } else {
+                continue
+            }
+        }
+        $out += $line
     }
+    return $out | Where-Object {
+        $line = $_
+        -not ($bothSidesExclude | Where-Object { $line -match $_ })
+    }
+}
+
+# NOTE: no automatic EXIT-code echoing here, deliberately -- the committed
+# output.txt files are inconsistent about when they show an EXIT: line (some
+# scenarios never show one for a successful run, others always do, some only
+# show it after the LAST of several split compile/run steps). Rather than
+# guess, every $cmd string includes its own "; echo EXIT:$?" exactly where the
+# committed transcript has one, so the comparison is honest either way.
+function S($dir, $image, $cmd, $net, $display) {
+    $autoDisplay = $cmd -replace [regex]::Escape($exit0), ''
+    return @{ Dir = $dir; Image = $image; Cmd = $cmd; Net = [bool]$net; Display = $(if ($display) { $display } else { $autoDisplay }) }
+}
+
+function Invoke-Step($step) {
+    $hostDir = Join-Path $root $step.Dir
+    $networkArgs = @()
+    if ($step.Net) { $networkArgs = @("--network", $network) }
+    $out = docker run --rm @networkArgs -v "${hostDir}:/src" -w /src $step.Image bash -c $step.Cmd 2>&1 | Out-String
+    return "`$ $($step.Display)`n$($out.TrimEnd())`n`n"
+}
+
+function Run-Steps($steps) {
+    $actual = ""
+    foreach ($step in $steps) { $actual += Invoke-Step $step }
+    return $actual.TrimEnd() + "`n"
+}
+
+function Test-Scenario($name, $steps, $expectedFile) {
+    $actual = Run-Steps $steps
     $actualNorm = Normalize $actual
-    $expectedRaw = Get-Content -Raw $expectedFile
-    $expectedNorm = Normalize $expectedRaw
+    $expectedNorm = Normalize (Get-Content -Raw $expectedFile)
 
     $actualPath = Join-Path $tmpDir ($name -replace '[\\/]', '_')
     $actualNorm | Set-Content -Path $actualPath
 
-    # Loose containment check rather than exact-line diff: output.txt also has
-    # "$ command" echo lines (never produced by actual docker run output) and a
-    # trailing toolchain/version line this script doesn't re-derive -- both are
-    # excluded here, everything else must appear in actual output.
-    $expectedLines = ($expectedNorm -split "`n") | Where-Object {
-        $_.Trim() -ne "" -and
-        $_ -notmatch '^(Toolchain|Interpreter|SDK|Runtime|Compiler|Type checker):' -and
-        $_ -notmatch '^\$ ' -and
-        $_ -notmatch '^EXIT:' -and
-        $_ -notmatch '^\(no errors\)$' -and  # tsc check output -- covered separately by check-all.sh, not re-run here
-        ($null -eq $skipLinePattern -or $_ -notmatch $skipLinePattern)
-    }
-    $actualLines = ($actualNorm -split "`n") | ForEach-Object { $_.TrimEnd() }
-    $missing = @()
-    foreach ($line in $expectedLines) {
-        if (-not ($actualLines -contains $line.TrimEnd())) { $missing += $line }
-    }
-    if ($missing.Count -eq 0) {
+    $expectedLines = Filter-Lines (($expectedNorm -split "`n") | Where-Object { $_.Trim() -ne "" } | ForEach-Object { $_.TrimEnd() })
+    $actualLines = Filter-Lines (($actualNorm -split "`n") | Where-Object { $_.Trim() -ne "" } | ForEach-Object { $_.TrimEnd() })
+
+    $missing = Compare-Object $expectedLines $actualLines | Where-Object { $_.SideIndicator -eq "<=" } | ForEach-Object { $_.InputObject }
+    $unexpected = Compare-Object $expectedLines $actualLines | Where-Object { $_.SideIndicator -eq "=>" } | ForEach-Object { $_.InputObject }
+
+    if ($missing.Count -eq 0 -and $unexpected.Count -eq 0) {
         Write-Host "PASS: $name" -ForegroundColor Green
         return $true
     } else {
         Write-Host "FAIL: $name" -ForegroundColor Red
-        Write-Host "  missing/changed lines (normalized):" -ForegroundColor Red
-        $missing | ForEach-Object { Write-Host "    $_" -ForegroundColor Red }
+        if ($missing.Count -gt 0) {
+            Write-Host "  in output.txt but NOT in this run:" -ForegroundColor Red
+            $missing | ForEach-Object { Write-Host "    - $_" -ForegroundColor Red }
+        }
+        if ($unexpected.Count -gt 0) {
+            Write-Host "  in this run but NOT in output.txt:" -ForegroundColor Red
+            $unexpected | ForEach-Object { Write-Host "    + $_" -ForegroundColor Red }
+        }
         Write-Host "  actual output saved to: $actualPath"
         return $false
     }
 }
 
-function S($dir, $image, $cmd, $net) {
-    return @{ Dir = $dir; Image = $image; Cmd = $cmd; Net = [bool]$net }
+function Test-Property($name, [scriptblock]$check) {
+    try {
+        $result = & $check
+        if ($result -eq $true) {
+            Write-Host "PASS: $name" -ForegroundColor Green
+            return $true
+        } else {
+            Write-Host "FAIL: $name -- $result" -ForegroundColor Red
+            return $false
+        }
+    } catch {
+        Write-Host "FAIL: $name -- exception: $($_.Exception.Message)" -ForegroundColor Red
+        return $false
+    }
 }
 
 $py = "python:3.14.8-slim"
@@ -129,178 +195,402 @@ $node = "node:26-bookworm-slim"
 $kt = "kotlinc-2.4.0"
 $cs = "mcr.microsoft.com/dotnet/sdk:10.0"
 $gcc = "gcc:16.2"
+$exit0 = '; echo "EXIT:$?"'
 
+# ============================================================================
+# Output-diff scenarios
+# ============================================================================
 $scenarios = @(
     # --- Python ---
     @{ Name="python/01_absent_null"; Expected="python/scenarios/01_absent_null/output.txt"; Steps=@(
-        S "python/scenarios/01_absent_null" $py "python broken.py"
-        S "python/scenarios/01_absent_null" $py "python fixed.py"
+        S "python/scenarios/01_absent_null" $py "python broken.py$exit0"
+        S "python/scenarios/01_absent_null" $py "python fixed.py$exit0"
     )}
     @{ Name="python/03_integer_overflow"; Expected="python/scenarios/03_integer_overflow/output.txt"; Steps=@(
-        S "python/scenarios/03_integer_overflow" $py "python demo.py"
+        S "python/scenarios/03_integer_overflow" $py "python demo.py$exit0"
     )}
     @{ Name="python/04_ignored_errors"; Expected="python/scenarios/04_ignored_errors/output.txt"; Steps=@(
-        S "python/scenarios/04_ignored_errors" $py "python broken.py"
-        S "python/scenarios/04_ignored_errors" $py "python fixed.py"
+        S "python/scenarios/04_ignored_errors" $py "python broken.py$exit0"
+        S "python/scenarios/04_ignored_errors" $py "python fixed.py$exit0"
     )}
     @{ Name="python/05_resource_cleanup"; Expected="python/scenarios/05_resource_cleanup/output.txt"; Steps=@(
-        S "python/scenarios/05_resource_cleanup" $py "python broken.py"
-        S "python/scenarios/05_resource_cleanup" $py "python fixed.py"
+        S "python/scenarios/05_resource_cleanup" $py "python broken.py$exit0"
+        S "python/scenarios/05_resource_cleanup" $py "python fixed.py$exit0"
     )}
     @{ Name="python/08_untrusted_json"; Expected="python/scenarios/08_untrusted_json/output.txt"; Steps=@(
-        S "python/scenarios/08_untrusted_json" $py "python broken.py" $true
-        S "python/scenarios/08_untrusted_json" $py "python fixed.py" $true
+        S "python/scenarios/08_untrusted_json" $py "python broken.py$exit0" $true
+        S "python/scenarios/08_untrusted_json" $py "python fixed.py$exit0" $true
     )}
     @{ Name="python/footgun_mutable_default"; Expected="python/scenarios/footgun_mutable_default/output.txt"; Steps=@(
-        S "python/scenarios/footgun_mutable_default" $py "python broken.py"
-        S "python/scenarios/footgun_mutable_default" $py "python fixed.py"
+        S "python/scenarios/footgun_mutable_default" $py "python broken.py$exit0"
+        S "python/scenarios/footgun_mutable_default" $py "python fixed.py$exit0"
     )}
 
     # --- Go ---
     @{ Name="go/01_absent_null"; Expected="go/scenarios/01_absent_null/output.txt"; Steps=@(
-        S "go/scenarios/01_absent_null" $go "go run broken.go"
-        S "go/scenarios/01_absent_null" $go "go run fixed.go"
+        S "go/scenarios/01_absent_null" $go "go run broken.go$exit0"
+        S "go/scenarios/01_absent_null" $go "go run fixed.go$exit0"
     )}
     @{ Name="go/03_integer_overflow"; Expected="go/scenarios/03_integer_overflow/output.txt"; Steps=@(
-        S "go/scenarios/03_integer_overflow" $go "go run broken.go"
-        S "go/scenarios/03_integer_overflow" $go "go run fixed.go"
+        S "go/scenarios/03_integer_overflow" $go "go run broken.go$exit0"
+        S "go/scenarios/03_integer_overflow" $go "go run fixed.go$exit0"
     )}
     @{ Name="go/04_ignored_errors"; Expected="go/scenarios/04_ignored_errors/output.txt"; Steps=@(
-        S "go/scenarios/04_ignored_errors" $go "go run broken.go"
-        S "go/scenarios/04_ignored_errors" $go "go run fixed.go"
+        S "go/scenarios/04_ignored_errors" $go "go run broken.go$exit0"
+        S "go/scenarios/04_ignored_errors" $go "go run fixed.go$exit0"
     )}
     @{ Name="go/05_resource_cleanup"; Expected="go/scenarios/05_resource_cleanup/output.txt"; Steps=@(
-        S "go/scenarios/05_resource_cleanup" $go "go run broken.go"
-        S "go/scenarios/05_resource_cleanup" $go "go run fixed.go"
+        S "go/scenarios/05_resource_cleanup" $go "go run broken.go$exit0"
+        S "go/scenarios/05_resource_cleanup" $go "go run fixed.go$exit0"
     )}
     @{ Name="go/08_untrusted_json"; Expected="go/scenarios/08_untrusted_json/output.txt"; Steps=@(
-        S "go/scenarios/08_untrusted_json" $go "go run broken.go" $true
-        S "go/scenarios/08_untrusted_json" $go "go run fixed.go" $true
+        S "go/scenarios/08_untrusted_json" $go "go run broken.go$exit0" $true
+        S "go/scenarios/08_untrusted_json" $go "go run fixed.go$exit0" $true
     )}
     @{ Name="go/footgun_nil_interface"; Expected="go/scenarios/footgun_nil_interface/output.txt"; Steps=@(
-        S "go/scenarios/footgun_nil_interface" $go "go run broken.go"
-        S "go/scenarios/footgun_nil_interface" $go "go run fixed.go"
+        S "go/scenarios/footgun_nil_interface" $go "go run broken.go$exit0"
+        S "go/scenarios/footgun_nil_interface" $go "go run fixed.go$exit0"
     )}
 
-    # --- TypeScript (primary runs only; tsc checks are separate, see check-all.sh) ---
+    # --- TypeScript (node runs only here; tsc checks are a property scenario below) ---
     @{ Name="typescript/01_absent_null"; Expected="typescript/scenarios/01_absent_null/output.txt"; Steps=@(
-        S "typescript/scenarios/01_absent_null" $node "node broken.ts"
-        S "typescript/scenarios/01_absent_null" $node "node fixed.ts"
+        S "typescript/scenarios/01_absent_null" $node "node broken.ts$exit0"
+        S "typescript/scenarios/01_absent_null" $node "node fixed.ts$exit0"
     )}
     @{ Name="typescript/03_integer_overflow"; Expected="typescript/scenarios/03_integer_overflow/output.txt"; Steps=@(
-        S "typescript/scenarios/03_integer_overflow" $node "node demo.ts"
+        S "typescript/scenarios/03_integer_overflow" $node "node demo.ts$exit0"
     )}
     @{ Name="typescript/05_resource_cleanup"; Expected="typescript/scenarios/05_resource_cleanup/output.txt"; Steps=@(
-        S "typescript/scenarios/05_resource_cleanup" $node "node broken.ts"
-        S "typescript/scenarios/05_resource_cleanup" $node "node fixed.ts"
+        S "typescript/scenarios/05_resource_cleanup" $node "node broken.ts$exit0"
+        S "typescript/scenarios/05_resource_cleanup" $node "node fixed.ts$exit0"
     )}
     @{ Name="typescript/08_untrusted_json"; Expected="typescript/scenarios/08_untrusted_json/output.txt"; Steps=@(
         S "typescript/scenarios/08_untrusted_json" $node "node broken.ts" $true
         S "typescript/scenarios/08_untrusted_json" $node "node fixed.ts" $true
     )}
 
-    # --- C baseline ---
-    # NOTE: broken.c's exact "Segmentation fault (core dumped)" message text is a
-    # bash job-control artifact that depends on whether bash forks or execs for
-    # the dying process -- not reliably reproducible byte-for-byte via scripting.
-    # The substance (SIGSEGV, exit 139) reproduces every time; this scenario is
-    # intentionally excluded from the strict line-match and spot-checked by eye.
-    @{ Name="c/01-absent-null"; Expected="c/scenarios/01-absent-null/output.txt"; SkipReason="segfault message text is a bash job-control artifact, not byte-reproducible"; Steps=@(
-        S "c/scenarios/01-absent-null" $gcc "gcc -O0 -g -Wall broken.c -o broken && ./broken; echo done"
-        S "c/scenarios/01-absent-null" $gcc "gcc -O0 -g -Wall fixed.c -o fixed && ./fixed"
+    # --- C baseline: every scenario compiles and runs broken/fixed as four
+    #     separate "$ " prompts; only the two "run" steps get an EXIT: line,
+    #     matching the committed transcripts exactly ---
+    @{ Name="c/01-absent-null"; Expected="c/scenarios/01-absent-null/output.txt"; Steps=@(
+        S "c/scenarios/01-absent-null" $gcc "gcc -O0 -g -Wall broken.c -o broken"
+        S "c/scenarios/01-absent-null" $gcc "./broken$exit0"
+        S "c/scenarios/01-absent-null" $gcc "gcc -O0 -g -Wall fixed.c -o fixed"
+        S "c/scenarios/01-absent-null" $gcc "./fixed$exit0"
     )}
     @{ Name="c/03-integer-overflow"; Expected="c/scenarios/03-integer-overflow/output.txt"; Steps=@(
-        S "c/scenarios/03-integer-overflow" $gcc "gcc -O0 -g -Wall broken.c -o broken && ./broken"
-        S "c/scenarios/03-integer-overflow" $gcc "gcc -O0 -g -Wall fixed.c -o fixed && ./fixed"
+        S "c/scenarios/03-integer-overflow" $gcc "gcc -O0 -g -Wall broken.c -o broken"
+        S "c/scenarios/03-integer-overflow" $gcc "./broken$exit0"
+        S "c/scenarios/03-integer-overflow" $gcc "gcc -O0 -g -Wall fixed.c -o fixed"
+        S "c/scenarios/03-integer-overflow" $gcc "./fixed$exit0"
     )}
-    @{ Name="c/04-ignored-errors"; Expected="c/scenarios/04-ignored-errors/output.txt"; SkipReason="segfault message text is a bash job-control artifact, not byte-reproducible"; Steps=@(
-        S "c/scenarios/04-ignored-errors" $gcc "gcc -O0 -g -Wall broken.c -o broken && ./broken; echo done"
-        S "c/scenarios/04-ignored-errors" $gcc "gcc -O0 -g -Wall fixed.c -o fixed && ./fixed"
+    @{ Name="c/04-ignored-errors"; Expected="c/scenarios/04-ignored-errors/output.txt"; Steps=@(
+        S "c/scenarios/04-ignored-errors" $gcc "gcc -O0 -g -Wall broken.c -o broken"
+        S "c/scenarios/04-ignored-errors" $gcc "./broken$exit0"
+        S "c/scenarios/04-ignored-errors" $gcc "gcc -O0 -g -Wall fixed.c -o fixed"
+        S "c/scenarios/04-ignored-errors" $gcc "./fixed$exit0"
     )}
 
-    # --- Rust (single-file scenarios only; 07/08 are full Cargo projects, see README) ---
+    # --- Rust (single-file scenarios; 07/08 and compile-reject are property scenarios below) ---
     @{ Name="rust/01_absent_null"; Expected="rust/scenarios/01_absent_null/output.txt"; Steps=@(
-        S "rust/scenarios/01_absent_null" $rs "rustc -O broken.rs -o broken && ./broken; true"
-        S "rust/scenarios/01_absent_null" $rs "rustc -O fixed.rs -o fixed && ./fixed"
+        S "rust/scenarios/01_absent_null" $rs "rustc -O broken.rs -o broken && ./broken$exit0"
+        S "rust/scenarios/01_absent_null" $rs "rustc -O fixed.rs -o fixed && ./fixed$exit0"
     )}
     @{ Name="rust/04_ignored_errors"; Expected="rust/scenarios/04_ignored_errors/output.txt"; Steps=@(
-        S "rust/scenarios/04_ignored_errors" $rs "rustc -O broken.rs -o broken && ./broken"
-        S "rust/scenarios/04_ignored_errors" $rs "rustc -O fixed.rs -o fixed && ./fixed"
+        S "rust/scenarios/04_ignored_errors" $rs "rustc -O broken.rs -o broken && ./broken$exit0"
+        S "rust/scenarios/04_ignored_errors" $rs "rustc -O fixed.rs -o fixed && ./fixed$exit0"
     )}
     @{ Name="rust/05_resource_cleanup"; Expected="rust/scenarios/05_resource_cleanup/output.txt"; Steps=@(
-        S "rust/scenarios/05_resource_cleanup" $rs "rustc -O broken.rs -o broken && ./broken"
-        S "rust/scenarios/05_resource_cleanup" $rs "rustc -O fixed.rs -o fixed && ./fixed"
+        S "rust/scenarios/05_resource_cleanup" $rs "rustc -O broken.rs -o broken && ./broken$exit0"
+        S "rust/scenarios/05_resource_cleanup" $rs "rustc -O fixed.rs -o fixed && ./fixed$exit0"
     )}
 
-    # --- Kotlin (single-file scenarios only; 07/08 need the fetched jars, see README) ---
+    # --- Kotlin (single-file scenarios; 07/08 are property scenarios below) ---
     @{ Name="kotlin/01_absent_null"; Expected="kotlin/scenarios/01_absent_null/output.txt"; Steps=@(
-        S "kotlin/scenarios/01_absent_null" $kt "kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar; true"
-        S "kotlin/scenarios/01_absent_null" $kt "kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar"
+        S "kotlin/scenarios/01_absent_null" $kt "kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar$exit0"
+        S "kotlin/scenarios/01_absent_null" $kt "kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar$exit0"
     )}
     @{ Name="kotlin/03_integer_overflow"; Expected="kotlin/scenarios/03_integer_overflow/output.txt"; Steps=@(
-        S "kotlin/scenarios/03_integer_overflow" $kt "kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar"
-        S "kotlin/scenarios/03_integer_overflow" $kt "kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar"
+        S "kotlin/scenarios/03_integer_overflow" $kt "kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar$exit0"
+        S "kotlin/scenarios/03_integer_overflow" $kt "kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar$exit0"
     )}
     @{ Name="kotlin/04_ignored_errors"; Expected="kotlin/scenarios/04_ignored_errors/output.txt"; Steps=@(
-        S "kotlin/scenarios/04_ignored_errors" $kt "kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar"
-        S "kotlin/scenarios/04_ignored_errors" $kt "kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar"
+        S "kotlin/scenarios/04_ignored_errors" $kt "kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar$exit0"
+        S "kotlin/scenarios/04_ignored_errors" $kt "kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar$exit0"
     )}
     @{ Name="kotlin/05_resource_cleanup"; Expected="kotlin/scenarios/05_resource_cleanup/output.txt"; Steps=@(
-        S "kotlin/scenarios/05_resource_cleanup" $kt "kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar"
-        S "kotlin/scenarios/05_resource_cleanup" $kt "kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar"
+        S "kotlin/scenarios/05_resource_cleanup" $kt "kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar$exit0"
+        S "kotlin/scenarios/05_resource_cleanup" $kt "kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar$exit0"
     )}
     @{ Name="kotlin/footgun_platform_types"; Expected="kotlin/scenarios/footgun_platform_types/output.txt"; Steps=@(
-        S "kotlin/scenarios/footgun_platform_types" $kt "kotlinc Broken.kt -include-runtime -d broken.jar; java -jar broken.jar; true"
-        S "kotlin/scenarios/footgun_platform_types" $kt "kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar"
+        S "kotlin/scenarios/footgun_platform_types" $kt "kotlinc Broken.kt -include-runtime -d broken.jar"
+        S "kotlin/scenarios/footgun_platform_types" $kt "java -jar broken.jar$exit0"
+        S "kotlin/scenarios/footgun_platform_types" $kt "kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar$exit0"
     )}
 
-    # --- C# (dotnet run per broken/fixed subfolder; Debug config, matches the
-    #     primary captured output -- Release-config evidence for scenario 7 is
-    #     a separate documented comparison, not re-checked here) ---
+    # --- C# (03/05 never show an EXIT: line at all; 01/footgun_async_void do, after each step) ---
     @{ Name="csharp/01_absent_null"; Expected="csharp/scenarios/01_absent_null/output.txt"; Steps=@(
-        S "csharp/scenarios/01_absent_null/broken" $cs "rm -rf bin obj && dotnet run; true"
-        S "csharp/scenarios/01_absent_null/fixed" $cs "rm -rf bin obj && dotnet run"
-        S "csharp/scenarios/01_absent_null/indexer_demo" $cs "rm -rf bin obj && dotnet run"
+        S "csharp/scenarios/01_absent_null/broken" $cs "rm -rf bin obj && dotnet run$exit0" "" "dotnet run   (broken/)"
+        S "csharp/scenarios/01_absent_null/fixed" $cs "rm -rf bin obj && dotnet run$exit0" "" "dotnet run   (fixed/)"
+        S "csharp/scenarios/01_absent_null/indexer_demo" $cs "rm -rf bin obj && dotnet run" "" "dotnet run   (indexer_demo/ -- Dictionary indexer vs TryGetValue)"
     )}
     @{ Name="csharp/03_integer_overflow"; Expected="csharp/scenarios/03_integer_overflow/output.txt"; Steps=@(
-        S "csharp/scenarios/03_integer_overflow/broken" $cs "rm -rf bin obj && dotnet run"
-        S "csharp/scenarios/03_integer_overflow/fixed" $cs "rm -rf bin obj && dotnet run"
-        S "csharp/scenarios/03_integer_overflow/checked_project" $cs "rm -rf bin obj && dotnet run"
+        S "csharp/scenarios/03_integer_overflow/broken" $cs "rm -rf bin obj && dotnet run" "" "dotnet run   (broken/ -- default unchecked context)"
+        S "csharp/scenarios/03_integer_overflow/fixed" $cs "rm -rf bin obj && dotnet run" "" 'dotnet run   (fixed/ -- explicit `checked(...)`)'
+        S "csharp/scenarios/03_integer_overflow/checked_project" $cs "rm -rf bin obj && dotnet run" "" 'dotnet run   (checked_project/ -- same plain code, project-level <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>, no `checked` keyword in source)'
     )}
     @{ Name="csharp/05_resource_cleanup"; Expected="csharp/scenarios/05_resource_cleanup/output.txt"; Steps=@(
-        S "csharp/scenarios/05_resource_cleanup/broken" $cs "rm -rf bin obj && dotnet run"
-        S "csharp/scenarios/05_resource_cleanup/fixed" $cs "rm -rf bin obj && dotnet run"
+        S "csharp/scenarios/05_resource_cleanup/broken" $cs "rm -rf bin obj && dotnet run" "" "dotnet run   (broken/)"
+        S "csharp/scenarios/05_resource_cleanup/fixed" $cs "rm -rf bin obj && dotnet run" "" "dotnet run   (fixed/)"
     )}
     @{ Name="csharp/footgun_async_void"; Expected="csharp/scenarios/footgun_async_void/output.txt"; Steps=@(
-        S "csharp/scenarios/footgun_async_void/broken" $cs "rm -rf bin obj && dotnet run; true"
-        S "csharp/scenarios/footgun_async_void/fixed" $cs "rm -rf bin obj && dotnet run"
+        S "csharp/scenarios/footgun_async_void/broken" $cs "rm -rf bin obj && dotnet run$exit0" "" "dotnet run   (broken/)"
+        S "csharp/scenarios/footgun_async_void/fixed" $cs "rm -rf bin obj && dotnet run$exit0" "" "dotnet run   (fixed/)"
     )}
 )
 
 $results = @()
-foreach ($s in $scenarios) {
-    $expectedFile = Join-Path $root $s.Expected
-    if (-not (Test-Path $expectedFile)) {
-        Write-Host "SKIP (no output.txt): $($s.Name)" -ForegroundColor Yellow
-        continue
+if (-not $Update) {
+    foreach ($s in $scenarios) {
+        $expectedFile = Join-Path $root $s.Expected
+        if (-not (Test-Path $expectedFile)) {
+            Write-Host "SKIP (no output.txt): $($s.Name)" -ForegroundColor Yellow
+            continue
+        }
+        $ok = Test-Scenario -name $s.Name -steps $s.Steps -expectedFile $expectedFile
+        $results += @{ Name = $s.Name; Pass = $ok }
     }
-    $skipPattern = if ($s.SkipReason) { 'Segmentation fault' } else { $null }
-    $ok = Test-Scenario -name $s.Name -steps $s.Steps -expectedFile $expectedFile -skipLinePattern $skipPattern
-    if ($s.SkipReason) { Write-Host "  (known gap, not required: $($s.SkipReason))" -ForegroundColor DarkYellow }
-    $results += @{ Name = $s.Name; Pass = $ok }
+}
+
+# ============================================================================
+# --update mode: regenerate specific output.txt files from a real run.
+# Every file here was hand-edited after its original capture at some point;
+# this replaces that edit with the real, current, verbatim output.
+# ============================================================================
+$updateTargets = @(
+    @{ Name="python/01_absent_null"; Scenario=($scenarios | Where-Object { $_.Name -eq "python/01_absent_null" }) }
+    @{ Name="python/08_untrusted_json"; Scenario=($scenarios | Where-Object { $_.Name -eq "python/08_untrusted_json" }) }
+    @{ Name="kotlin/01_absent_null"; Scenario=($scenarios | Where-Object { $_.Name -eq "kotlin/01_absent_null" }) }
+    @{ Name="kotlin/footgun_platform_types"; Scenario=($scenarios | Where-Object { $_.Name -eq "kotlin/footgun_platform_types" }) }
+    @{ Name="rust/04_ignored_errors"; Scenario=($scenarios | Where-Object { $_.Name -eq "rust/04_ignored_errors" }) }
+)
+
+if ($Update) {
+    foreach ($t in $updateTargets) {
+        $s = $t.Scenario
+        if (-not $s) { Write-Host "SKIP (not found in table): $($t.Name)" -ForegroundColor Yellow; continue }
+        $expectedFile = Join-Path $root $s.Expected
+        $existing = Get-Content -Raw $expectedFile
+        $toolchainLines = ($existing -split "`n") | Where-Object { $_ -match '^(Toolchain|Interpreter|SDK|Runtime|Compiler|Type checker):' }
+        $actual = Run-Steps $s.Steps
+        $newContent = $actual.TrimEnd() + "`n"
+        if ($toolchainLines.Count -gt 0) {
+            $newContent += "`n" + ($toolchainLines -join "`n") + "`n"
+        }
+        Set-Content -Path $expectedFile -Value $newContent -NoNewline
+        Write-Host "UPDATED: $($s.Expected)" -ForegroundColor Cyan
+    }
+    Pop-Location
+    Write-Host "`n--update complete. Review the diffs (git diff) before committing -- this does not auto-commit." -ForegroundColor Cyan
+    exit 0
+}
+
+# ============================================================================
+# Property scenarios
+# ============================================================================
+Write-Host "`n--- Property scenarios ---" -ForegroundColor Cyan
+
+# -- Data races: broken total < expected, fixed total == expected --
+function Test-Race($name, $dir, $image, $brokenCmd, $fixedCmd, $expected, $net) {
+    Test-Property $name {
+        $networkArgs = @()
+        if ($net) { $networkArgs = @("--network", $network) }
+        $hostDir = Join-Path $root $dir
+        $brokenOut = docker run --rm @networkArgs -v "${hostDir}:/src" -w /src $image bash -c $brokenCmd 2>&1 | Out-String
+        $fixedOut = docker run --rm @networkArgs -v "${hostDir}:/src" -w /src $image bash -c $fixedCmd 2>&1 | Out-String
+        $brokenMatch = [regex]::Match($brokenOut, 'counter\s*=\s*(\d+)')
+        $fixedMatch = [regex]::Match($fixedOut, 'counter\s*=\s*(\d+)')
+        if (-not $brokenMatch.Success -or -not $fixedMatch.Success) { return "could not parse counter from output" }
+        $brokenVal = [int]$brokenMatch.Groups[1].Value
+        $fixedVal = [int]$fixedMatch.Groups[1].Value
+        if ($fixedVal -ne $expected) { return "fixed total was $fixedVal, expected exactly $expected" }
+        if ($brokenVal -ge $expected) { return "broken total was $brokenVal, expected LESS than $expected (race didn't lose any updates this run)" }
+        return $true
+    }
+}
+$goRaceCountResult = Test-Race "property: go/02_data_race (broken<400000, fixed=400000)" "go/scenarios/02_data_race" $go "go run broken.go" "go run fixed.go" 400000 $false
+# Go's race detector also prints a WARNING -- check it directly rather than just the count.
+$goRaceResults = Test-Property "property: go/02_data_race -race detector reports DATA RACE" {
+    $hostDir = Join-Path $root "go/scenarios/02_data_race"
+    $out = docker run --rm -v "${hostDir}:/src" -w /src $go bash -c "go run -race broken.go" 2>&1 | Out-String
+    if ($out -match "WARNING: DATA RACE") { return $true }
+    return "no 'WARNING: DATA RACE' in -race output"
+}
+
+# C#'s scenario 2 needs both broken/ and fixed/ subfolders, not a single dir --
+# redo it directly instead of forcing it through Test-Race's single-dir shape.
+$csharpRaceResult = Test-Property "property: csharp/02_data_race (broken<400000, fixed=400000)" {
+    $brokenDir = Join-Path $root "csharp/scenarios/02_data_race/broken"
+    $fixedDir = Join-Path $root "csharp/scenarios/02_data_race/fixed"
+    $brokenOut = docker run --rm -v "${brokenDir}:/src" -w /src $cs bash -c "rm -rf bin obj && dotnet run" 2>&1 | Out-String
+    $fixedOut = docker run --rm -v "${fixedDir}:/src" -w /src $cs bash -c "rm -rf bin obj && dotnet run" 2>&1 | Out-String
+    $brokenVal = [int]([regex]::Match($brokenOut, 'counter\s*=\s*(\d+)').Groups[1].Value)
+    $fixedVal = [int]([regex]::Match($fixedOut, 'counter\s*=\s*(\d+)').Groups[1].Value)
+    if ($fixedVal -ne 400000) { return "fixed total was $fixedVal, expected exactly 400000" }
+    if ($brokenVal -ge 400000) { return "broken total was $brokenVal, expected less than 400000" }
+    return $true
+}
+
+# TypeScript and Python and Kotlin and Rust scenario 2 races, similarly:
+$tsRaceResult = Test-Property "property: typescript/02_data_race (broken<400000, fixed=400000)" {
+    $hostDir = Join-Path $root "typescript/scenarios/02_data_race"
+    $brokenOut = docker run --rm -v "${hostDir}:/src" -w /src $node bash -c "node broken.ts" 2>&1 | Out-String
+    $fixedOut = docker run --rm -v "${hostDir}:/src" -w /src $node bash -c "node fixed.ts" 2>&1 | Out-String
+    $brokenVal = [int]([regex]::Match($brokenOut, 'counter\s*=\s*(\d+)').Groups[1].Value)
+    $fixedVal = [int]([regex]::Match($fixedOut, 'counter\s*=\s*(\d+)').Groups[1].Value)
+    if ($fixedVal -ne 400000) { return "fixed total was $fixedVal, expected exactly 400000" }
+    if ($brokenVal -ge 400000) { return "broken total was $brokenVal, expected less than 400000" }
+    return $true
+}
+$ktRaceResult = Test-Property "property: kotlin/02_data_race (broken<400000, fixed=400000)" {
+    $hostDir = Join-Path $root "kotlin/scenarios/02_data_race"
+    $brokenOut = docker run --rm -v "${hostDir}:/src" -w /src $kt bash -c "kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar" 2>&1 | Out-String
+    $fixedOut = docker run --rm -v "${hostDir}:/src" -w /src $kt bash -c "kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar" 2>&1 | Out-String
+    $brokenVal = [int]([regex]::Match($brokenOut, 'counter\s*=\s*(\d+)').Groups[1].Value)
+    $fixedVal = [int]([regex]::Match($fixedOut, 'counter\s*=\s*(\d+)').Groups[1].Value)
+    if ($fixedVal -ne 400000) { return "fixed total was $fixedVal, expected exactly 400000" }
+    if ($brokenVal -ge 400000) { return "broken total was $brokenVal, expected less than 400000" }
+    return $true
+}
+$pyRaceResult = Test-Property "property: python/02_data_race (broken<400, fixed=400)" {
+    $hostDir = Join-Path $root "python/scenarios/02_data_race"
+    $brokenOut = docker run --rm -v "${hostDir}:/src" -w /src $py bash -c "python broken.py" 2>&1 | Out-String
+    $fixedOut = docker run --rm -v "${hostDir}:/src" -w /src $py bash -c "python fixed.py" 2>&1 | Out-String
+    $brokenVal = [int]([regex]::Match($brokenOut, 'counter\s*=\s*(\d+)').Groups[1].Value)
+    $fixedVal = [int]([regex]::Match($fixedOut, 'counter\s*=\s*(\d+)').Groups[1].Value)
+    if ($fixedVal -ne 400) { return "fixed total was $fixedVal, expected exactly 400" }
+    if ($brokenVal -ge 400) { return "broken total was $brokenVal, expected less than 400 (this race is known to need the induced delay already in the source -- see NOTES.md)" }
+    return $true
+}
+$rsRaceResult = Test-Property "property: rust/02_data_race (broken<400 [reduced-iteration demo], fixed=400000 [full-iteration Arc<Mutex<_>>])" {
+    # NOTE: broken.rs and fixed.rs intentionally use DIFFERENT iteration counts --
+    # broken.rs was reduced to 200/thread (400 total) specifically to make the
+    # race reliable with an induced yield; fixed.rs was never changed from the
+    # original 200,000/thread (400,000 total). This asymmetry is real, not a bug
+    # -- see NOTES.md.
+    $hostDir = Join-Path $root "rust/scenarios/02_data_race"
+    $brokenOut = docker run --rm -v "${hostDir}:/src" -w /src $rs bash -c "rustc -O broken.rs -o broken 2>/dev/null; ./broken" 2>&1 | Out-String
+    $fixedOut = docker run --rm -v "${hostDir}:/src" -w /src $rs bash -c "rustc -O fixed.rs -o fixed 2>/dev/null && ./fixed" 2>&1 | Out-String
+    $brokenVal = [int]([regex]::Match($brokenOut, 'counter\s*=\s*(\d+)').Groups[1].Value)
+    $fixedVal = [int]([regex]::Match($fixedOut, 'counter\s*=\s*(\d+)').Groups[1].Value)
+    if ($fixedVal -ne 400000) { return "fixed total was $fixedVal, expected exactly 400000" }
+    if ($brokenVal -ge 400) { return "broken total was $brokenVal, expected less than 400" }
+    return $true
+}
+
+# -- Scenario 6: all six CLIs exit 1 and cancel near the configured timeout --
+$scenario6Results = @()
+docker compose up -d mockserver 2>&1 | Out-Null
+foreach ($lang in @("python", "go", "rust", "typescript", "kotlin", "csharp")) {
+    $scenario6Results += Test-Property "property: scenario6/$lang (exit 1, wall time near 2s timeout)" {
+        $sw = [Diagnostics.Stopwatch]::StartNew()
+        docker compose run --rm $lang --top 5 --concurrency 1 --timeout 2 /data/urls-hang.txt 2>&1 | Out-Null
+        $code = $LASTEXITCODE
+        $sw.Stop()
+        if ($code -ne 1) { return "exit code was $code, expected 1" }
+        if ($sw.Elapsed.TotalSeconds -lt 1.5 -or $sw.Elapsed.TotalSeconds -gt 6) { return "wall time was $($sw.Elapsed.TotalSeconds)s, expected roughly 2-4s (2s timeout plus overhead)" }
+        return $true
+    }
+}
+
+# -- Scenario 7: single-threaded broken = 0 ticks, offloaded = >0 ticks, correct result --
+$expectedResult = "3464101606477.5415"
+function Test-Scenario7($name, $dir, $image, $brokenCmd, $fixedCmd, $net) {
+    Test-Property $name {
+        $networkArgs = @()
+        if ($net) { $networkArgs = @("--network", $network) }
+        $hostDir = Join-Path $root $dir
+        $brokenOut = docker run --rm @networkArgs -v "${hostDir}:/src" -w /src $image bash -c $brokenCmd 2>&1 | Out-String
+        $fixedOut = docker run --rm @networkArgs -v "${hostDir}:/src" -w /src $image bash -c $fixedCmd 2>&1 | Out-String
+        $brokenTicks = [int]([regex]::Match($brokenOut, 'ticks seen:\s*(\d+)').Groups[1].Value)
+        $fixedTicks = [int]([regex]::Match($fixedOut, 'ticks seen:\s*(\d+)').Groups[1].Value)
+        if ($brokenTicks -ne 0) { return "broken (single-threaded) ticks was $brokenTicks, expected exactly 0" }
+        if ($fixedTicks -le 0) { return "fixed (offloaded) ticks was $fixedTicks, expected more than 0" }
+        if ($brokenOut -notmatch [regex]::Escape($expectedResult) -or $fixedOut -notmatch [regex]::Escape($expectedResult)) {
+            return "result value did not match the expected deterministic constant $expectedResult"
+        }
+        return $true
+    }
+}
+$scenario7Results = @(
+    Test-Scenario7 "property: typescript/07_cpu_heavy_blocking (0 vs >0 ticks)" "typescript/scenarios/07_cpu_heavy_blocking" $node "node broken.ts" "node fixed.ts" $false
+    Test-Scenario7 "property: python/07_cpu_heavy_blocking (0 vs >0 ticks)" "python/scenarios/07_cpu_heavy_blocking" $py "python broken.py" "python fixed.py" $false
+)
+$ktScenario7Result = Test-Property "property: kotlin/07_cpu_heavy_blocking (single-thread=0, Dispatchers.Default>0)" {
+    $hostDir = Join-Path $root "kotlin/scenarios/07_cpu_heavy_blocking"
+    $coroutinesJar = "coroutines.jar"
+    $singleOut = docker run --rm -v "${hostDir}:/src" -w /src $kt bash -c "kotlinc -cp $coroutinesJar SingleThreadBroken.kt -include-runtime -d single.jar && java -cp single.jar:$coroutinesJar SingleThreadBrokenKt" 2>&1 | Out-String
+    $defaultOut = docker run --rm -v "${hostDir}:/src" -w /src $kt bash -c "kotlinc -cp $coroutinesJar DefaultDispatcherBroken.kt -include-runtime -d default.jar && java -cp default.jar:$coroutinesJar DefaultDispatcherBrokenKt" 2>&1 | Out-String
+    $singleTicks = [int]([regex]::Match($singleOut, 'ticks seen:\s*(\d+)').Groups[1].Value)
+    $defaultTicks = [int]([regex]::Match($defaultOut, 'ticks seen:\s*(\d+)').Groups[1].Value)
+    if ($singleTicks -ne 0) { return "single-threaded ticks was $singleTicks, expected exactly 0" }
+    if ($defaultTicks -le 0) { return "Dispatchers.Default ticks was $defaultTicks, expected more than 0" }
+    return $true
+}
+$rsScenario7Result = Test-Property "property: rust/07_cpu_heavy_blocking (current_thread=0, multi_thread>0)" {
+    $hostDir = Join-Path $root "rust/scenarios/07_cpu_heavy_blocking"
+    docker run --rm -v "${hostDir}:/src" -w /src $rs bash -c "cargo build --release 2>&1" | Out-Null
+    $currentOut = docker run --rm -v "${hostDir}:/src" -w /src $rs bash -c "./target/release/current_thread_broken" 2>&1 | Out-String
+    $multiOut = docker run --rm -v "${hostDir}:/src" -w /src $rs bash -c "./target/release/multi_thread_broken" 2>&1 | Out-String
+    $currentTicks = [int]([regex]::Match($currentOut, 'ticks seen:\s*(\d+)').Groups[1].Value)
+    $multiTicks = [int]([regex]::Match($multiOut, 'ticks seen:\s*(\d+)').Groups[1].Value)
+    if ($currentTicks -ne 0) { return "current_thread runtime ticks was $currentTicks, expected exactly 0" }
+    if ($multiTicks -le 0) { return "multi_thread runtime ticks was $multiTicks, expected more than 0 (NOTE: this machine's spare worker threads can make this pass even without the fix -- see NOTES.md)" }
+    return $true
+}
+
+# -- Rust compile_reject files: expect specific error codes, nonzero exit --
+$compileRejectResult = Test-Property "property: rust/02_data_race compile_reject files (E0373/E0499 and E0277)" {
+    $hostDir = Join-Path $root "rust/scenarios/02_data_race"
+    $out1 = docker run --rm -v "${hostDir}:/src" -w /src $rs bash -c "rustc compile_reject_plain_mut.rs -o out1" 2>&1 | Out-String
+    $out2 = docker run --rm -v "${hostDir}:/src" -w /src $rs bash -c "rustc compile_reject_rc.rs -o out2" 2>&1 | Out-String
+    if ($out1 -notmatch "E0499" -and $out1 -notmatch "E0373") { return "compile_reject_plain_mut.rs did not report E0373/E0499" }
+    if ($out2 -notmatch "E0277") { return "compile_reject_rc.rs did not report E0277" }
+    return $true
+}
+
+# -- TypeScript tsc checks: every file must type-check with zero errors --
+$tscResult = Test-Property "property: typescript tsc --noEmit (all scenario files, zero errors)" {
+    $hostDir = Join-Path $root "typescript/scenarios"
+    $out = docker run --rm -v "${hostDir}:/src" -w /src $node bash check-all.sh 2>&1 | Out-String
+    if ($out -match "error TS") { return "tsc reported at least one TS error -- see captured output for which file" }
+    $exitCount = ([regex]::Matches($out, "EXIT:0")).Count
+    if ($exitCount -lt 15) { return "expected 15 'EXIT:0' markers (one per checked file), found $exitCount" }
+    return $true
+}
+
+# -- C AddressSanitizer run: leak detected in broken, exit reflects the leak --
+$asanResult = Test-Property "property: c/05_resource_cleanup ASan leak detector" {
+    $hostDir = Join-Path $root "c/scenarios/05-resource-cleanup"
+    $out = docker run --rm -v "${hostDir}:/src" -w /src $gcc bash -c "gcc -O0 -g -fsanitize=address broken.c -o broken_asan && ./broken_asan; echo EXIT:`$?" 2>&1 | Out-String
+    if ($out -notmatch "LeakSanitizer: detected memory leaks") { return "ASan did not report a detected leak" }
+    if ($out -notmatch "EXIT:1") { return "expected ASan's nonzero exit code (1) on leak detection" }
+    return $true
 }
 
 Pop-Location
 
 $failed = $results | Where-Object { -not $_.Pass }
+$propertyResults = @($goRaceCountResult, $goRaceResults, $csharpRaceResult, $tsRaceResult, $ktRaceResult, $pyRaceResult, $rsRaceResult) +
+    $scenario6Results + $scenario7Results + @($ktScenario7Result, $rsScenario7Result, $compileRejectResult, $tscResult, $asanResult)
+$propertyFailCount = ($propertyResults | Where-Object { $_ -eq $false }).Count
+
 Write-Host ""
-Write-Host "$($results.Count - $failed.Count)/$($results.Count) scenarios reproduced." -ForegroundColor Cyan
+Write-Host "$($results.Count - $failed.Count)/$($results.Count) output-diff scenarios reproduced." -ForegroundColor Cyan
+Write-Host "$($propertyResults.Count - $propertyFailCount)/$($propertyResults.Count) property scenarios passed." -ForegroundColor Cyan
 if ($failed.Count -gt 0) {
-    Write-Host "FAILED:" -ForegroundColor Red
+    Write-Host "FAILED (output-diff):" -ForegroundColor Red
     $failed | ForEach-Object { Write-Host "  - $($_.Name)" -ForegroundColor Red }
-    Write-Host "Results written to: $tmpDir"
-    exit 1
-} else {
-    Write-Host "Results written to: $tmpDir"
-    exit 0
 }
+Write-Host "Results written to: $tmpDir"
+if ($failed.Count -gt 0 -or $propertyFailCount -gt 0) { exit 1 } else { exit 0 }

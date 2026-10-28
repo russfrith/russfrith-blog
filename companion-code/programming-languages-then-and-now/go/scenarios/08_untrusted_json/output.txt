@@ -1,9 +1,11 @@
 $ go run broken.go
 http://mockserver:8080/json/missing-field: item={ID:1 Label:widget Count:0} err=<nil>
 http://mockserver:8080/json/wrong-type: item={ID:2 Label:gadget Count:0} err=json: cannot unmarshal string into Go struct field Item.count of type int
+EXIT:0
 
 $ go run fixed.go
 http://mockserver:8080/json/missing-field: count absent (correctly distinguished from zero)
 http://mockserver:8080/json/wrong-type: decode error (correctly caught): json: cannot unmarshal string into Go struct field Item.count of type int
+EXIT:0
 
 Toolchain: go1.26.4 (golang:1.26.4-bookworm)

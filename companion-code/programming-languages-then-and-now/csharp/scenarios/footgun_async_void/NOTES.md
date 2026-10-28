@@ -6,3 +6,6 @@ exception. The surprising part is specifically that a try/catch that looks like
 it should catch this (it's wrapped directly around the call) does nothing at
 all, not that the failure is quiet. `async Task` + `await` lets the exception
 propagate through the try/catch normally.
+
+The broken run's exit code is 134 (SIGABRT, .NET's unhandled-exception process
+exit code), not a plain 1.

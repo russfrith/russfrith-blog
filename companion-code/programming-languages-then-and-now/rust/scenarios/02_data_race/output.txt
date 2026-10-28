@@ -14,7 +14,7 @@ counter = 358 (expected 400)
 EXIT:0
 
 $ rustc -O fixed.rs -o fixed && ./fixed
-counter = 400 (expected 400)
+counter = 400000 (expected 400000)
 EXIT:0
 
 Toolchain: rustc 1.96.1 (rust:1.96.1-slim-bookworm)

@@ -1,4 +1,6 @@
 $ kotlinc Broken.kt -include-runtime -d broken.jar
+
+
 $ java -jar broken.jar
 Exception in thread "main" java.lang.NullPointerException: getProperty(...) must not be null
 	at BrokenKt.main(Broken.kt:12)
