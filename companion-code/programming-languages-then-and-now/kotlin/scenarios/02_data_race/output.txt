@@ -1,0 +1,13 @@
+$ kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar
+counter = 291408 (expected 400000)
+EXIT:0
+
+$ kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar
+counter = 400000 (expected 400000)
+EXIT:0
+
+Toolchain: kotlinc 2.4.0, JVM: Eclipse Temurin 25
+Note: unlike Go, there is no built-in race detector in the standard `kotlinc`/`java`
+toolchain -- the wrong total is visible, but nothing flags it as a race for you.
+This raced reliably on the first run with plain back-to-back `counter++` (no
+artificial delay needed), unlike the Python/Rust tight-loop cases.

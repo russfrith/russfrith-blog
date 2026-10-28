@@ -1,0 +1,23 @@
+$ gcc -O0 -g -Wall broken.c -o broken
+$ ./broken
+EXIT:0   (no crash, no visible symptom -- this is the point: a leak is silent)
+
+$ gcc -O0 -g -Wall fixed.c -o fixed
+$ ./fixed
+EXIT:0
+
+$ gcc -O0 -g -fsanitize=address broken.c -o broken_asan
+$ ./broken_asan
+
+=================================================================
+==12==ERROR: LeakSanitizer: detected memory leaks
+
+Direct leak of 128 byte(s) in 1 object(s) allocated from:
+    #0 0x780f77be435f in malloc (/usr/local/lib64/libasan.so.8+0x12435f)
+    #1 0x000000401187 in main /src/broken.c:8
+    #2 0x780f778f5ca7  (/lib/x86_64-linux-gnu/libc.so.6+0x29ca7)
+
+SUMMARY: AddressSanitizer: 128 byte(s) leaked in 1 allocation(s).
+EXIT:1
+
+Compiler: gcc (GCC) 16.2.0

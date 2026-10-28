@@ -1,0 +1,49 @@
+services:
+  mockserver:
+    build: ./mockserver
+    networks: [wordfreq]
+    expose: ["8080"]
+
+  python:
+    build: ./python
+    networks: [wordfreq]
+    depends_on: [mockserver]
+    volumes:
+      - ./shared:/data:ro
+    entrypoint: ["python", "/app/wordfreq.py"]
+
+  go:
+    build: ./go
+    networks: [wordfreq]
+    depends_on: [mockserver]
+    volumes:
+      - ./shared:/data:ro
+    entrypoint: ["/app/wordfreq"]
+
+  rust:
+    build: ./rust
+    networks: [wordfreq]
+    depends_on: [mockserver]
+    volumes:
+      - ./shared:/data:ro
+    entrypoint: ["/app/wordfreq"]
+
+  typescript:
+    build: ./typescript
+    networks: [wordfreq]
+    depends_on: [mockserver]
+    volumes:
+      - ./shared:/data:ro
+    entrypoint: ["node", "/app/dist/wordfreq.js"]
+
+  kotlin:
+    build: ./kotlin
+    networks: [wordfreq]
+    depends_on: [mockserver]
+    volumes:
+      - ./shared:/data:ro
+    entrypoint: ["java", "-jar", "/app/wordfreq.jar"]
+
+networks:
+  wordfreq:
+    driver: bridge

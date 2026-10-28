@@ -1,0 +1,19 @@
+$ rustc -O broken.rs -o broken && ./broken
+a strong_count = 2
+b strong_count = 2
+end of main -- watch for (missing) "dropping a"/"dropping b" below
+EXIT:0
+
+$ rustc -O fixed.rs -o fixed && ./fixed
+a strong_count = 1
+b strong_count = 1
+end of main -- both should drop below
+dropping b
+dropping a
+EXIT:0
+
+Toolchain: rustc 1.96.1 (rust:1.96.1-slim-bookworm)
+Confirms the prediction exactly: broken.rs prints neither "dropping a" nor "dropping
+b" -- the cycle leaks, both nodes' memory is never freed. This is memory-safe (no
+use-after-free, no double-free) but not leak-free; Rust's guarantee is deterministic
+Drop for values that do get dropped, not leak-freedom for reference cycles.

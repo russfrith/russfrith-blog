@@ -1,0 +1,9 @@
+$ go run broken.go
+count = 0 (no error, no way to tell this from a real zero)
+EXIT:0
+
+$ go run fixed.go
+count absent
+EXIT:0
+
+Toolchain: go1.26.4 (golang:1.26.4-bookworm)

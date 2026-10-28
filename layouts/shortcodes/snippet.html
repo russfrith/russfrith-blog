@@ -1,0 +1,53 @@
+{{- /*
+Includes a region of a file from companion-code/<post-slug>/ as a fenced code
+block, so post snippets are never retyped by hand.
+
+Usage: {{< snippet file="python/wordfreq.py" region="tokenize" >}}
+       {{< snippet file="python/wordfreq.py" >}}  (whole file)
+       {{< snippet file="python/wordfreq.py" lang="python" >}}  (override language)
+
+Fails the build loudly (errorf) if the file or the named region doesn't exist --
+deliberately, so a renamed/moved companion-code file can't silently leave a post
+with a stale or blank snippet.
+*/ -}}
+{{- $file := .Get "file" -}}
+{{- $region := .Get "region" -}}
+{{- $langOverride := .Get "lang" -}}
+{{- $slug := .Page.File.ContentBaseName -}}
+{{- $relPath := printf "companion-code/%s/%s" $slug $file -}}
+{{- if not (fileExists $relPath) -}}
+  {{- errorf "snippet shortcode: file not found: %s (referenced from %s)" $relPath .Page.File.Path -}}
+{{- end -}}
+{{- $raw := readFile $relPath -}}
+{{- $body := $raw -}}
+{{- if $region -}}
+  {{- $startMarker := printf "region:%s" $region -}}
+  {{- $endMarker := printf "endregion:%s" $region -}}
+  {{- $lines := split $raw "\n" -}}
+  {{- $capturing := false -}}
+  {{- $found := false -}}
+  {{- $out := slice -}}
+  {{- range $lines -}}
+    {{- if in . $startMarker -}}
+      {{- $capturing = true -}}
+      {{- $found = true -}}
+    {{- else if in . $endMarker -}}
+      {{- $capturing = false -}}
+    {{- else if $capturing -}}
+      {{- $out = $out | append . -}}
+    {{- end -}}
+  {{- end -}}
+  {{- if not $found -}}
+    {{- errorf "snippet shortcode: region %q not found in %s (referenced from %s)" $region $relPath .Page.File.Path -}}
+  {{- end -}}
+  {{- $body = delimit $out "\n" -}}
+{{- end -}}
+{{- $lang := $langOverride -}}
+{{- if not $lang -}}
+  {{- $ext := path.Ext $file -}}
+  {{- $extMap := dict ".py" "python" ".go" "go" ".rs" "rust" ".ts" "typescript" ".kt" "kotlin" ".c" "c" ".h" "c" ".sh" "bash" ".ps1" "powershell" ".yml" "yaml" ".yaml" "yaml" ".txt" "text" -}}
+  {{- $lang = or (index $extMap $ext) "text" -}}
+{{- end -}}
+```{{ $lang }}
+{{ $body }}
+```

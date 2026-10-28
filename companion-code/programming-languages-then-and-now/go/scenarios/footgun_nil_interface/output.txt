@@ -1,0 +1,9 @@
+$ go run broken.go
+err == nil: false
+EXIT:0
+
+$ go run fixed.go
+err == nil: true
+EXIT:0
+
+Toolchain: go1.26.4 (golang:1.26.4-bookworm)

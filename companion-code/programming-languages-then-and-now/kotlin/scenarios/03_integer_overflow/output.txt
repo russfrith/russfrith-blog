@@ -1,0 +1,9 @@
+$ kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar
+Int.MAX_VALUE + 1 = -2147483648
+EXIT:0
+
+$ kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar
+overflow detected: integer overflow
+EXIT:0
+
+Toolchain: kotlinc 2.4.0, JVM: Eclipse Temurin 25

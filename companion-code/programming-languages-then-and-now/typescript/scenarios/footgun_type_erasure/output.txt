@@ -1,0 +1,19 @@
+$ node broken.ts
+file:///src/broken.ts:10
+console.log(`Hello, ${user.name.toUpperCase()}`);
+                                ^
+
+TypeError: Cannot read properties of undefined (reading 'toUpperCase')
+    at Object.<anonymous> (file:///src/broken.ts:10:33)
+    ...
+Node.js v26.12.1
+EXIT:1
+
+$ node fixed.ts
+not a valid User
+EXIT:0
+
+Runtime: Node.js v26.12.1 (node:26-bookworm-slim)
+Note: `tsc` reports zero type errors on broken.ts -- the `as User` assertion is
+syntactically valid and type-checks cleanly. The failure only shows up at runtime,
+and only once the lied-about field is actually used.

@@ -1,0 +1,15 @@
+$ python broken.py
+counter = 201 (expected 400)
+EXIT:0
+
+$ python fixed.py
+counter = 400 (expected 400)
+EXIT:0
+
+Interpreter: Python 3.14.8 (python:3.14.8-slim), default GIL build
+Mismatch with prediction: a plain `counter += 1` loop (200,000 iterations, no
+artificial delay) did NOT reproduce a lost update in this container, even with
+sys.setswitchinterval lowered -- see PREDICTIONS.md. Reducing to 200 iterations
+per thread and inserting an explicit time.sleep(0) between the read and the write
+(simulating the gap a real read-modify-write over I/O would have) made the race
+reliable and is what's captured above.

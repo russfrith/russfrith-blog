@@ -1,0 +1,37 @@
+Scenario 6: hung request and cancellation. All five wordfreq implementations
+already wire the `--timeout` flag through to their HTTP client correctly (that was
+part of the baseline CLI contract), so there is no separate broken/fixed pair here
+-- this is the baseline CLI itself, pointed at the mock server's /hang endpoint
+(sleeps 3600s, never responds), run with `--timeout 2`:
+
+$ docker compose run --rm python --top 5 --concurrency 1 --timeout 2 /data/urls-hang.txt
+wordfreq: fetch failed: http://mockserver:8080/hang: timed out
+wordfreq: fetched 1 url(s) in 2.016s
+EXIT:1  wall=2.92s
+
+$ docker compose run --rm go --top 5 --concurrency 1 --timeout 2 /data/urls-hang.txt
+wordfreq: fetch failed: http://mockserver:8080/hang: Get "http://mockserver:8080/hang": context deadline exceeded (Client.Timeout exceeded while awaiting headers)
+wordfreq: fetched 1 url(s) in 2.000746298s
+EXIT:1  wall=2.63s
+
+$ docker compose run --rm rust --top 5 --concurrency 1 --timeout 2 /data/urls-hang.txt
+wordfreq: fetch failed: http://mockserver:8080/hang: http://mockserver:8080/hang: Network Error: Network Error: Error encountered in the status line: timed out reading response
+wordfreq: fetched 1 url(s) in 2.013s
+EXIT:1  wall=2.62s
+
+$ docker compose run --rm typescript --top 5 --concurrency 1 --timeout 2 /data/urls-hang.txt
+wordfreq: fetch failed: http://mockserver:8080/hang: This operation was aborted
+wordfreq: fetched 1 url(s) in 2.007s
+EXIT:1  wall=2.66s
+
+$ docker compose run --rm kotlin --top 5 --concurrency 1 --timeout 2 /data/urls-hang.txt
+wordfreq: fetch failed: http://mockserver:8080/hang: request timed out
+wordfreq: fetched 1 url(s) in 2.051s
+EXIT:1  wall=3.21s
+
+All five cancel at ~2s (the configured timeout) rather than hanging for the
+mock server's full 3600s sleep. The "broken" counterpart in every language is simply
+constructing the HTTP client WITHOUT a timeout (e.g. Go's `http.Get` using
+`http.DefaultClient`, which has no timeout at all) -- that version would hang for
+the full 3600s, which is impractical to capture verbatim in a committed output file,
+so it is described rather than run to completion.

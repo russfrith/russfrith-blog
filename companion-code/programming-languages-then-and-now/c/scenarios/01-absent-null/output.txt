@@ -1,0 +1,11 @@
+$ gcc -O0 -g -Wall broken.c -o broken
+$ ./broken
+Segmentation fault (core dumped)
+EXIT:139
+
+$ gcc -O0 -g -Wall fixed.c -o fixed
+$ ./fixed
+label absent
+EXIT:0
+
+Compiler: gcc (GCC) 16.2.0

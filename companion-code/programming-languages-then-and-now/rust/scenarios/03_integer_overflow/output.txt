@@ -1,0 +1,29 @@
+$ rustc broken.rs -o broken_debug && ./broken_debug   (debug profile: overflow-checks on)
+thread 'main' (41) panicked at broken.rs:9:13:
+attempt to add with overflow
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+EXIT:101
+
+$ rustc -O broken.rs -o broken && ./broken   (release-style profile: overflow-checks off)
+i32::MAX + 1 = -2147483648
+EXIT:0
+
+$ rustc -O fixed.rs -o fixed && ./fixed
+overflow detected: would exceed i32 range
+EXIT:0
+
+Toolchain: rustc 1.96.1 (rust:1.96.1-slim-bookworm)
+Deviation from the original broken.rs: a plain `let x: i32 = i32::MAX; x + 1` is
+rejected at COMPILE time on this rustc, not just at runtime -- the deny-by-default
+`arithmetic_overflow` lint const-evaluates the known value and refuses to compile:
+
+error: this arithmetic operation will overflow
+ --> broken.rs:5:13
+  |
+5 |     let y = x + 1;
+  |             ^^^^^ attempt to compute `i32::MAX + 1_i32`, which would overflow
+  = note: `#[deny(arithmetic_overflow)]` on by default
+
+std::hint::black_box(i32::MAX) hides the value from that compile-time check so the
+snippet demonstrates the intended runtime behavior (panic in debug, silent wrap in
+release) instead.

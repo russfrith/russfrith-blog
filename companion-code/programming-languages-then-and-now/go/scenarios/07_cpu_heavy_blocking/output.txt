@@ -1,0 +1,17 @@
+$ go run demo.go
+starting CPU-bound work on the main goroutine, heartbeat goroutine running concurrently...
+heartbeat tick 1 at 2026-10-28T04:53:43.274499483Z
+heartbeat tick 2 at 2026-10-28T04:53:43.37486734Z
+heartbeat tick 3 at 2026-10-28T04:53:43.47520009Z
+CPU-bound work finished after 332.791172ms, heartbeat ticks seen: 3
+
+Toolchain: go1.26.4 (golang:1.26.4-bookworm)
+Confirms the prediction: the heartbeat goroutine keeps ticking on schedule (every
+~100ms) WHILE the CPU-bound loop runs on the main goroutine, with no explicit
+offloading needed -- Go's scheduler runs goroutines across real OS threads
+(GOMAXPROCS of them) rather than cooperatively on one, so a CPU-bound goroutine does
+not freeze everything else the way it does in Node or default-build Python asyncio.
+Kotlin coroutines on Dispatchers.Default (a multi-threaded pool) and Rust async
+tasks that avoid putting blocking work directly on an executor thread behave the
+same way; neither was run as a separate full demo here (one line/row, per the
+post's own rule about showing full detail only where something notable happens).

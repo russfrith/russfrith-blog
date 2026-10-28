@@ -1,0 +1,9 @@
+$ kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar
+done
+EXIT:0
+
+$ kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar
+file not found: /no/such/path.txt (No such file or directory)
+EXIT:0
+
+Toolchain: kotlinc 2.4.0, JVM: Eclipse Temurin 25

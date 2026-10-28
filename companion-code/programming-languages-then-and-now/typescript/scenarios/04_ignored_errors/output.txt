@@ -1,0 +1,27 @@
+$ node broken.ts
+done
+node:internal/process/promises:324
+    triggerUncaughtException(err, true /* fromPromise */);
+    ^
+
+[Error: ENOENT: no such file or directory, open '/no/such/path.txt'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/no/such/path.txt'
+}
+
+Node.js v26.12.1
+EXIT:1
+
+$ node fixed.ts
+read failed: ENOENT: no such file or directory, open '/no/such/path.txt'
+EXIT:0
+
+Runtime: Node.js v26.12.1 (node:26-bookworm-slim)
+Mismatch with prediction: "done" DOES print before the failure surfaces (confirming
+the ignored error doesn't block execution), but current Node's default behavior for
+an unhandled rejection is to crash the process afterward (since Node 15, unhandled
+rejections are fatal by default) rather than just log a warning and keep going
+indefinitely. The error is still effectively "ignored" at the point it happens --
+the crash comes later, asynchronously, disconnected from the line that caused it.

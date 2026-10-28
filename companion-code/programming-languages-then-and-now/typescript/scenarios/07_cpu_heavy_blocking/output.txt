@@ -1,0 +1,15 @@
+$ node broken.ts
+starting CPU-bound work on the main thread...
+CPU-bound work finished after 2626ms, heartbeat ticks seen: 0
+
+$ node fixed.ts
+starting CPU-bound work on a worker thread...
+heartbeat tick 1 at 1793163208117
+...
+heartbeat tick 26 at 1793163210622
+CPU-bound work finished after 2701ms, heartbeat ticks seen: 26
+
+Runtime: Node.js v26.12.1 (node:26-bookworm-slim)
+Confirms the prediction exactly: 0 heartbeat ticks while the CPU-bound loop runs on
+the main thread (the event loop cannot run anything else), 26 ticks (consistent
+with ~2.6s / 100ms) once the same work moves to a worker_thread.

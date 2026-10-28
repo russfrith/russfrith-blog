@@ -1,0 +1,49 @@
+$ go run -race broken.go
+==================
+WARNING: DATA RACE
+Read at 0x00c0000180c8 by goroutine 8:
+  main.main.func1()
+      /src/broken.go:20 +0x99
+
+Previous write at 0x00c0000180c8 by goroutine 9:
+  main.main.func1()
+      /src/broken.go:20 +0xab
+
+Goroutine 8 (running) created at:
+  main.main()
+      /src/broken.go:17 +0x84
+
+Goroutine 9 (running) created at:
+  main.main()
+      /src/broken.go:17 +0x84
+==================
+==================
+WARNING: DATA RACE
+Write at 0x00c0000180c8 by goroutine 8:
+  main.main.func1()
+      /src/broken.go:20 +0xab
+
+Previous write at 0x00c0000180c8 by goroutine 9:
+  main.main.func1()
+      /src/broken.go:20 +0xab
+
+Goroutine 8 (running) created at:
+  main.main()
+      /src/broken.go:17 +0x84
+
+Goroutine 9 (running) created at:
+  main.main()
+      /src/broken.go:17 +0x84
+==================
+counter = 322288 (expected 400000)
+Found 2 data race(s)
+exit status 66
+EXIT:1
+
+$ go run -race fixed.go
+counter = 400000 (expected 400000)
+EXIT:0
+
+Toolchain: go1.26.4 (golang:1.26.4-bookworm)
+Note: 322288 is this run's actual wrong total, nondeterministic by nature -- not a
+representative figure.

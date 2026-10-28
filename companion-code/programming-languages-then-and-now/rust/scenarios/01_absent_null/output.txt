@@ -1,0 +1,11 @@
+$ rustc -O broken.rs -o broken && ./broken
+thread 'main' (45) panicked at broken.rs:9:23:
+no entry found for key
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+EXIT:101
+
+$ rustc -O fixed.rs -o fixed && ./fixed
+count absent
+EXIT:0
+
+Toolchain: rustc 1.96.1 (rust:1.96.1-slim-bookworm)

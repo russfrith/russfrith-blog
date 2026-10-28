@@ -1,0 +1,13 @@
+$ python broken.py
+Traceback (most recent call last):
+  File "/src/broken.py", line 4, in <module>
+    print(record["count"])
+          ~~~~~~^^^^^^^^^
+KeyError: 'count'
+EXIT:1
+
+$ python fixed.py
+count absent
+EXIT:0
+
+Interpreter: Python 3.14.8 (python:3.14.8-slim)

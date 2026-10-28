@@ -1,0 +1,6 @@
+FROM eclipse-temurin:25-jdk
+RUN apt-get update && apt-get install -y --no-install-recommends curl unzip && apt-get clean
+RUN curl -fsSL https://github.com/JetBrains/kotlin/releases/download/v2.4.0/kotlin-compiler-2.4.0.zip -o /tmp/kotlinc.zip \
+    && unzip -q /tmp/kotlinc.zip -d /opt && rm /tmp/kotlinc.zip
+ENV PATH="/opt/kotlinc/bin:${PATH}"
+WORKDIR /src

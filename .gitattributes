@@ -1,0 +1,28 @@
+* text=auto eol=lf
+
+*.sh text eol=lf
+*.ps1 text eol=lf
+*.py text eol=lf
+*.go text eol=lf
+*.rs text eol=lf
+*.ts text eol=lf
+*.js text eol=lf
+*.kt text eol=lf
+*.kts text eol=lf
+*.c text eol=lf
+*.h text eol=lf
+*.zig text eol=lf
+*.mojo text eol=lf
+*.🔥 text eol=lf
+Dockerfile text eol=lf
+Dockerfile.* text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.toml text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.json text eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary

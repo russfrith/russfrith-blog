@@ -1,0 +1,9 @@
+$ go run broken.go
+read 0 bytes
+EXIT:0
+
+$ go run fixed.go
+read failed: open /no/such/path.txt: no such file or directory
+EXIT:0
+
+Toolchain: go1.26.4 (golang:1.26.4-bookworm)

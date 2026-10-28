@@ -1,0 +1,11 @@
+$ gcc -O0 -g -Wall broken.c -o broken
+$ ./broken
+Segmentation fault (core dumped)
+EXIT:139
+
+$ gcc -O0 -g -Wall fixed.c -o fixed
+$ ./fixed
+fopen: No such file or directory
+EXIT:1
+
+Compiler: gcc (GCC) 16.2.0

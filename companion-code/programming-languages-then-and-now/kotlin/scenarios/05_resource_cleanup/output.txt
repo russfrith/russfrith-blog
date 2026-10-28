@@ -1,0 +1,9 @@
+$ kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar
+read 13 bytes, stream never explicitly closed
+EXIT:0
+
+$ kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar
+read 13 bytes, stream closed deterministically via use{}
+EXIT:0
+
+Toolchain: kotlinc 2.4.0, JVM: Eclipse Temurin 25

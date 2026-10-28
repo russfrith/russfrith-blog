@@ -1,0 +1,2 @@
+FROM gcc:16.2
+WORKDIR /src

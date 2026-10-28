@@ -1,0 +1,11 @@
+$ kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar
+Exception in thread "main" java.lang.NullPointerException
+	at BrokenKt.main(Broken.kt:7)
+	at BrokenKt.main(Broken.kt)
+EXIT:1
+
+$ kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar
+count absent
+EXIT:0
+
+Toolchain: kotlinc 2.4.0, JVM: Eclipse Temurin 25

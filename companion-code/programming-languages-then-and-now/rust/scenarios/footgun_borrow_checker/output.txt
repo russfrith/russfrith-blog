@@ -1,0 +1,24 @@
+$ rustc broken.rs -o broken
+error[E0499]: cannot borrow `v` as mutable more than once at a time
+  --> broken.rs:12:21
+   |
+11 |     let a = get_mut(&mut v, 0);
+   |                     ------ first mutable borrow occurs here
+12 |     let b = get_mut(&mut v, 1);
+   |                     ^^^^^^ second mutable borrow occurs here
+13 |     *a += 1;
+   |     ------- first borrow later used here
+
+error: aborting due to 1 previous error
+EXIT:1 (compile failure -- never runs)
+
+$ rustc fixed.rs -o fixed && ./fixed
+[2, 3, 3]
+EXIT:0
+
+Toolchain: rustc 1.96.1 (rust:1.96.1-slim-bookworm)
+Note: `get_mut(&mut v, 0)` and `get_mut(&mut v, 1)` touch disjoint elements and would
+never alias at runtime, but the borrow checker cannot see through the function
+boundary to prove that, so it rejects genuinely correct code. split_at_mut proves
+disjointness by construction (it's implemented with carefully audited unsafe code
+inside the standard library) and the compiler accepts it.

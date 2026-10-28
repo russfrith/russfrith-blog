@@ -1,0 +1,9 @@
+$ node broken.ts
+read 13 bytes, fd 17 never explicitly closed
+EXIT:0
+
+$ node fixed.ts
+read 13 bytes, fd closed deterministically
+EXIT:0
+
+Runtime: Node.js v26.12.1 (node:26-bookworm-slim)

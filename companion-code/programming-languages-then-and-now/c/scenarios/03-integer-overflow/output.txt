@@ -1,0 +1,15 @@
+$ gcc -O0 -g -Wall broken.c -o broken
+$ ./broken
+INT_MAX + 1 = -2147483648
+EXIT:0
+
+$ gcc -O0 -g -Wall fixed.c -o fixed
+$ ./fixed
+overflow detected: INT_MAX + 1 would overflow
+EXIT:0
+
+Compiler: gcc (GCC) 16.2.0
+Note: signed overflow is undefined behavior in C, not merely "wraps to -2147483648."
+GCC happened to produce two's-complement wraparound at -O0 with -Wall and no further
+optimization; this is not a guarantee and the compiler is free to do something else,
+including removing code, at higher optimization levels.

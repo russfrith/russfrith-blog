@@ -1,0 +1,2 @@
+http://mockserver:8080/fixed/alpha.html
+http://mockserver:8080/fixed/beta.html

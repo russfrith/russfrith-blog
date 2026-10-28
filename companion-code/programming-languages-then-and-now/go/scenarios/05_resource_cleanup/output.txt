@@ -1,0 +1,9 @@
+$ go run broken.go
+read 13 bytes, fd never explicitly closed
+EXIT:0
+
+$ go run fixed.go
+read 13 bytes, fd closed deterministically via defer
+EXIT:0
+
+Toolchain: go1.26.4 (golang:1.26.4-bookworm)

@@ -1,0 +1,15 @@
+# Build output only -- source stays committed.
+target/
+dist/
+build/
+*.jar
+__pycache__/
+*.pyc
+node_modules/
+*.class
+broken
+fixed
+broken_debug
+broken_asan
+*.exe
+.hugo_build_test/
