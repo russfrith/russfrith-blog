@@ -9,3 +9,16 @@ EXIT:0
 
 Runtime: Node.js v26.12.1 (node:26-bookworm-slim), running .ts directly via Node's
 built-in TypeScript type stripping -- no tsc/ts-node step needed to execute these.
+
+$ npx tsc --noEmit --strict --target ES2023 --module NodeNext --moduleResolution NodeNext --esModuleInterop --skipLibCheck --types node broken.ts
+(no errors)
+EXIT:0
+
+$ npx tsc --noEmit --strict --target ES2023 --module NodeNext --moduleResolution NodeNext --esModuleInterop --skipLibCheck --types node fixed.ts
+(no errors)
+EXIT:0
+
+Type checker: TypeScript 5.9.3. Node's type stripping (above) does NOT type-check --
+this confirms the real compiler, run with the project's strict settings, ALSO
+reports zero errors on broken.ts (the `as Record` assertion compiles clean despite
+being wrong at runtime), not just that Node executed it without complaint.

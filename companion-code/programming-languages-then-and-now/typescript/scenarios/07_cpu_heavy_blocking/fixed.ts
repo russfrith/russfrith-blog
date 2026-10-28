@@ -11,6 +11,8 @@ function cpuBound(iterations: number): number {
   return total;
 }
 
+const ITERATIONS = 300_000_000; // same workload across every language in this scenario
+
 if (isMainThread) {
   let ticks = 0;
   const timer = setInterval(() => {
@@ -21,11 +23,11 @@ if (isMainThread) {
   const start = Date.now();
   console.log("starting CPU-bound work on a worker thread...");
   const worker = new Worker(fileURLToPath(import.meta.url));
-  worker.on("message", () => {
-    console.log(`CPU-bound work finished after ${Date.now() - start}ms, heartbeat ticks seen: ${ticks}`);
+  worker.on("message", (result) => {
+    console.log(`CPU-bound work finished after ${Date.now() - start}ms, heartbeat ticks seen: ${ticks}, result: ${result}`);
     clearInterval(timer);
   });
 } else {
-  cpuBound(2_000_000_000);
-  parentPort!.postMessage("done");
+  const result = cpuBound(ITERATIONS);
+  parentPort!.postMessage(result);
 }

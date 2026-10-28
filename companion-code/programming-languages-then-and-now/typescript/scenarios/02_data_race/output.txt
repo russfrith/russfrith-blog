@@ -12,3 +12,13 @@ Note: ordinary JS/TS objects can't race (single-threaded); this uses worker_thre
 Unlike the Python/Rust tight-loop cases, this raced reliably on the first run with
 no artificial delay needed -- the two workers run genuinely concurrently on separate
 OS threads, not cooperatively scheduled on one.
+
+$ npx tsc --noEmit --strict --target ES2023 --module NodeNext --moduleResolution NodeNext --esModuleInterop --skipLibCheck --types node broken.ts
+(no errors)
+EXIT:0
+
+$ npx tsc --noEmit --strict --target ES2023 --module NodeNext --moduleResolution NodeNext --esModuleInterop --skipLibCheck --types node fixed.ts
+(no errors)
+EXIT:0
+
+Type checker: TypeScript 5.9.3.

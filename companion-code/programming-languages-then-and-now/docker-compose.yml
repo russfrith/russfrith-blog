@@ -44,6 +44,14 @@ services:
       - ./shared:/data:ro
     entrypoint: ["java", "-jar", "/app/wordfreq.jar"]
 
+  csharp:
+    build: ./csharp
+    networks: [wordfreq]
+    depends_on: [mockserver]
+    volumes:
+      - ./shared:/data:ro
+    entrypoint: ["dotnet", "/app/wordfreq.dll"]
+
 networks:
   wordfreq:
     driver: bridge

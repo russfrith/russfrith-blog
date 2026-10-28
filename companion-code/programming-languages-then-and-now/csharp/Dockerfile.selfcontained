@@ -1,0 +1,9 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+COPY wordfreq.csproj Program.cs ./
+RUN dotnet publish -c Release -r linux-x64 --self-contained true -o /app
+
+FROM mcr.microsoft.com/dotnet/runtime-deps:10.0
+WORKDIR /app
+COPY --from=build /app .
+ENTRYPOINT ["/app/wordfreq"]

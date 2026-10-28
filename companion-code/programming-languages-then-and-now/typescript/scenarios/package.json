@@ -1,0 +1,10 @@
+{
+  "name": "wordfreq-scenario-typecheck",
+  "private": true,
+  "type": "module",
+  "description": "Helper package for check-all.sh -- installs the exact typescript/@types versions used to type-check every scenario file (A2).",
+  "devDependencies": {
+    "typescript": "~5.9.0",
+    "@types/node": "~24.0.0"
+  }
+}

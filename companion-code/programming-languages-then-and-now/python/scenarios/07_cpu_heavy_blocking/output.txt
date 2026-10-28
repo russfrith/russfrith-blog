@@ -1,18 +1,32 @@
+Workload equalized across every language in this scenario to 300,000,000 sqrt
+additions; the result is printed so the loop can't be eliminated as dead code.
+
 $ python broken.py
+[python 3.14.8, gil_enabled=True]
 starting CPU-bound work inside the event loop...
-CPU-bound work finished after 1.328s, heartbeat ticks seen: 0
+CPU-bound work finished after 14.312s, heartbeat ticks seen: 0, result: 3464101606477.5415
 
 $ python fixed.py
+[python 3.14.8, gil_enabled=True]
 starting CPU-bound work in an executor thread...
-heartbeat tick 1 at 1277.504
+heartbeat tick 1 at 842.977
+heartbeat tick 2 at 843.082
+heartbeat tick 3 at 843.188
+heartbeat tick 4 at 843.293
 ...
-heartbeat tick 12 at 1278.663
-CPU-bound work finished after 1.379s, heartbeat ticks seen: 12
+heartbeat tick 128 at 856.370
+CPU-bound work finished after 13.601s, heartbeat ticks seen: 128, result: 3464101606477.5415
 
-Interpreter: Python 3.14.8 (python:3.14.8-slim), default GIL build
-Confirms the prediction exactly: 0 heartbeat ticks while the CPU-bound loop runs
-directly on the event loop task with no await points; 12 ticks (consistent with
-~1.3s / 100ms) once the same work moves to run_in_executor's thread pool. Note this
-improvement comes from asyncio being able to schedule around a blocking call
-running on another OS thread, not from true CPU parallelism -- the executor thread
-still contends for the GIL with the event loop thread in this build.
+Interpreter: Python 3.14.8 (python:3.14.8-slim), default GIL build (confirmed by
+the printed sys.version / sys._is_gil_enabled() above -- A8 fix; no free-threaded
+build was run, see VERSIONS.md)
+Confirms the prediction: 0 heartbeat ticks while the CPU-bound loop runs directly
+on the event loop task with no await points; 128 ticks once the same work moves to
+run_in_executor's thread pool. Tick interval drifts slightly above the nominal
+100ms (e.g. tick 1 at 842.977, tick 2 at 843.082 -- about 105ms apart) -- the
+executor thread still contends for the GIL with the event loop thread in this
+build, so even the "fixed" version isn't perfectly on schedule.
+Python took 14.3s/13.6s for the same 300,000,000-iteration workload Go and Node
+finished in ~0.4s -- about 33-35x slower, consistent with an interpreted loop
+versus a JIT-compiled (V8) or natively compiled (Go) one. This is a real, expected
+difference in this micro-workload, not a general benchmark claim about Python.

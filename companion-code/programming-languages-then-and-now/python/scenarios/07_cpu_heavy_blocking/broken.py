@@ -4,7 +4,10 @@ call inside an async function runs on asyncio's single event-loop thread with no
 the CPU-bound call returns -- there's no preemption in cooperative scheduling."""
 import asyncio
 import math
+import sys
 import time
+
+print(f"[python {sys.version.split()[0]}, gil_enabled={sys._is_gil_enabled()}]", file=sys.stderr)
 
 
 def cpu_bound(iterations: int) -> float:
@@ -22,13 +25,14 @@ async def heartbeat(ticks: list[int]):
 
 
 async def main():
+    ITERATIONS = 300_000_000  # same workload across every language in this scenario
     ticks = [0]
     hb = asyncio.create_task(heartbeat(ticks))
     start = time.monotonic()
     print("starting CPU-bound work inside the event loop...")
-    cpu_bound(30_000_000)
+    result = cpu_bound(ITERATIONS)
     elapsed = time.monotonic() - start
-    print(f"CPU-bound work finished after {elapsed:.3f}s, heartbeat ticks seen: {ticks[0]}")
+    print(f"CPU-bound work finished after {elapsed:.3f}s, heartbeat ticks seen: {ticks[0]}, result: {result}")
     hb.cancel()
 
 

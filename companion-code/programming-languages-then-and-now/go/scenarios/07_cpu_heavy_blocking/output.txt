@@ -1,17 +1,43 @@
+Workload equalized across every language in this scenario to 300,000,000 sqrt
+additions; the result is printed so the compiler can't eliminate the loop as dead
+code (see the A3 investigation note below -- this is exactly what the ORIGINAL
+Phase 1 version of this file got wrong).
+
 $ go run demo.go
 starting CPU-bound work on the main goroutine, heartbeat goroutine running concurrently...
-heartbeat tick 1 at 2026-10-28T04:53:43.274499483Z
-heartbeat tick 2 at 2026-10-28T04:53:43.37486734Z
-heartbeat tick 3 at 2026-10-28T04:53:43.47520009Z
-CPU-bound work finished after 332.791172ms, heartbeat ticks seen: 3
+heartbeat tick 1 at 2026-10-28T05:20:23.061770169Z
+heartbeat tick 2 at 2026-10-28T05:20:23.16209978Z
+heartbeat tick 3 at 2026-10-28T05:20:23.26247045Z
+heartbeat tick 4 at 2026-10-28T05:20:23.361660284Z
+CPU-bound work finished after 404.469077ms, heartbeat ticks seen: 4, result: 3464101606477.541504
 
 Toolchain: go1.26.4 (golang:1.26.4-bookworm)
 Confirms the prediction: the heartbeat goroutine keeps ticking on schedule (every
 ~100ms) WHILE the CPU-bound loop runs on the main goroutine, with no explicit
-offloading needed -- Go's scheduler runs goroutines across real OS threads
-(GOMAXPROCS of them) rather than cooperatively on one, so a CPU-bound goroutine does
-not freeze everything else the way it does in Node or default-build Python asyncio.
-Kotlin coroutines on Dispatchers.Default (a multi-threaded pool) and Rust async
-tasks that avoid putting blocking work directly on an executor thread behave the
-same way; neither was run as a separate full demo here (one line/row, per the
-post's own rule about showing full detail only where something notable happens).
+offloading needed.
+
+A3 investigation note -- an order-of-magnitude discrepancy found and corrected:
+the original (Phase 1) version of this file called `cpuBound(2_000_000_000)` and
+discarded the return value, printing only the elapsed time. That version reported
+332ms for 2,000,000,000 iterations. Re-running the SAME 2,000,000,000-iteration
+workload with the result printed (so the loop can't be proven dead and removed)
+instead took 2.742s -- about 8x slower than the unprinted version, and in line
+with Node's 2.6s/2.7s for the same iteration count. Verbatim re-run:
+
+$ sed 's/300_000_000/2_000_000_000/' demo.go > demo_2e9.go && go run demo_2e9.go
+starting CPU-bound work on the main goroutine, heartbeat goroutine running concurrently...
+heartbeat tick 1 at 2026-10-28T05:21:11.486640512Z
+...
+heartbeat tick 27 at 2026-10-28T05:21:14.086673199Z
+CPU-bound work finished after 2.74203249s, heartbeat ticks seen: 27, result: 59628479377633.976562
+
+Conclusion: the original Go result was invalid -- the Go compiler's dead-code
+elimination had removed (or substantially optimized away) a loop whose result was
+never used. This was NOT a genuine ~8x Go-vs-Node speed advantage; once both
+print the result, Go (404ms) and Node (411ms) are nearly identical for the same
+300,000,000-iteration workload. Kotlin coroutines on Dispatchers.Default and Rust
+async tasks using spawn_blocking behave the same qualitative way (heartbeat keeps
+ticking without explicit offloading) as this Go counterexample; neither was run as
+a full separate timed demo here, per the rule of showing full detail only where
+something notable happens -- the "notable" thing for Rust/Kotlin in this scenario
+is the scheduling behavior, not a timing comparison.

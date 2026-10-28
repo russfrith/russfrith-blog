@@ -3,8 +3,11 @@ Plain back-to-back increments rarely interleave badly even across GIL handoffs -
 inserting a deliberate gap between the read and the write (as a slower real-world
 read-modify-write over a network or disk would) makes the lost update reliable and
 visible, which is the honest way to demonstrate it rather than relying on timing luck."""
+import sys
 import threading
 import time
+
+print(f"[python {sys.version.split()[0]}, gil_enabled={sys._is_gil_enabled()}]", file=sys.stderr)
 
 counter = 0
 ITERATIONS = 200

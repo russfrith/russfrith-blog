@@ -1,0 +1,21 @@
+$ kotlinc -Xplugin=serialization-plugin.jar -cp "serialization-core.jar:serialization-json.jar" Strict.kt -include-runtime -d strict.jar
+(compiles clean)
+
+$ java -cp "strict.jar:serialization-core.jar:serialization-json.jar" StrictKt
+http://mockserver:8080/json/missing-field: decode error (correctly caught): Field 'count' is required for type with serial name 'Item', but it was missing at path: $
+http://mockserver:8080/json/wrong-type: decode error (correctly caught): Unexpected JSON token at offset 38: Unexpected symbol 'n' in numeric literal at path: $.count
+JSON input: {"id": 2, "label": "gadget", "count": "not-a-number"}
+
+$ java -cp "defaulted.jar:serialization-core.jar:serialization-json.jar" DefaultedKt
+http://mockserver:8080/json/missing-field: Item(id=1, label=widget, count=0) (no error, no way to tell count=0 from a real zero)
+http://mockserver:8080/json/wrong-type: decode error: Unexpected JSON token at offset 38: Unexpected symbol 'n' in numeric literal at path: $.count
+JSON input: {"id": 2, "label": "gadget", "count": "not-a-number"}
+
+Toolchain: kotlinc 2.4.0, kotlinx.serialization compiler plugin 2.4.0,
+kotlinx-serialization-core/json-jvm 1.7.3 (JVM: Eclipse Temurin 25)
+Confirms the prediction exactly, the same pattern as Rust's serde result: a plain
+non-default `count: Long` field errors on BOTH the missing-field and wrong-type
+payloads -- strict by default, unlike Go. Giving `count` a default value (`= 0`)
+makes ONLY the missing-field case silently zero-fill; the wrong-type case still
+correctly errors, because a default only applies when the field is absent, not
+when it's present with the wrong type.

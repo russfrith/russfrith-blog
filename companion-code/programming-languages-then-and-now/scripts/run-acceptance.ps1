@@ -11,7 +11,7 @@ $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 Push-Location $root
 
-$languages = @("python", "go", "rust", "typescript", "kotlin")
+$languages = @("python", "go", "rust", "typescript", "kotlin", "csharp")
 $failures = @()
 $resultLines = @()
 $resultLines += "# Acceptance results"
@@ -49,6 +49,17 @@ foreach ($lang in $languages) {
 
     $resultLines += ""
 }
+
+# Independent recomputation (A1/B1): a coreutils-only pipeline that shares no
+# code with any implementation above, reading the same fixtures.
+$resultLines += "## independent verification (verify-expected, coreutils only)"
+$resultLines += ""
+$independentHappy = docker run --rm --network programming-languages-then-and-now_wordfreq -v "$root/shared/acceptance/verify-expected:/verify-expected" debian:bookworm-slim sh -c "apt-get update -qq && apt-get install -y -qq curl gawk >/dev/null 2>&1; sh /verify-expected 5 http://mockserver:8080/fixed/alpha.html http://mockserver:8080/fixed/beta.html"
+$expectedHappy = Get-Content "$root/shared/expected-output/happy-top5.txt"
+$independentMatch = (($independentHappy | ForEach-Object { $_.TrimEnd() }) -join "`n") -eq ($expectedHappy -join "`n")
+$resultLines += "- happy path matches shared/expected-output/happy-top5.txt: $independentMatch"
+if (-not $independentMatch) { $failures += "independent verification (happy path)" }
+$resultLines += ""
 
 New-Item -ItemType Directory -Force -Path "$root/shared/acceptance" | Out-Null
 $resultLines | Set-Content "$root/shared/acceptance/RESULTS.md"

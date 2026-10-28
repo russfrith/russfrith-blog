@@ -40,11 +40,12 @@ func main() {
 		}
 	}()
 
+	const iterations = 300_000_000 // same workload across every language in this scenario
 	start := time.Now()
 	fmt.Println("starting CPU-bound work on the main goroutine, heartbeat goroutine running concurrently...")
-	cpuBound(2_000_000_000)
+	result := cpuBound(iterations)
 	elapsed := time.Since(start)
 	close(done)
 	wg.Wait()
-	fmt.Printf("CPU-bound work finished after %s, heartbeat ticks seen: %d\n", elapsed, ticks)
+	fmt.Printf("CPU-bound work finished after %s, heartbeat ticks seen: %d, result: %f\n", elapsed, ticks, result)
 }

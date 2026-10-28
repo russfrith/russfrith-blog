@@ -1,15 +1,37 @@
+Workload equalized across every language in this scenario to 300,000,000 sqrt
+additions; the result is printed so V8 can't eliminate the loop as dead code.
+
 $ node broken.ts
 starting CPU-bound work on the main thread...
-CPU-bound work finished after 2626ms, heartbeat ticks seen: 0
+CPU-bound work finished after 411ms, heartbeat ticks seen: 0, result: 3464101606477.5415
 
 $ node fixed.ts
 starting CPU-bound work on a worker thread...
-heartbeat tick 1 at 1793163208117
-...
-heartbeat tick 26 at 1793163210622
-CPU-bound work finished after 2701ms, heartbeat ticks seen: 26
+heartbeat tick 1 at 1793164854343
+heartbeat tick 2 at 1793164854442
+heartbeat tick 3 at 1793164854542
+heartbeat tick 4 at 1793164854643
+CPU-bound work finished after 435ms, heartbeat ticks seen: 4, result: 3464101606477.5415
 
 Runtime: Node.js v26.12.1 (node:26-bookworm-slim)
 Confirms the prediction exactly: 0 heartbeat ticks while the CPU-bound loop runs on
-the main thread (the event loop cannot run anything else), 26 ticks (consistent
-with ~2.6s / 100ms) once the same work moves to a worker_thread.
+the main thread (the event loop cannot run anything else), 4 ticks (consistent
+with ~400ms / 100ms) once the same work moves to a worker_thread.
+
+$ npx tsc --noEmit --strict --target ES2023 --module NodeNext --moduleResolution NodeNext --esModuleInterop --skipLibCheck --types node broken.ts
+(no errors)
+EXIT:0
+
+$ npx tsc --noEmit --strict --target ES2023 --module NodeNext --moduleResolution NodeNext --esModuleInterop --skipLibCheck --types node fixed.ts
+(no errors)
+EXIT:0
+
+Type checker: TypeScript 5.9.3.
+
+Revision note (A3): the original (Phase 1) run used 2,000,000,000 iterations and
+took 2626ms/2701ms, versus Go's reported 332ms for the SAME iteration count --
+nearly an 8x gap that turned out NOT to be a true Node-vs-Go gap. See
+go/scenarios/07_cpu_heavy_blocking/output.txt: Go's original result was invalid
+because the loop's result was never used, so the compiler eliminated it as dead
+code. Once both print the result and run the same 300,000,000-iteration workload,
+Node (411ms) and Go (404ms) are nearly identical.

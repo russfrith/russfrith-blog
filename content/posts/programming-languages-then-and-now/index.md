@@ -1,9 +1,9 @@
 ---
 title: "Programming Languages, Then and Now"
-description: "A hands-on comparison of Python, Go, Rust, TypeScript, and Kotlin (plus a C safety baseline) on the same small CLI task, and a look at why the language landscape looks the way it does."
+description: "A hands-on comparison of Python, Go, Rust, TypeScript, Kotlin, and C# (plus a C safety baseline) on the same small CLI task, and a look at why the language landscape looks the way it does."
 date: 2026-10-27T20:00:00-04:00
 draft: true
-tags: ["python", "go", "rust", "typescript", "kotlin", "programming-languages"]
+tags: ["python", "go", "rust", "typescript", "kotlin", "csharp", "dotnet", "programming-languages"]
 categories: ["programming"]
 ShowToc: true
 ---
@@ -64,13 +64,19 @@ Everything runs in Docker containers pinned to specific versions (full list and 
 
 {{< snippet file="VERSIONS.md" lang="text" >}}
 
-A shared mock HTTP server (Python stdlib `http.server`, no third-party dependencies) serves fixed pages, a 404, an endpoint that hangs, a large page, and two JSON endpoints with a missing field and a wrong-typed field, respectively. A connection-refused case is tested by pointing at an unused port. Nothing ever touches the live internet. A shared acceptance script runs every implementation against the same fixtures and diffs stdout against one expected-output file per fixture; all five core languages (Python, Go, Rust, TypeScript, Kotlin) pass it as of this writing.
+A shared mock HTTP server (Python stdlib `http.server`, no third-party dependencies) serves fixed pages, a 404, an endpoint that hangs, a large page, and two JSON endpoints with a missing field and a wrong-typed field, respectively. A connection-refused case is tested by pointing at an unused port. Nothing ever touches the live internet. A shared acceptance script runs every implementation against the same fixtures and diffs stdout against one expected-output file per fixture; all six core languages (Python, Go, Rust, TypeScript, Kotlin, C#) pass it as of this writing. That expected output was also recomputed independently, with a coreutils-only pipeline (`curl`/`tr`/`sort`/`uniq`/`head`) that shares no code with any of the six implementations, and matched exactly -- see `shared/acceptance/README.md`.
 
-**Honest limits of this comparison**: this is a small, I/O-bound task. It says very little about CPU-bound throughput, large-codebase maintainability, or how any of these languages feel after a year of real production use. The numbers under "productivity" below are single-machine observations from one development session, not controlled benchmarks -- no repeated trials, no isolated hardware. Treat everything quantitative in this post as "this is what happened, once, on my machine," not "this is the true relative performance of these languages."
+<!-- AUTHOR-TODO: disclosure that C# is my daily language and my notes on it are the baseline, not a neutral review -->
+
+**Honest limits of this comparison**: this is a small, I/O-bound task. It says very little about CPU-bound throughput, large-codebase maintainability, or how any of these languages feel after a year of real production use. The numbers under "productivity" below are from three runs each, median and range reported, not controlled benchmarks -- no isolated hardware, no larger sample. Treat everything quantitative in this post as "this is what happened on my machine," not "this is the true relative performance of these languages."
 
 ## Scenarios
 
 Ten fixed scenarios, grouped by theme, plus one signature footgun per language. C serves as a baseline for the five safety scenarios only (no full CLI). For each scenario, languages where something notable happened get full detail; the rest get a line or a table row.
+
+{{< aside >}}
+**A1/A3 verification note:** two claims in this post were specifically checked, not assumed. First, the expected CLI output was independently recomputed with a coreutils-only pipeline sharing no code with any implementation, and matched exactly (`shared/acceptance/README.md`). Second, scenario 7's original ~8x Go-vs-Node gap was investigated rather than reported at face value, and turned out to be invalid -- Go's unused loop result let the compiler eliminate it as dead code (full investigation under scenario 7 below).
+{{< /aside >}}
 
 ### Safety
 
@@ -96,18 +102,25 @@ Rust's direct `HashMap` indexing panics loudly on a missing key -- a full proces
 
 {{< snippet file="rust/scenarios/01_absent_null/output.txt" lang="text" >}}
 
-Kotlin's `!!` operator forces past an already-nullable `Map.get()` result and crashes exactly the way `unwrap()`-equivalents do elsewhere:
+Kotlin's absence is already visible in the type -- `Map.get()` returns `V?`, not `V` -- so the compiler already knows "count" might not be there; `!!` is an explicit, deliberate opt-in to crash if that type turns out to be wrong at runtime, not a gap in the type system:
 
 {{< snippet file="kotlin/scenarios/01_absent_null/output.txt" lang="text" >}}
 
 Python's direct dict indexing raises a specific `KeyError`, and TypeScript's declared type lies silently (`count: undefined` at runtime despite a `number` annotation) -- both detailed fully under scenario 8, where the same pattern shows up against real untrusted JSON from the mock server.
+
+C# splits the same way Go does, but on a different axis: a fresh project template's nullable-reference-types annotation makes violating a non-null return type a **build warning**, not an error, and the program still compiles and crashes at the point of use; separately, `Dictionary`'s indexer throws `KeyNotFoundException` while `TryGetValue` returns `false` with no exception -- the same two-styles-of-absence split as Python's `d[k]` vs. `d.get(k)`:
+
+{{< snippet file="csharp/scenarios/01_absent_null/broken/Program.cs" >}}
+
+{{< snippet file="csharp/scenarios/01_absent_null/output.txt" lang="text" >}}
 
 | Language | Behavior on absent field |
 |---|---|
 | C | undefined behavior (segfault here) |
 | Go | silent zero-fill, no error |
 | Rust | panic (`HashMap` index) or `None` (`.get()`) |
-| Kotlin | crash via `!!`, or `null` if respected |
+| Kotlin | `V?` from `Map.get()` by default; `!!` is an explicit opt-in crash |
+| C# | nullable-reference-types violation is a build *warning*, not an error; `Dictionary` indexer throws, `TryGetValue` doesn't |
 | Python | `KeyError` |
 | TypeScript | `undefined`, type system says otherwise |
 
@@ -121,21 +134,29 @@ Go's race detector (`go run -race`) catches the race explicitly, naming the exac
 
 {{< snippet file="go/scenarios/02_data_race/output.txt" lang="text" >}}
 
-Rust's type system makes the naive version (plain shared mutable state across threads, no synchronization) a **compile error** -- there's no safe way to even write the C/Go-style mistake. Getting an actual race requires opting into `unsafe`:
+Rust's type system makes the naive version (plain shared mutable state across threads, no synchronization) a **compile error** -- there's no safe way to even write the C/Go-style mistake. Two concrete attempts confirm it: capturing a plain mutable counter in two `thread::spawn` closures fails the borrow checker, and sharing an `Rc<RefCell<i64>>` (instead of `Arc<Mutex<i64>>`) across threads fails a `Send` trait bound, because `Rc` is deliberately not thread-safe:
+
+{{< snippet file="rust/scenarios/02_data_race/compile_reject_output.txt" lang="text" >}}
+
+Getting an actual Rust data race requires opting into `unsafe`:
 
 {{< snippet file="rust/scenarios/02_data_race/broken.rs" >}}
 
 {{< snippet file="rust/scenarios/02_data_race/output.txt" lang="text" >}}
 
+**Precise claim, not a looser one:** safe Rust prevents *data races* (unsynchronized concurrent access to shared mutable memory) at compile time. It does not prevent all *race conditions* (e.g., two threads racing to acquire a lock first, with an order-dependent result, still compiles and runs) or deadlocks (two threads each waiting on a lock the other holds also compiles fine and can hang forever) -- those remain logic errors the type system doesn't catch.
+
 Python and Rust's plain tight-loop increments (200,000 iterations, no induced delay) did **not** reproduce a lost update reliably in this environment -- a mismatch with the initial prediction, recorded in PREDICTIONS.md. Inserting an explicit yield between the read and the write (simulating the gap a slower real-world read-modify-write would have) made both races reliable:
 
 {{< snippet file="python/scenarios/02_data_race/output.txt" lang="text" >}}
 
-Kotlin's and TypeScript's (worker_threads + `SharedArrayBuffer`) versions raced reliably with no induced delay:
+Kotlin's, TypeScript's (worker_threads + `SharedArrayBuffer`), and C#'s versions all raced reliably with no induced delay:
 
 {{< snippet file="kotlin/scenarios/02_data_race/output.txt" lang="text" >}}
 
 {{< snippet file="typescript/scenarios/02_data_race/output.txt" lang="text" >}}
+
+{{< snippet file="csharp/scenarios/02_data_race/output.txt" lang="text" >}}
 
 #### 3. Integer overflow
 
@@ -163,12 +184,17 @@ TypeScript's `number` is a 64-bit float; past `Number.MAX_SAFE_INTEGER` it silen
 
 {{< snippet file="typescript/scenarios/03_integer_overflow/output.txt" lang="text" >}}
 
+C#'s default is also silent, defined wraparound (like Go/Kotlin) -- but the SAME plain source line throws `OverflowException` under either an explicit `checked(...)` expression or the project-level `CheckForOverflowUnderflow` MSBuild setting, with no `checked` keyword anywhere in the source for the latter:
+
+{{< snippet file="csharp/scenarios/03_integer_overflow/output.txt" lang="text" >}}
+
 | Language | Overflow behavior |
 |---|---|
 | C | undefined behavior |
 | Go | silent, defined wraparound |
 | Rust | compile-time error (const-evaluable case) / debug panic / release wrap |
 | Kotlin | silent, defined wraparound (like Java) |
+| C# | silent, defined wraparound by default; `checked` or a project setting throws `OverflowException` |
 | Python | no overflow (arbitrary precision) |
 | TypeScript | silent precision loss past 2^53 (not wraparound) |
 
@@ -196,13 +222,17 @@ TypeScript: calling an async function without `await` or `.catch` lets execution
 
 {{< snippet file="typescript/scenarios/04_ignored_errors/output.txt" lang="text" >}}
 
+C#: a swallowed `catch {}` behaves like Python/Kotlin's equivalent. The more interesting case is a "fire-and-forget" `Task` -- started, never awaited, never stored, never observed -- whose body throws: unlike Node's unhandled-promise-rejection-is-fatal default, .NET does **not** crash the process; the exception is silently absorbed:
+
+{{< snippet file="csharp/scenarios/04_ignored_errors/output.txt" lang="text" >}}
+
 #### 5. Resource cleanup and leaks
 
 C, built with `-fsanitize=address` to get a leak detector: an unfreed `malloc` is a straightforward, detectable leak:
 
 {{< snippet file="c/scenarios/05-resource-cleanup/output.txt" lang="text" >}}
 
-Go, Python, Kotlin, and TypeScript are all garbage collected and don't leak in the C sense, but none of them guarantee *when* a resource (a file descriptor, here) gets released without an explicit `defer`/`with`/`use`/`finally`:
+Go, Python, Kotlin, TypeScript, and C# are all garbage collected and don't leak in the C sense, but none of them guarantee *when* a resource (a file descriptor, here) gets released without an explicit `defer`/`with`/`use`/`finally`/`using`:
 
 {{< snippet file="go/scenarios/05_resource_cleanup/output.txt" lang="text" >}}
 
@@ -211,6 +241,8 @@ Go, Python, Kotlin, and TypeScript are all garbage collected and don't leak in t
 {{< snippet file="kotlin/scenarios/05_resource_cleanup/output.txt" lang="text" >}}
 
 {{< snippet file="typescript/scenarios/05_resource_cleanup/output.txt" lang="text" >}}
+
+{{< snippet file="csharp/scenarios/05_resource_cleanup/output.txt" lang="text" >}}
 
 Rust's case is the one worth stating precisely. An `Rc` reference cycle (two nodes each holding a strong `Rc` to the other) leaks -- neither node's `Drop` ever runs, because neither's strong count ever reaches zero:
 
@@ -226,13 +258,15 @@ Rust's case is the one worth stating precisely. An `Rc` reference cycle (two nod
 
 #### 6. Hung request and cancellation
 
-All five core `wordfreq` implementations already wire `--timeout` through to their HTTP client correctly -- there's no separate broken/fixed pair for this one, since timeout handling was part of the baseline CLI contract from the start. Pointed at the mock server's `/hang` endpoint (which sleeps for an hour and never responds) with `--timeout 2`:
+Unlike every other scenario in this post, **this one has no broken/fixed pair at all.** All six core `wordfreq` implementations already wire `--timeout` through to their HTTP client correctly -- timeout handling was part of the baseline CLI contract from the start, not something fixed for this post. What follows is the baseline CLI itself, pointed at the mock server's `/hang` endpoint (which sleeps for an hour and never responds) with `--timeout 2`:
 
 {{< snippet file="shared/scenarios/06_hung_cancellation/output.txt" lang="text" >}}
 
-All five cancel at roughly the configured timeout rather than hanging. The "broken" counterpart in every language is simply constructing the HTTP client *without* a timeout at all (e.g., Go's `http.DefaultClient`), which would hang for the mock server's full sleep duration -- described rather than run to completion, since capturing that verbatim isn't practical.
+All six cancel at roughly the configured timeout rather than hanging. Each language's cancellation mechanism, read from the existing CLI source rather than written new for this scenario: Python's `urlopen(..., timeout=...)`, Go's `http.Client{Timeout: ...}`, Rust's `ureq` agent-level timeout, TypeScript's `AbortController` + `fetch(..., { signal })`, Kotlin's `java.net.http` per-request/connect timeouts, and C#'s `CancellationTokenSource` passed to `HttpClient.GetAsync`. Full detail in `shared/scenarios/06_hung_cancellation/README.md`. The "broken" counterpart in every language would simply be constructing the HTTP client *without* a timeout at all (e.g., Go's `http.DefaultClient`), which would hang for the mock server's full sleep duration -- described rather than run to completion, since capturing that verbatim isn't practical.
 
 #### 7. CPU-heavy work blocking an event loop
+
+Every language in this scenario runs the identical workload (300,000,000 `sqrt` additions) with the result printed, so no compiler can eliminate the loop as dead code and the comparison is apples-to-apples -- an equalization pass that caught a real mistake in the first draft: see the Go callout below.
 
 Node: a synchronous CPU-bound loop on the single JS thread blocks a 100ms heartbeat completely:
 
@@ -252,12 +286,24 @@ Go's counterexample needed no fix at all: a heartbeat goroutine keeps ticking on
 
 {{< snippet file="go/scenarios/07_cpu_heavy_blocking/output.txt" lang="text" >}}
 
-Kotlin coroutines on a multi-threaded dispatcher (`Dispatchers.Default`) and Rust async tasks that avoid placing blocking work directly on an executor thread (using `spawn_blocking` instead) behave the same way as Go here; neither was run as a full separate demo, per the rule of showing full detail only where something notable happens.
+**Investigation, not just a result:** the first draft of this scenario reported Go finishing the same workload roughly 8x faster than Node, which turned out to be invalid -- the Go version's loop result was never used, so the compiler eliminated it as dead code and the "benchmark" measured almost nothing. Printing the result (as every language here now does) made Go and Node land within 2% of each other. That investigation, and the corrected numbers, are in the output above.
+
+Rust (tokio) and Kotlin (coroutines) both show the same two-part result once actually run, which only partly matched the prediction: a single-threaded runtime/dispatcher stalls completely (0 ticks, matching Node/Python), but simply running the SAME unfixed code on the default multi-thread runtime / `Dispatchers.Default` did **not** stall either -- this machine's thread pool had a spare thread for the heartbeat even without `spawn_blocking`/`withContext` applied. That is not evidence the mistake is harmless in general; both ecosystems' own documentation recommends the explicit fix specifically because a saturated pool would show the stall this single demo didn't:
+
+{{< snippet file="rust/scenarios/07_cpu_heavy_blocking/output.txt" lang="text" >}}
+
+{{< snippet file="kotlin/scenarios/07_cpu_heavy_blocking/output.txt" lang="text" >}}
+
+C# needed no fix either, for a related but distinct reason: there is no single-threaded event loop to block in the first place -- `async`/`await` runs on the thread pool, which has multiple worker threads by default, so a heartbeat `Task` keeps ticking regardless of whether the CPU-bound call is wrapped in `Task.Run` or called directly:
+
+{{< snippet file="csharp/scenarios/07_cpu_heavy_blocking/output.txt" lang="text" >}}
 
 <!-- AUTHOR-TODO: candidate observation -- Python's officially-supported
-free-threaded build (3.14t, PEP 779) was looked up for this scenario but not run
-head-to-head against the GIL build here. Worth a follow-up post on its own; see
-"what I'd learn next." -->
+free-threaded build (3.14t, PEP 779) was looked up for this scenario but never
+actually built or run (see VERSIONS.md, corrected in Phase 1b) -- every Python
+result in this post is the default GIL build, confirmed by the printed
+sys._is_gil_enabled() in each output. A genuine free-threaded run against this
+scenario is a real candidate for "what I'd learn next," not something to assume. -->
 
 ### Data handling
 
@@ -285,7 +331,17 @@ Written defensively -- explicit validation at the boundary instead of trusting t
 
 {{< snippet file="typescript/scenarios/08_untrusted_json/fixed.ts" >}}
 
-Rust (`serde` with an `Option` field) and Kotlin (`kotlinx.serialization` with a nullable field) behave like the fixed Python/TypeScript versions when written defensively; neither was run as a full separate demo here.
+Rust (`serde_json`) and Kotlin (`kotlinx.serialization`) both land in the same place as each other once actually run: a plain, non-defaulted field errors on **both** the missing-field and wrong-type payloads -- strict by default, unlike Go. Giving the field an explicit default value makes **only** the missing-field case silently zero-fill (a deliberate opt-in counterpoint, mirroring Go); the wrong-type case still correctly errors either way, because a default only fills an absent field, it doesn't relax the type of a field that's present but wrong-typed:
+
+{{< snippet file="rust/scenarios/08_untrusted_json/output.txt" lang="text" >}}
+
+{{< snippet file="kotlin/scenarios/08_untrusted_json/output.txt" lang="text" >}}
+
+C#'s `System.Text.Json` splits exactly like Go for a plain property: silent zero-fill on the **missing** field, a thrown `JsonException` on the **wrong-typed** one. The `required` modifier (C# 11+) closes the gap, making both cases throw:
+
+{{< snippet file="csharp/scenarios/08_untrusted_json/broken/Program.cs" >}}
+
+{{< snippet file="csharp/scenarios/08_untrusted_json/output.txt" lang="text" >}}
 
 ### Productivity
 
@@ -295,7 +351,7 @@ Rust (`serde` with an `Option` field) and Kotlin (`kotlinx.serialization` with a
 
 #### 11. Final container image size
 
-Measured once, on one development machine, 2026-10-28; full methodology and the "reproduce this" commands are in `companion-code/programming-languages-then-and-now/results/productivity.md`.
+Measured three times each, back to back, on one development machine, 2026-10-28; median and range reported. Full methodology and the "reproduce this" commands are in `companion-code/programming-languages-then-and-now/results/productivity.md`, including C#'s three image-size variants (framework-dependent, self-contained, Native AOT).
 
 {{< snippet file="results/productivity.md" lang="text" >}}
 
@@ -335,6 +391,14 @@ So this post doesn't read as a scoreboard: one commonly-cited surprise per langu
 
 {{< snippet file="typescript/scenarios/footgun_type_erasure/output.txt" lang="text" >}}
 
+**C#: `async void` swallows a try/catch that looks like it should work.** An exception thrown inside an `async void` method is NOT caught by a try/catch wrapped directly around the call site -- it's rethrown on the thread pool instead, because `async void` gives the caller no `Task` to await or observe:
+
+{{< snippet file="csharp/scenarios/footgun_async_void/broken/Program.cs" >}}
+
+{{< snippet file="csharp/scenarios/footgun_async_void/output.txt" lang="text" >}}
+
+`async Task` plus `await` lets the exception propagate through the try/catch normally.
+
 ## Language notes
 
 ### Python
@@ -367,7 +431,14 @@ Platform-anchored: it's a layer over JavaScript, which means it's anchored to th
 
 ### Kotlin
 
-Platform-anchored: built by JetBrains, officially adopted by Google as a first-class Android language, and runs on the JVM (plus Kotlin/Native and Kotlin/JS targets). Tooling: Gradle (or Maven), full interop with the existing Java/Maven Central ecosystem. Signature strength: null safety baked into the type system for Kotlin-native code, concise syntax relative to Java for equivalent logic. Signature footgun: platform types erasing that same null safety at the Java interop boundary (above). Server-side adoption: JetBrains' own "State of Developer Ecosystem" survey reports usage figures for Kotlin on the server, but those are vendor-reported numbers, not an independent survey, and are called out as such rather than cited as settled fact (see REVIEW.md).
+Platform-anchored: built by JetBrains, officially adopted by Google as a first-class Android language, and runs on the JVM (plus Kotlin/Native and Kotlin/JS targets). Tooling: Gradle (or Maven), full interop with the existing Java/Maven Central ecosystem. Signature strength: null safety baked into the type system for Kotlin-native code, concise syntax relative to Java for equivalent logic. Signature footgun: platform types erasing that same null safety at the Java interop boundary (above) -- note this is distinct from scenario 1's absent-value case, where absence IS visible in Kotlin's own types. Server-side adoption: JetBrains' own ["State of Kotlin 2026"](https://kotlinlang.org/state-of-kotlin-2026/) report states 61% of Kotlin backend developers use Spring/Spring Boot and 51% use Ktor; JetBrains' [announcement of its strategic partnership with Spring](https://blog.jetbrains.com/kotlin/2025/05/strategic-partnership-with-spring/) (2025-05-22) states 27% of Spring developers have used Kotlin. Both figures are vendor-reported (JetBrains surveying its own ecosystem), labeled as such here, not independent. [RedMonk's Q1 2026 language rankings](https://redmonk.com/sogrady/2026/04/14/language-rankings-1-26/) are independent and rank Kotlin 14th, tied with Scala.
+
+<!-- AUTHOR-TODO: what was familiar -->
+<!-- AUTHOR-TODO: what surprised me -->
+
+### C#
+
+Platform-anchored in its history (.NET and the CLR, originally Windows-only), general-purpose and genuinely cross-platform today (.NET runs natively on Linux and macOS, and this post's own C# container runs on Linux throughout) -- a useful contrast with Kotlin's JVM anchoring and Swift's Apple anchoring, both still platform-rooted in a way C#/.NET no longer is. Tooling: the `dotnet` CLI covers build/test/publish/run with no separate package manager to choose, NuGet for packages. Signature strength: the base class library covers an unusually wide surface (HTTP, JSON, regex, concurrency primitives) without reaching for a single third-party package, demonstrated directly in this post's own CLI and every C# scenario. Signature footgun: `async void` swallowing exceptions past a try/catch that looks like it should work (above). .NET 10 is the current LTS release; Native AOT publishing produced this post's smallest C# container image (207 MB) with no toolchain beyond `clang`/`zlib1g-dev` in the build stage.
 
 <!-- AUTHOR-TODO: what was familiar -->
 <!-- AUTHOR-TODO: what surprised me -->
@@ -385,7 +456,7 @@ func fetchCount(from record: [String: Int]) -> Int? {
 }
 ```
 
-Server-side Swift (Vapor, Hummingbird) exists and is used in production in some shops, but adoption outside Apple-centric teams is limited, and the tooling/platform experience on Linux is reported as noticeably different from developing on macOS -- a measured note, not a dismissal.
+Server-side Swift (Vapor, Hummingbird) is documented by [swift.org's own "Swift on Server" page](https://www.swift.org/documentation/server/), which lists both frameworks as community options; adoption outside Apple-centric teams is limited, and the tooling/platform experience on Linux is reported as noticeably different from developing on macOS -- a measured note, not a dismissal.
 
 <!-- AUTHOR-TODO: what was familiar -->
 <!-- AUTHOR-TODO: what surprised me -->
@@ -410,15 +481,15 @@ A factual summary, drawn only from the recorded results above and in the compani
 
 | Scenario | Notable finding |
 |---|---|
-| 1. Absent/null | Go zero-fills silently; Rust/Python panic/raise loudly; Kotlin crashes via `!!`; TypeScript's type lies |
-| 2. Data race | Go's `-race` catches it directly; Rust requires `unsafe` to even write it; plain tight loops in Python/Rust needed an induced delay to race reliably (mismatch vs. prediction); Kotlin/TS raced on the first try |
-| 3. Integer overflow | C: UB; Go/Kotlin: silent defined wrap; Rust: compile-time error for the const case (mismatch vs. prediction), else debug-panic/release-wrap; Python: no overflow; TS: silent precision loss, not wraparound |
-| 4. Ignored errors | Go/Rust let it through (warning only in Rust); Python/Kotlin require an active swallow; TS's unhandled rejection crashes the process asynchronously (mismatch vs. prediction) |
-| 5. Resource cleanup | C: detected leak via ASan; Rust's `Rc` cycle leaks but is memory-safe (deterministic Drop, not leak-freedom); GC'd languages all need explicit cleanup for deterministic timing |
-| 6. Hung request | All five core CLIs cancel correctly at the configured timeout |
-| 7. CPU-heavy blocking | Node and Python asyncio block completely (0 heartbeat ticks) until offloaded to a thread; Go needed no fix |
-| 8. Untrusted JSON | Go splits: silent on absence, error on wrong type; TS's assertion lies through both; Python crashes on the first bad payload and never reaches the second |
-| 9-11. Productivity | See `results/productivity.md` -- Go smallest image (19.5 MB) and fastest clean build; Kotlin largest image (481 MB) and slowest clean build (Gradle/JVM cold start) |
+| 1. Absent/null | Go zero-fills silently; Rust/Python panic/raise loudly; Kotlin's `Map.get()` is already nullable, `!!` is an opt-in crash; C#'s nullable-warning is a build warning not an error, Dictionary indexer throws but TryGetValue doesn't; TypeScript's type lies |
+| 2. Data race | Go's `-race` catches it directly; Rust requires `unsafe` to even write it (two safe-Rust attempts confirmed as compile-time rejections, not runtime races) -- precise claim: safe Rust prevents data races, not all race conditions or deadlocks; plain tight loops in Python/Rust needed an induced delay to race reliably (mismatch vs. prediction); Kotlin/TS/C# raced on the first try |
+| 3. Integer overflow | C: UB; Go/Kotlin/C# (default): silent defined wrap; Rust: compile-time error for the const case (mismatch vs. prediction), else debug-panic/release-wrap; C#'s `checked`/project setting throws `OverflowException`; Python: no overflow; TS: silent precision loss, not wraparound |
+| 4. Ignored errors | Go/Rust let it through (warning only in Rust); Python/Kotlin require an active swallow; TS's unhandled rejection crashes the process asynchronously (mismatch vs. prediction); C#'s unobserved fire-and-forget Task exception is silently absorbed, no crash |
+| 5. Resource cleanup | C: detected leak via ASan; Rust's `Rc` cycle leaks but is memory-safe (deterministic Drop, not leak-freedom); every GC'd language (Go, Python, Kotlin, TypeScript, C#) needs explicit cleanup for deterministic timing |
+| 6. Hung request | All six core CLIs cancel correctly at the configured timeout; no broken/fixed pair exists for this scenario (stated plainly, not implied) |
+| 7. CPU-heavy blocking | Node and Python asyncio block completely (0 heartbeat ticks) until offloaded to a thread; Go/Rust(multi-thread runtime)/Kotlin(Dispatchers.Default)/C# all kept ticking without the explicit fix in this run, which is a fact about this run's spare thread capacity, not proof the fix is unnecessary; the original ~8x Go-vs-Node gap was investigated and found to be Go's unused-result dead-code elimination, not a real difference |
+| 8. Untrusted JSON | Go and C# (without `required`) split the same way: silent on absence, error on wrong type; Rust (serde) and Kotlin (kotlinx.serialization) are strict on both by default, with an explicit default-value opt-in mirroring Go; TS's assertion lies through both; Python crashes on the first bad payload and never reaches the second |
+| 9-11. Productivity | See `results/productivity.md` (median of 3 runs) -- Go smallest image (19.5 MB) and fastest clean build; Kotlin largest image (481 MB) and slowest clean build (Gradle/JVM cold start); C#'s Native AOT variant (207 MB) was its smallest of three image variants tried |
 
 ## What I'd learn next
 
@@ -431,6 +502,6 @@ A factual summary, drawn only from the recorded results above and in the compani
 
 **What this post didn't test**: large-codebase maintainability over time, build-system behavior at monorepo scale, CPU-bound (as opposed to I/O-bound) throughput under real load, memory usage under sustained load, cross-compilation, debugging/IDE experience, hiring/ecosystem-maturity considerations, and (this phase) Zig and Mojo implementations.
 
-**Reproduce this**: clone the repo, `cd companion-code/programming-languages-then-and-now`, `docker compose up -d mockserver`, then `docker compose run --rm <language> --top N --concurrency N --timeout SECONDS /data/urls-happy.txt` for any of `python`, `go`, `rust`, `typescript`, `kotlin`. `./scripts/run-acceptance.ps1` runs the full acceptance suite across all five. Each language's `scenarios/` folder has its own broken/fixed pairs with instructions in that folder's README.
+**Reproduce this**: clone the repo, `cd companion-code/programming-languages-then-and-now`, `docker compose up -d mockserver`, then `docker compose run --rm <language> --top N --concurrency N --timeout SECONDS /data/urls-happy.txt` for any of `python`, `go`, `rust`, `typescript`, `kotlin`, `csharp`. `./scripts/run-acceptance.ps1` runs the full acceptance suite across all six, plus the independent coreutils-only verification. Each language's `scenarios/` folder has its own broken/fixed pairs with instructions in that folder's README.
 
 **Versions and sources**: `companion-code/programming-languages-then-and-now/VERSIONS.md` (this post's version pins and lookup sources), `PREDICTIONS.md` (predictions recorded before each run, with mismatches flagged), `REVIEW.md` (claims that didn't clear the bar for this post as stated fact).

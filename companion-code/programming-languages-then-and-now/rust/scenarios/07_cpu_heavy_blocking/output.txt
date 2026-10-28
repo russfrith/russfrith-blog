@@ -1,0 +1,42 @@
+Workload: 300,000,000 sqrt additions, same as every other language in this
+scenario; result printed so the compiler can't eliminate the loop as dead code.
+
+$ cargo build --release
+   Compiling tokio v1.54.1
+   Compiling scenario07 v0.1.0 (/src)
+    Finished `release` profile [optimized] target(s) in 11.87s
+
+$ ./target/release/current_thread_broken   (#[tokio::main(flavor = "current_thread")])
+starting CPU-bound work directly inside an async task (current_thread runtime)...
+CPU-bound work finished after 407.734ms, heartbeat ticks seen: 0, result: 3464101606477.5415
+
+$ ./target/release/multi_thread_broken   (#[tokio::main], default multi-thread runtime)
+starting CPU-bound work directly inside an async task (default multi-thread runtime)...
+heartbeat tick 1
+heartbeat tick 2
+heartbeat tick 3
+heartbeat tick 4
+CPU-bound work finished after 408.390ms, heartbeat ticks seen: 4, result: 3464101606477.5415
+
+$ ./target/release/fixed   (spawn_blocking)
+starting CPU-bound work via spawn_blocking...
+heartbeat tick 1
+heartbeat tick 2
+heartbeat tick 3
+heartbeat tick 4
+CPU-bound work finished after 406.095ms, heartbeat ticks seen: 4, result: 3464101606477.5415
+
+Toolchain: rustc/cargo 1.96.1, tokio 1.54.1 (rust:1.96.1-slim-bookworm)
+Confirms half the prediction, revises the other half: the current_thread runtime
+stalls completely (0 ticks), matching Node/Python's broken case exactly. The
+multi-thread runtime did NOT stall in this run (4 ticks, same count as the fixed
+spawn_blocking version) -- this machine's default worker-thread count (one per
+core) was enough to schedule the heartbeat task on a different worker thread than
+the one running the blocking CPU-bound call. This is NOT evidence that blocking a
+worker thread on tokio's multi-thread runtime is safe in general: tokio's own
+documentation warns that CPU-bound or blocking work should use spawn_blocking
+precisely because it can starve other tasks once enough worker threads are
+simultaneously occupied by blocking calls -- a single blocking call with spare
+worker threads available simply doesn't demonstrate that failure mode. Mismatch
+with the original prediction ("may still stall... UNLESS worker threads get
+occupied") recorded here rather than papered over.

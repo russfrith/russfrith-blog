@@ -1,0 +1,15 @@
+$ dotnet run   (broken/ -- plain record, no `required`)
+http://mockserver:8080/json/missing-field: Item { Id = 1, Label = widget, Count = 0 } (no error if Count was absent -- no way to tell 0 from a real zero)
+http://mockserver:8080/json/wrong-type: decode error (correctly caught): The JSON value could not be converted to Item. Path: $.count | LineNumber: 0 | BytePositionInLine: 52.
+
+$ dotnet run   (fixed/ -- `required int Count`)
+http://mockserver:8080/json/missing-field: decode error (correctly caught): JSON deserialization for type 'Item' was missing required properties including: 'Count'.
+http://mockserver:8080/json/wrong-type: decode error (correctly caught): The JSON value could not be converted to System.Int32. Path: $.count | LineNumber: 0 | BytePositionInLine: 52.
+
+SDK: .NET 10.0.402, System.Text.Json (part of the BCL, no extra package)
+Confirms the prediction exactly: System.Text.Json's default behavior for a plain
+(non-required) property is to silently zero-fill a MISSING field -- the same
+failure mode as Go's encoding/json, not serde/kotlinx.serialization's default
+strictness -- while still throwing on a WRONG-TYPED field (a hard type mismatch).
+The `required` modifier (C# 11+) closes the gap: with it, BOTH the missing-field
+and wrong-type payloads throw a JsonException.

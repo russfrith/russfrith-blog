@@ -56,8 +56,172 @@ Written before running each scenario, per the post's results rules. Actual outco
 
 **Actual:** see `<lang>/scenarios/08-untrusted-json/output.txt`.
 
+## Phase 1b additions
+
+### A1 — independent expected-output verification
+
+**Prediction:** a coreutils-only pipeline (curl/tr/sort/uniq/head) reading the same
+mock-server fixtures, with the same tie-break rule, will match the existing
+`shared/expected-output/*.txt` files exactly, since those files were generated
+from the actual mock-server content, not invented.
+
+**Actual:** matched exactly for both fixtures. See `shared/acceptance/README.md`.
+No changes were made to the expected-output files.
+
+### A3 — scenario 7 workload equalization
+
+**Prediction:** once Node, Python, and Go all run the identical iteration count
+with the result printed, Go and Node (both compiled-to-native-code JIT paths: V8's
+JIT and Go's static compiler) should land in the same order of magnitude; Python,
+pure-interpreted, should be substantially slower (expect at least 10x).
+
+**Actual:** Go (404ms) and Node (411ms) landed within 2% of each other at
+300,000,000 iterations -- closer than predicted. Python took 13.5s, about 33x
+slower than Go/Node, more than the predicted 10x+. The ORIGINAL Phase 1 Go result
+(332ms for 2,000,000,000 iterations, an apparent 8x Go-vs-Node advantage) was
+investigated and found to be invalid: the loop's result was never used, so Go's
+compiler eliminated it as dead code. Re-run with the result printed, the same
+2,000,000,000-iteration workload took 2.74s, matching Node's ~2.6-2.7s for the
+same count. See go/scenarios/07_cpu_heavy_blocking/output.txt for the full
+investigation.
+
+### A4 — Rust scenario 7 (tokio)
+
+**Prediction:** a blocking (synchronous CPU-bound or `std::thread::sleep`-style)
+call placed directly inside an async task will stall a heartbeat task on a
+`current_thread` runtime completely (only one OS thread services all tasks, so a
+blocking call starves everything else). On the default multi-thread runtime, a
+single blocked worker thread may still let the heartbeat run on a different
+worker thread, UNLESS all worker threads get occupied by blocking calls or tokio's
+cooperative scheduling assumptions are violated badly enough to delay the
+heartbeat anyway. `spawn_blocking` should restore heartbeat ticking in both cases
+by moving the blocking work to tokio's dedicated blocking thread pool.
+
+### A5 — Kotlin scenario 7 (coroutines)
+
+**Prediction:** a single-threaded dispatcher (or `runBlocking` on one thread) will
+stall the heartbeat completely while CPU-bound work runs, the same qualitative
+result as Node/Python's broken case. `Dispatchers.Default` (a multi-threaded pool
+sized to available cores) should let the heartbeat keep ticking, the same way
+Go's goroutines did, since the CPU-bound coroutine and the heartbeat coroutine can
+run on different OS threads concurrently.
+
+### A6 — scenario 8 for Rust and Kotlin
+
+**Prediction:** `serde_json` with a plain (non-`Option`) field will error on
+deserialize for BOTH the missing-field and wrong-type cases (serde is strict about
+required fields by default, unlike Go). Adding `#[serde(default)]` will make the
+missing-field case silently zero-fill, mirroring Go's behavior -- a deliberate
+opt-in counterpoint, not a strictness failure. Kotlin's `kotlinx.serialization`
+should behave the same way: strict by default, with an explicit default value
+annotation needed to opt into zero-filling.
+
+### A7 — Rust scenario 2, safe-Rust compiler rejections
+
+**Prediction:** capturing a plain `&mut i64` (or owned `i64`) in two
+`thread::spawn` closures without `Arc`/synchronization will fail to compile with a
+lifetime/ownership error (the closures would outlive the borrowed stack frame, or
+Rust will demand `move`, after which both closures can't own the same value
+without `Clone`, which would make them independent counters, not a shared race).
+Sharing a plain `Rc<RefCell<i64>>` across `thread::spawn` will fail to compile with
+a trait-bound error, because `Rc` is not `Send` (it's not thread-safe by design,
+unlike `Arc`). Both should be genuine compile-time rejections, not runtime
+failures.
+
+### A8 — version/provenance checks (no prediction; a direct audit)
+
+**Actual:** the Temurin JDK version recorded in Phase 1's VERSIONS.md ("25.0.4.7",
+"2026-08-21") was wrong on both the patch number and the date -- it was apparently
+copied from a secondary aggregator without checking the actual pulled image.
+Direct `java -version` against the pinned `eclipse-temurin:25-jdk`/`25-jre` images
+resolves to 25.0.4.1+1, dated 2026-08-18. Corrected in VERSIONS.md. Separately,
+Phase 1's VERSIONS.md described a free-threaded (`python3.14t`) build and Docker
+step that was never actually built -- every Phase 1 Python scenario ran on the
+default GIL build. There is also no OFFICIAL free-threaded Python Docker image as
+of this lookup. Every Python scenario output now prints `sys.version` and
+`sys._is_gil_enabled()` so this can't silently drift again; see each
+`python/scenarios/*/output.txt`.
+
+## C# (Part B) — predictions before running
+
+**1 absent value:** a fresh .NET 10 console project template enables nullable
+reference types as a compiler WARNING, not an error -- a null dereference where
+the compiler warned should still build and run, then throw a
+`NullReferenceException` at runtime. `Dictionary` indexing on a missing key should
+throw `KeyNotFoundException`; `TryGetValue` should return `false` without
+throwing.
+
+**2 data race:** an unsynchronized `counter++` across `Task.Run`/`Thread`
+instances should lose updates under load (same risk as Go/Kotlin/Java); expect it
+may need the same kind of artificial delay Python/Rust needed to reproduce
+reliably, since this is the same class of race. `Interlocked.Increment` or `lock`
+should fix it.
+
+**3 integer overflow:** C#'s default arithmetic context is `unchecked` -- overflow
+should wrap silently, like Go/Kotlin. An explicit `checked` block, or the
+project-level `<CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>`
+setting, should make it throw `OverflowException` instead.
+
+**4 ignored errors:** a swallowed `catch {}` should behave like Python/Kotlin's
+equivalent. A "fire-and-forget" `Task` (started and not awaited, not stored, not
+observed) whose body throws should NOT crash the process the way an unobserved
+Node promise rejection does by default -- .NET's default unobserved-task-exception
+behavior differs from Node's unhandled-rejection-is-fatal default; expect either a
+silently swallowed exception or (pre-.NET 4.5-era behavior, now changed) a
+finalizer-thread crash. This needs to be checked against the actual runtime, not
+assumed.
+
+**5 resource cleanup:** `IDisposable` without `using` should leave a resource
+(file handle) open longer than necessary, same risk as every other GC'd language
+here; `using`/`await using` should close it deterministically when the block
+exits.
+
+**6 hung request:** `CancellationTokenSource` with a timeout, passed to
+`HttpClient.GetAsync`, should cancel at the configured timeout, same as every
+other language.
+
+**7 CPU-heavy work:** .NET does not have a single-threaded event loop the way
+Node or Python asyncio does -- `async`/`await` is built on the thread pool, which
+has multiple worker threads by default. A CPU-bound loop called directly inside
+an `async` method without `Task.Run` should run synchronously on whichever thread
+called it (blocking that one caller), but should NOT stall a heartbeat running as
+a separate `Task`/`async` operation the way Node/Python's single-threaded case
+does, because the thread pool has other threads available -- expected to pattern-
+match Go/Rust's multi-thread-runtime/Kotlin's Dispatchers.Default result (heartbeat
+keeps ticking) rather than Node/Python's single-threaded stall. This needs
+verification, not assumption, per the prompt's own instruction.
+
+**8 untrusted JSON:** `System.Text.Json` with a plain (non-nullable, no
+`required`) field should likely zero-fill a MISSING field silently (System.Text.Json
+is documented as lenient about missing members by default, closer to Go than to
+serde/kotlinx.serialization) while still erroring on a WRONG-TYPED field (a JSON
+string where a number is expected is a hard type mismatch). The `required`
+modifier (C# 11+) should turn the missing-field case into a thrown
+`JsonException` instead.
+
+**Footgun:** `async void` is the strongest candidate -- exceptions thrown inside an
+`async void` method are NOT caught by a surrounding `try`/`catch` around the call
+site (they're rethrown on the `SynchronizationContext` instead), unlike
+`async Task`. This is justified over the other candidates (nullable warnings not
+breaking the build -- already covered in scenario 1; `HttpClient` created per
+request -- a performance/socket-exhaustion footgun, not a correctness-crash one)
+because it reproduces a clean, surprising, incorrect-looking-correct crash in a
+few lines.
+
+### C# — actual results (all in `csharp/scenarios/*/output.txt`)
+
+- **1**: confirmed exactly. CS8603 warning, build succeeds, `NullReferenceException` at runtime. Indexer throws `KeyNotFoundException`, `TryGetValue` doesn't.
+- **2**: confirmed. Raced reliably on the first run (no induced delay needed), matching Kotlin/TypeScript rather than Python/Rust's tight-loop case.
+- **3**: confirmed exactly, both the `checked()` expression and the project-level setting throw `OverflowException` for identical source.
+- **4**: confirmed for the fire-and-forget Task -- no crash, silently absorbed, a genuine difference from Node's default. One deviation: `/no/such/path.txt` threw `DirectoryNotFoundException`, not `FileNotFoundException` as first assumed (the parent directory is also missing); fixed by catching the common `IOException` base class.
+- **5**: confirmed, same pattern as every other GC'd language.
+- **6**: confirmed, cancels at ~2s via `CancellationTokenSource`.
+- **7**: confirmed -- no single-threaded event loop, heartbeat unaffected whether or not `Task.Run` wraps the CPU-bound call, in both cases. ~1000ms for the same 300M-iteration workload Go/Node did in ~400ms -- noted as an observation, not investigated further (not an order-of-magnitude gap, A3's bar for investigation).
+- **8**: confirmed exactly -- plain property zero-fills on absence, throws on wrong type; `required` makes both throw.
+- **Footgun**: confirmed the try/catch doesn't catch it; one correction -- the result is a process-crashing unhandled exception, not a silent swallow as the broken file's comment originally implied.
+
 ## Scenarios 9-11 — CLI size/deps, build/rebuild time, image size
 
 **Prediction:** Go and Rust produce the smallest final images (static-ish binaries, multi-stage builds); Python needs the full interpreter + stdlib (or a slim variant) in the final image; Kotlin's final image carries a JRE; Rust has the slowest clean build and a much faster incremental rebuild; Go has both the fastest clean build and fastest incremental rebuild.
 
-**Actual:** see `results/productivity.md` for measured (not benchmarked) figures with the exact commands used.
+**Actual:** see `results/productivity.md` for measured (not benchmarked) figures with the exact commands used. Confirmed for Go (fastest clean+incremental, smallest image) and Kotlin (slowest clean build, largest image). C# added in Phase 1b (B3): zero third-party CLI dependencies (matching Go/Python), a mid-pack clean build time (4.5s median), and three image-size variants -- framework-dependent (301MB) and self-contained (300MB) landed almost identical, which was not predicted in advance; Native AOT (207MB) was the smallest of the three and built successfully with only `clang`/`zlib1g-dev` added to the build stage, no external toolchain install needed.

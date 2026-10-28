@@ -1,0 +1,22 @@
+$ dotnet run   (broken/)
+/src/Program.cs(14,12): warning CS8603: Possible null reference return. [/src/scenario.csproj]
+Unhandled exception. System.NullReferenceException: Object reference not set to an instance of an object.
+   at Program.<Main>$(String[] args) in /src/Program.cs:line 9
+EXIT:1 (crashes at runtime; build itself succeeded despite the warning)
+
+$ dotnet run   (fixed/)
+label absent
+EXIT:0
+
+$ dotnet run   (indexer_demo/ -- Dictionary indexer vs TryGetValue)
+indexer threw: KeyNotFoundException: The given key 'count' was not present in the dictionary.
+TryGetValue: count absent, no exception
+
+SDK: .NET 10.0.402 (mcr.microsoft.com/dotnet/sdk:10.0)
+Confirms the prediction exactly: a fresh project template's nullable reference
+types annotation (`<Nullable>enable</Nullable>`, which `dotnet new console`
+enables by default) makes violating a non-null return type a WARNING (CS8603),
+not a build error -- the project still compiles and runs, and the null only
+surfaces as a crash at the actual point of use. Dictionary's indexer throws
+KeyNotFoundException on a missing key; TryGetValue returns false with no
+exception, same two-styles-of-absence pattern as Python's `d[k]` vs `d.get(k)`.

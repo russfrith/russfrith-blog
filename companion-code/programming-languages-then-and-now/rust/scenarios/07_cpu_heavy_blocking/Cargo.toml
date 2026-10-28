@@ -1,0 +1,19 @@
+[package]
+name = "scenario07"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+
+[[bin]]
+name = "current_thread_broken"
+path = "src/bin/current_thread_broken.rs"
+
+[[bin]]
+name = "multi_thread_broken"
+path = "src/bin/multi_thread_broken.rs"
+
+[[bin]]
+name = "fixed"
+path = "src/bin/fixed.rs"

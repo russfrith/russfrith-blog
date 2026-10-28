@@ -1,0 +1,32 @@
+#!/bin/sh
+# Independent recomputation of expected wordfreq output, using only coreutils
+# (tr, sort, uniq, head) plus curl -- no code shared with any of the six
+# implementations under test. Same tie-break rule: count descending, then word
+# alphabetically ascending. Run inside a plain debian container on the shared
+# `wordfreq` network:
+#
+#   docker run --rm --network programming-languages-then-and-now_wordfreq \
+#     -v "${PWD}/shared/acceptance/verify-expected:/verify-expected" \
+#     debian:bookworm-slim sh /verify-expected <top-n> <url1> [url2 ...]
+#
+# Prints "word count" lines to stdout, same format as the CLI.
+set -eu
+
+TOP="$1"
+shift
+
+TMP="$(mktemp)"
+trap 'rm -f "$TMP"' EXIT
+
+for url in "$@"; do
+  curl -fsS "$url" >>"$TMP"
+done
+
+tr 'A-Z' 'a-z' <"$TMP" \
+  | tr -c 'a-z' '\n' \
+  | grep -v '^$' \
+  | sort \
+  | uniq -c \
+  | sort -k1,1nr -k2,2 \
+  | head -n "$TOP" \
+  | awk '{print $2, $1}'

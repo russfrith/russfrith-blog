@@ -1,7 +1,10 @@
 """Scenario 8 fixed: validate presence AND type explicitly before trusting the
 value -- Python's own typing does nothing for you at runtime, same as TypeScript."""
 import json
+import sys
 import urllib.request
+
+print(f"[python {sys.version.split()[0]}, gil_enabled={sys._is_gil_enabled()}]", file=sys.stderr)
 
 
 def parse_item(raw: bytes) -> dict | None:

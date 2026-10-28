@@ -1,0 +1,11 @@
+$ dotnet run   (broken/)
+read 13 bytes, stream never explicitly disposed
+
+$ dotnet run   (fixed/)
+read 13 bytes, stream disposed deterministically via using
+
+SDK: .NET 10.0.402 (mcr.microsoft.com/dotnet/sdk:10.0)
+Same pattern as every other GC'd language here: broken.cs's FileStream is still
+open when the program's last statement runs -- the finalizer will eventually
+release the OS handle, but that timing is not deterministic. `using` disposes it
+deterministically when the declaring scope ends.

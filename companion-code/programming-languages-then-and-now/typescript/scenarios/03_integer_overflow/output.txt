@@ -8,3 +8,9 @@ Runtime: Node.js v26.12.1 (node:26-bookworm-slim)
 Note: "+1" and "+2" print the SAME value -- this is silent precision loss, not
 wraparound. No broken/fixed pair: ordinary `number` has no fix for itself; BigInt is
 a different, exact type you must opt into deliberately.
+
+$ npx tsc --noEmit --strict --target ES2023 --module NodeNext --moduleResolution NodeNext --esModuleInterop --skipLibCheck --types node demo.ts
+(no errors)
+EXIT:0
+
+Type checker: TypeScript 5.9.3.

@@ -2,6 +2,11 @@
 target/
 dist/
 build/
+bin/
+obj/
+*.so
+coroutines.jar
+serialization-*.jar
 *.jar
 __pycache__/
 *.pyc

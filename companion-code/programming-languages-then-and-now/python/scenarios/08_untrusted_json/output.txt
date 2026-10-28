@@ -1,21 +1,23 @@
 $ python broken.py
+[python 3.14.8, gil_enabled=True]
 Traceback (most recent call last):
-  File "/src/broken.py", line 14, in <module>
+  File "/src/broken.py", line 17, in <module>
     count = item["count"]
             ~~~~^^^^^^^^^
 KeyError: 'count'
 EXIT:1
 
 $ python fixed.py
+[python 3.14.8, gil_enabled=True]
 http://mockserver:8080/json/missing-field: validation failed, rejecting payload
 http://mockserver:8080/json/wrong-type: validation failed, rejecting payload
 EXIT:0
 
-Interpreter: Python 3.14.8 (python:3.14.8-slim)
+Interpreter: Python 3.14.8 (python:3.14.8-slim), default GIL build (confirmed by
+the printed sys.version / sys._is_gil_enabled() above -- A8 fix)
 Note: broken.py crashes on the FIRST url (missing-field) and never even reaches the
 wrong-type url, which is itself informative -- an unhandled KeyError on one bad
-payload takes down the whole batch, unlike Go's per-item silent zero-fill.
-Rust (serde with Option<i64> for the field) and Kotlin (kotlinx.serialization with
-a nullable field) behave like the fixed Python/TypeScript versions here when
-written defensively; neither was run as a full separate demo (one line, per the
-post's rule about full detail only where something notable happens).
+payload takes down the whole batch, unlike Go's silent per-item zero-fill.
+Rust (serde with #[serde(default)] for the field, see A6) and Kotlin
+(kotlinx.serialization with a default value, see A6) behave like the fixed
+Python/TypeScript versions here when written defensively.
