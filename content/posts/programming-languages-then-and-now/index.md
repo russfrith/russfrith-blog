@@ -17,12 +17,12 @@ surprised me" notes under each language below. -->
 
 Most early general-purpose languages were built to solve one specific problem, not to be general-purpose in the way we'd use that word today.
 
-- **Fortran** (1957) existed to make scientific and engineering numerical computation practical without hand-written assembly, on IBM's own hardware. Its name is literally "FORmula TRANslation."
-- **COBOL** (1959) existed to make business data processing (payroll, inventory, billing) readable by non-programmers reviewing the code, which is why its syntax reads like stilted English.
-- **BASIC** (1964) existed to make programming accessible to students outside engineering and science departments at Dartmouth, on a time-sharing system, deliberately simplified versus Fortran.
-- **Pascal** (1970) existed to teach structured programming systematically, as a reaction against languages (including early BASIC and Fortran) that made it easy to write unstructured, `GOTO`-laden code.
-- **C** (1972) existed to write an operating system (Unix) and its tools efficiently, portably, and close to the hardware, replacing the assembly Unix had been written in.
-- **Ada** (1980) existed because the U.S. Department of Defense was paying for hundreds of incompatible languages across embedded and safety-critical defense systems and wanted one language with built-in support for strong typing, concurrency, and real-time constraints.
+- **Fortran** (1957) existed to make scientific and engineering numerical computation practical without hand-written assembly, on IBM's own hardware. Its name is literally "FORmula TRANslation," per [IBM Research's own account of Fortran I, II, and III](https://research.ibm.com/publications/the-history-of-fortran-i-ii-and-iii--2), written by John Backus, who led the original project.
+- **COBOL** (1959) existed to make business data processing (payroll, inventory, billing) readable by non-programmers reviewing the code -- the CODASYL committee's own early specification work is archived in [NIST's NBS Handbook 106](https://nvlpubs.nist.gov/nistpubs/Legacy/hb/nbshandbook106.pdf), the official U.S. government record of COBOL's development.
+- **BASIC** (1964) existed to make programming accessible to students outside engineering and science departments at Dartmouth, on a time-sharing system, deliberately simplified versus Fortran. Source: [Dartmouth's own account, "BASIC Begins at Dartmouth"](https://www.dartmouth.edu/basicfifty/basic.html).
+- **Pascal** (1970) existed to teach structured programming systematically, as a reaction against languages Niklaus Wirth considered too large and complex for students to understand in their entirety. Source: [Wirth's 1984 ACM Turing Award lecture, "From Programming Language Design to Computer Construction"](https://informatik.uni-bremen.de/agbkb/lehre/programmiersprachen/artikel/wirth-Turing-Award.pdf).
+- **C** (1972) existed to write an operating system (Unix) and its tools efficiently, portably, and close to the hardware, replacing the assembly Unix had been written in. Source: Dennis Ritchie's own [&ldquo;The Development of the C Language&rdquo;](https://www.nokia.com/bell-labs/about/dennis-m-ritchie/chist.html).
+- **Ada** (1980) existed because the U.S. Department of Defense was funding hundreds of incompatible languages across embedded and safety-critical defense systems and wanted one language with built-in support for strong typing, concurrency, and real-time constraints. Source: the DoD's own ["Rationale for the Design of the Ada Programming Language"](https://apps.dtic.mil/sti/pdfs/ADA090709.pdf) (Ichbiah et al.).
 
 <!-- AUTHOR-TODO: candidate observation from writing this section -- how many of
 these "one problem" origin stories map cleanly onto scenarios later in this post
@@ -30,19 +30,19 @@ these "one problem" origin stories map cleanly onto scenarios later in this post
 
 ## Eras and pivot points
 
-The 1980s-1990s object-oriented era (C++, Java, C#) reframed "what problem does this solve" around managing complexity in large codebases through encapsulation and inheritance, not around a single computing domain the way Fortran or COBOL had been.
+The 1980s-1990s object-oriented era (C++, Java, C#) reframed "what problem does this solve" around managing complexity in large codebases through encapsulation and inheritance, not around a single computing domain the way Fortran or COBOL had been. Source, for C++'s own account of this motivation: [Bjarne Stroustrup's papers page](https://stroustrup.com/papers.html), including his HOPL retrospectives on C++'s design history.
 
-Web scripting in the mid-1990s to 2000s (Perl, PHP, then Python and Ruby) optimized for a different thing entirely: get a dynamic page in front of a browser quickly, with the language's job being to glue together HTML, a database, and some logic. Ruby on Rails (2004) was a pivot point within that era specifically because it bundled opinionated conventions (routing, an ORM, scaffolding) into the framework itself, which changed what "web scripting language" meant in practice even for languages that weren't Ruby.
+Web scripting in the mid-1990s to 2000s (Perl, PHP, then Python and Ruby) optimized for a different thing entirely: get a dynamic page in front of a browser quickly, with the language's job being to glue together HTML, a database, and some logic. Ruby on Rails (2004) was a pivot point within that era specifically because it bundled opinionated conventions (routing, an ORM, scaffolding) into the framework itself -- see [Rails' own doctrine page](https://rubyonrails.org/doctrine), particularly its "Convention over Configuration" and "The Menu is Omakase" sections, which state this design philosophy directly.
 
-Python's rise to its current dominance is widely attributed less to language design changes than to its library ecosystem, particularly NumPy, pandas, scikit-learn, and later PyTorch and TensorFlow, which made it the default glue language for data science and machine learning. The language itself changed relatively incrementally over that period; the ecosystem around it is what changed the calculation of "which language should I use for this."
+Python's rise to its current dominance is widely attributed less to language design changes than to its library ecosystem, particularly NumPy, pandas, and scikit-learn, which made it a default glue language for data science and machine learning. Source: [the SciPy 1.0 paper](https://arxiv.org/pdf/1907.10121), written by the maintainers of that ecosystem, documenting its growth and interdependencies. The language itself changed relatively incrementally over that period; the ecosystem around it is what changed the calculation of "which language should I use for this."
 
 ## What changed after the 2000s
 
-A cluster of new systems and application languages appeared from the mid-2000s onward -- Go (2009), Rust (2010 announced, 2015 stable 1.0), Swift (2014), Kotlin (2011), Zig (2016), Mojo (2023) -- at a pace that looks different from the preceding couple of decades. A few commonly cited, partial explanations, stated carefully because this is a contested, multi-causal historical question (see REVIEW.md for claims that didn't clear the bar for this post):
+A cluster of new systems and application languages appeared from the mid-2000s onward -- Go (2009), Rust (2010 announced, 2015 stable 1.0), Swift (2014), Kotlin (2011), Zig (2016), Mojo (2023) -- at a pace that looks different from the preceding couple of decades. A few commonly cited, partial explanations, stated carefully because this is a contested, multi-causal historical question -- claims that couldn't be traced to a primary source are left out here rather than included with a hedge:
 
-- **LLVM lowering the cost of building a compiler backend.** Writing a production-quality optimizing backend from scratch is a multi-year undertaking; LLVM let new language projects focus their effort on the frontend and type system instead. This is a commonly cited factor, not a universal one: **Go is an explicit counterexample** -- it uses a hand-written backend, not LLVM, and still shipped a usable, reasonably fast compiler.
-- **Package managers built into the language or its official tooling from day one** (Cargo for Rust, Go modules, npm having already set the expectation for JavaScript). Older languages like C and C++ still don't have one standard, built-in answer to "how do I pull in a dependency," and that gap is routinely cited by newer-language designers as something they wanted to avoid repeating.
-- **Corporate sponsors with a platform to push**: Go (Google, systems/infra), Rust (originally Mozilla, for Servo/Firefox), Swift (Apple, for its own platforms), Kotlin (JetBrains, then adopted by Google for Android). Having a company fund full-time compiler engineers for years is a different resourcing model than earlier languages often had.
+- **LLVM lowering the cost of building a compiler backend.** Writing a production-quality optimizing backend from scratch is a multi-year undertaking; LLVM let new language projects focus their effort on the frontend and type system instead. Source: [Lattner and Adve's original LLVM paper](https://llvm.org/pubs/2004-01-30-CGO-LLVM.html) describes it as infrastructure for exactly this kind of reuse. This is a commonly cited factor, not a universal one: **Go is an explicit counterexample** -- it uses a hand-written backend, not LLVM, and still shipped a usable, reasonably fast compiler, per [Google's own announcement of Go](https://developers.googleblog.com/2009/11/go-new-programming-language.html).
+- **Package managers built into the language or its official tooling from day one** (Cargo for Rust, Go modules). Older languages like C and C++ still don't have one standard, built-in answer to "how do I pull in a dependency."
+- **Corporate sponsors with a platform to push**: Go (Google, per the announcement above), Rust (originally Mozilla), Swift (Apple, for its own platforms -- see the Swift section below), Kotlin (JetBrains, with Google giving it [official first-class Android support in 2017](https://blog.jetbrains.com/kotlin/2017/05/kotlin-on-android-now-official/)). Having a company fund full-time compiler engineers for years is a different resourcing model than earlier languages often had.
 - **Hardware and platform shifts**: multi-core becoming the default (making "safe concurrency" a sellable language feature in a way it wasn't when most CPUs were single-core), and mobile platforms (iOS, Android) creating a reason for platform owners to want their own first-party language.
 
 <!-- AUTHOR-TODO: this section was drafted carefully to avoid overclaiming a single
@@ -70,7 +70,7 @@ Everything runs in Docker containers pinned to specific versions, looked up 2026
 | TypeScript (on Node) | Node 26 LTS | `node:26-bookworm-slim` |
 | Kotlin | 2.4.0 (JVM: Eclipse Temurin 25, build 25.0.4.1+1) | compiled on JDK |
 | C# | .NET 10 SDK 10.0.402 (LTS) | `mcr.microsoft.com/dotnet/sdk:10.0` |
-| C (baseline) | GCC 16.2 | `gcc:16.2-bookworm` |
+| C (baseline) | GCC 16.2 | `gcc:16.2` |
 
 A shared mock HTTP server (Python stdlib `http.server`, no third-party dependencies) serves fixed pages, a 404, an endpoint that hangs, a large page, and two JSON endpoints with a missing field and a wrong-typed field, respectively. A connection-refused case is tested by pointing at an unused port. Nothing ever touches the live internet. A shared acceptance script runs every implementation against the same fixtures and diffs stdout against one expected-output file per fixture; all six core languages (Python, Go, Rust, TypeScript, Kotlin, C#) pass it as of this writing. That expected output was also recomputed independently, with a coreutils-only pipeline (`curl`/`tr`/`sort`/`uniq`/`head`) that shares no code with any of the six implementations, and matched exactly -- see `shared/acceptance/README.md`.
 
@@ -134,7 +134,7 @@ C# splits the same way Go does, but on a different axis: a fresh project templat
 
 #### 2. Data race
 
-The C baseline, built with GCC's ThreadSanitizer-adjacent `-fsanitize=address` run separately for leaks (scenario 5) and run directly here for the race itself via two pthreads incrementing an unguarded shared counter:
+The C baseline: a plain `gcc -O0 -g -Wall broken.c -o broken -lpthread` build (no sanitizer involved) with two pthreads incrementing an unguarded shared counter -- the race is visible directly in the wrong final count, no detector tool needed to see it:
 
 {{< snippet file="c/scenarios/02-data-race/output.txt" lang="text" >}}
 
@@ -258,7 +258,7 @@ Rust's case is the one worth stating precisely. An `Rc` reference cycle (two nod
 
 {{< snippet file="rust/scenarios/05_resource_cleanup/output.txt" lang="text" >}}
 
-**This is memory-safe. It is not leak-free.** Rust's guarantee is deterministic `Drop` for values that *do* drop, plus no use-after-free and no double-free; it does not promise leak-freedom against reference cycles. The Rust book states this explicitly: "it's possible to leak memory" with `Rc<T>` and `RefCell<T>` cycles, and recommends `Weak<T>` for the back-reference to break the cycle -- exactly the fix here:
+**This is memory-safe. It is not leak-free.** Rust's guarantee is deterministic `Drop` for values that *do* drop, plus no use-after-free and no double-free; it does not promise leak-freedom against reference cycles. The [Rust book's chapter on reference cycles](https://doc.rust-lang.org/book/ch15-06-reference-cycles.html) states plainly that preventing memory leaks is not one of Rust's guarantees, and that an `Rc<T>`/`RefCell<T>` cycle is exactly the mechanism that causes one (the reference count never reaches zero, so the values never drop) -- `Weak<T>` for the back-reference breaks the cycle, which is the fix here:
 
 {{< snippet file="rust/scenarios/05_resource_cleanup/fixed.rs" >}}
 
@@ -294,7 +294,7 @@ Go's counterexample needed no fix at all: a heartbeat goroutine keeps ticking on
 
 {{< snippet file="go/scenarios/07_cpu_heavy_blocking/output.txt" lang="text" >}}
 
-**Investigation, not just a result:** the first draft of this scenario reported Go finishing the same workload roughly 8x faster than Node, which turned out to be invalid. Inspecting `go build -gcflags=-S` on a reconstruction of that version confirms the exact mechanism: the compiler inlined the loop into `main`, proved the accumulated sum was never read, and deleted the floating-point work entirely, leaving only an empty counting loop -- not a measurement bug, and not unique to this run. Printing the result (as every language here now does, so no compiler can prove it unused) made Go and Node land within 2% of each other. The assembly evidence and the corrected numbers are in `go/scenarios/07_cpu_heavy_blocking/NOTES.md`.
+**Investigation, not just a result:** an early run of this scenario reported Go finishing the same workload roughly 8x faster than Node, which turned out to be invalid. Inspecting `go build -gcflags=-S` on a reconstruction of that version confirms the exact mechanism: the compiler inlined the loop into `main`, proved the accumulated sum was never read, and deleted the floating-point work entirely, leaving only an empty counting loop -- not a measurement bug, and not unique to this run. Printing the result (as every language here now does, so no compiler can prove it unused) made Go and Node land within 2% of each other. The assembly evidence and the corrected numbers are in `go/scenarios/07_cpu_heavy_blocking/NOTES.md`.
 
 Rust (tokio) and Kotlin (coroutines) both show the same two-part result once actually run, which only partly matched the prediction: a single-threaded runtime/dispatcher stalls completely (0 ticks, matching Node/Python), but simply running the SAME unfixed code on the default multi-thread runtime / `Dispatchers.Default` did **not** stall either -- this machine's thread pool had a spare thread for the heartbeat even without `spawn_blocking`/`withContext` applied. That is not evidence the mistake is harmless in general; both ecosystems' own documentation recommends the explicit fix specifically because a saturated pool would show the stall this single demo didn't:
 
@@ -353,15 +353,9 @@ C#'s `System.Text.Json` splits exactly like Go for a plain property: silent zero
 
 ### Productivity
 
-#### 9. Baseline CLI size and dependency count
-
-#### 10. Clean build vs. incremental rebuild time
-
-#### 11. Final container image size
-
 Measured three times each, back to back, on one development machine, 2026-10-28; median reported, range in parentheses. Full methodology and the "reproduce this" commands are in `companion-code/programming-languages-then-and-now/results/productivity.md`.
 
-**9. CLI size and dependency count**
+#### 9. Baseline CLI size and dependency count
 
 | Language | Lines of code (wordfreq only) | Direct third-party dependencies |
 |---|---|---|
@@ -372,7 +366,7 @@ Measured three times each, back to back, on one development machine, 2026-10-28;
 | Go | 137 | 0 (stdlib only) |
 | C# | 91 | 0 (BCL only) |
 
-**10. Clean build vs. incremental rebuild time**
+#### 10. Clean build vs. incremental rebuild time
 
 | Language | Clean build (`--no-cache`) | Incremental rebuild (layer cache warm) |
 |---|---|---|
@@ -385,7 +379,9 @@ Measured three times each, back to back, on one development machine, 2026-10-28;
 
 Incremental rebuild times converge to roughly the same ~1-1.4s across all six once the Docker layer cache is warm and nothing in the source changed; the spread is in the clean build. Kotlin's clean build downloads Gradle 9.5.0 inside the build stage every time `--no-cache` is used. Rust's clean build compiles ~30 transitive crates from source every time.
 
-**11. Final image size (idiomatic multi-stage build)**
+#### 11. Final container image size
+
+Idiomatic multi-stage builds.
 
 | Language | Final image size | Base |
 |---|---|---|
@@ -418,7 +414,7 @@ So this post doesn't read as a scoreboard: one commonly-cited surprise per langu
 
 **Kotlin: platform types from Java interop.** An unannotated Java API (here, `java.util.Properties.getProperty`, which predates Java's nullability annotations entirely) returns a "platform type" that Kotlin lets you treat as non-null with zero warnings -- it compiles clean and crashes at runtime:
 
-{{< snippet file="kotlin/scenarios/footgun_platform_types/broken.kt" >}}
+{{< snippet file="kotlin/scenarios/footgun_platform_types/Broken.kt" >}}
 
 {{< snippet file="kotlin/scenarios/footgun_platform_types/output.txt" lang="text" >}}
 
@@ -462,7 +458,7 @@ Targets: networked services, CLI tooling, infrastructure software. Tooling: a si
 
 ### Rust
 
-Targets: systems programming, performance-critical services, anywhere C/C++ would traditionally be reached for but memory safety matters. Tooling: Cargo, widely regarded as one of the best package-manager-plus-build-tool combinations of any language, bundled from day one. Signature strength: the borrow checker eliminates whole categories of memory-safety bugs at compile time (no use-after-free, no data races in safe code, demonstrated directly in scenario 2). Signature footgun: the borrow checker rejecting correct code (above). Costs, stated plainly: the slowest clean build of the five core languages measured here (companion-code results), and real friction when the borrow checker can't see through an abstraction you know is safe.
+Targets: systems programming, performance-critical services, anywhere C/C++ would traditionally be reached for but memory safety matters. Tooling: Cargo, widely regarded as one of the best package-manager-plus-build-tool combinations of any language, bundled from day one. Signature strength: the borrow checker eliminates whole categories of memory-safety bugs at compile time (no use-after-free, no data races in safe code, demonstrated directly in scenario 2). Signature footgun: the borrow checker rejecting correct code (above). Costs, stated plainly: the second-slowest clean build of the six core languages measured here -- 14.0s median, behind only Kotlin's 66.4s (`results/productivity.md`) -- and real friction when the borrow checker can't see through an abstraction you know is safe.
 
 <!-- AUTHOR-TODO: what was familiar -->
 <!-- AUTHOR-TODO: what surprised me -->
@@ -501,21 +497,21 @@ func fetchCount(from record: [String: Int]) -> Int? {
 }
 ```
 
-Server-side Swift (Vapor, Hummingbird) is documented by [swift.org's own "Swift on Server" page](https://www.swift.org/documentation/server/), which lists both frameworks as community options; adoption outside Apple-centric teams is limited, and the tooling/platform experience on Linux is reported as noticeably different from developing on macOS -- a measured note, not a dismissal.
+Server-side Swift (Vapor, Hummingbird) is documented by [swift.org's own "Swift on Server" page](https://www.swift.org/documentation/server/), which describes them as "web frameworks ... that provide a variety of tools and libraries to streamline the development process"; adoption outside Apple-centric teams is limited, and the tooling/platform experience on Linux is reported as noticeably different from developing on macOS -- a measured note, not a dismissal.
 
 <!-- AUTHOR-TODO: what was familiar -->
 <!-- AUTHOR-TODO: what surprised me -->
 
-### Zig (Phase 2 -- not yet implemented)
+### Zig (not implemented in this post)
 
-Looked up 2026-10-28: Zig 0.17.0 is current and brought incremental compilation to `x86_64-linux`; Linux x86-64 container support is solid. Implementation (companion code, scenarios, benchmarking) is planned for Phase 2 of this project, pending approval, after Python/Go/Rust/TypeScript/Kotlin/C land. A dated "moving target" note: Zig has not yet reached a 1.0 release, and its standard library (including `std.http`) has a documented history of breaking changes between minor versions.
+Looked up 2026-10-28: Zig 0.17.0 is current and brought incremental compilation to `x86_64-linux`; Linux x86-64 container support is solid. Implementation (companion code, scenarios, benchmarking) is not done yet. A dated "moving target" note: Zig has not yet reached a 1.0 release, and its standard library (including `std.http`) has a documented history of breaking changes between minor versions.
 
 <!-- AUTHOR-TODO: what was familiar -->
 <!-- AUTHOR-TODO: what surprised me -->
 
-### Mojo (Phase 2 -- not yet implemented)
+### Mojo (not implemented in this post)
 
-Looked up 2026-10-28: Mojo reached 1.0 on 2026-08-11, 1.1 on 2026-09-17, and the compiler/stdlib went fully open source under Apache-2.0-with-LLVM-exceptions shortly after 1.0. Official Linux support exists; Windows support is still being added. Implementation is planned for Phase 2. Per the original plan: real HTTP will be attempted first against the mock server, with a documented fallback to reading pre-fetched fixture files if the pinned version's HTTP support isn't there yet, and Zig/Mojo are excluded from the scenario metrics comparison regardless. A dated "moving target" note: despite reaching 1.0, Mojo is young enough that its HTTP client/server maturity at the exact pinned version is an open question until actually tried.
+Looked up 2026-10-28: Mojo reached 1.0 on 2026-08-11, 1.1 on 2026-09-17, and the compiler/stdlib went fully open source under Apache-2.0-with-LLVM-exceptions shortly after 1.0. Official Linux support exists; Windows support is still being added. Implementation is not done yet. If it happens: real HTTP would be attempted first against the mock server, with a documented fallback to reading pre-fetched fixture files if the pinned version's HTTP support isn't there yet, and Zig/Mojo would stay excluded from the scenario metrics comparison regardless. A dated "moving target" note: despite reaching 1.0, Mojo is young enough that its HTTP client/server maturity at the exact pinned version is an open question until actually tried.
 
 <!-- AUTHOR-TODO: what was familiar -->
 <!-- AUTHOR-TODO: what surprised me -->
@@ -545,9 +541,9 @@ A factual summary, drawn only from the recorded results above and in the compani
 
 ## What I didn't test, how to reproduce, and sources
 
-**What this post didn't test**: large-codebase maintainability over time, build-system behavior at monorepo scale, CPU-bound (as opposed to I/O-bound) throughput under real load, memory usage under sustained load, cross-compilation, debugging/IDE experience, hiring/ecosystem-maturity considerations, and (this phase) Zig and Mojo implementations.
+**What this post didn't test**: large-codebase maintainability over time, build-system behavior at monorepo scale, CPU-bound (as opposed to I/O-bound) throughput under real load, memory usage under sustained load, cross-compilation, debugging/IDE experience, hiring/ecosystem-maturity considerations, and Zig and Mojo implementations (not done yet).
 
-**Reproduce this**: clone the repo, `cd companion-code/programming-languages-then-and-now`, `docker compose up -d mockserver`, then `docker compose run --rm <language> --top N --concurrency N --timeout SECONDS /data/urls-happy.txt` for any of `python`, `go`, `rust`, `typescript`, `kotlin`, `csharp`. `./scripts/run-acceptance.ps1` runs the full acceptance suite across all six, plus the independent coreutils-only verification. Each language's `scenarios/` folder has its own broken/fixed pairs with instructions in that folder's README.
+**Reproduce this**: clone [the repo](https://github.com/russfrith/russfrith-blog), `cd companion-code/programming-languages-then-and-now`, `docker compose up -d mockserver`, then `docker compose run --rm <language> --top N --concurrency N --timeout SECONDS /data/urls-happy.txt` for any of `python`, `go`, `rust`, `typescript`, `kotlin`, `csharp` -- those `docker compose` commands work the same on any OS. `./scripts/run-scenarios.ps1` runs every scenario against the pinned containers and diffs the result against what's committed here; `./scripts/run-acceptance.ps1` runs the shared CLI acceptance suite plus the independent coreutils-only verification. Both of those two scripts are PowerShell specifically; each language's own `scenarios/README.md` gives the plain `docker run` commands for that language's scenarios individually, which aren't PowerShell-specific.
 
-**Versions and sources**: `companion-code/programming-languages-then-and-now/VERSIONS.md` (this post's version pins and lookup sources), `PREDICTIONS.md` (predictions recorded before each run, with mismatches flagged), `REVIEW.md` (claims that didn't clear the bar for this post as stated fact).
+**Versions and sources**: [`VERSIONS.md`](https://github.com/russfrith/russfrith-blog/blob/master/companion-code/programming-languages-then-and-now/VERSIONS.md) (this post's version pins and lookup sources), [`PREDICTIONS.md`](https://github.com/russfrith/russfrith-blog/blob/master/companion-code/programming-languages-then-and-now/PREDICTIONS.md) (predictions recorded before each run, with mismatches flagged), [`REVIEW.md`](https://github.com/russfrith/russfrith-blog/blob/master/companion-code/programming-languages-then-and-now/REVIEW.md) (claims not included in this post as stated fact, pending a better source).
 

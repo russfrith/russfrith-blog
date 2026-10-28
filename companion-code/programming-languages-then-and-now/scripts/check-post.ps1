@@ -1,0 +1,88 @@
+# Builds the site and checks the "Programming Languages, Then and Now" post for:
+#   1. every {{< snippet file="..." >}} path matching git's exact casing
+#      (Windows' filesystem is case-insensitive; Linux CI and most readers' clones
+#      are not -- a casing mismatch builds fine here and breaks there).
+#   2. the build actually resolving every snippet (no missing-file/region error).
+#   3. no literal "{{<" shortcode syntax leaking into the rendered HTML (would
+#      mean a shortcode call wasn't recognized/processed).
+#   4. no literal triple-backtick fences in the rendered HTML (would mean a
+#      shortcode emitted raw markdown instead of calling `highlight`).
+#   5. no "Raw HTML omitted" Goldmark warning scoped to this post (would mean
+#      a snippet's content got treated as unsafe raw HTML instead of being
+#      highlighted properly).
+#
+# Usage (from repo root):
+#   ./companion-code/programming-languages-then-and-now/scripts/check-post.ps1
+#
+# Exits non-zero and prints every problem found.
+
+$ErrorActionPreference = "Stop"
+$repoRoot = Resolve-Path (Join-Path $PSScriptRoot "../../..")
+Push-Location $repoRoot
+
+$postDir = "content/posts/programming-languages-then-and-now"
+$postFile = "$postDir/index.md"
+$companionDir = "companion-code/programming-languages-then-and-now"
+
+$problems = @()
+
+# --- 1 & 2: casing audit (source-level, doesn't need a build) ---
+$tracked = git ls-files "$companionDir/*" | ForEach-Object { $_.Substring("$companionDir/".Length) }
+$refs = (Select-String -Path $postFile -Pattern 'snippet file="([^"]+)"' -AllMatches).Matches |
+    ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique
+
+foreach ($r in $refs) {
+    $exact = $tracked -ccontains $r
+    if (-not $exact) {
+        $caseInsensitiveMatch = $tracked | Where-Object { $_ -ieq $r }
+        if ($caseInsensitiveMatch) {
+            $problems += "CASE MISMATCH: post references '$r', git has '$caseInsensitiveMatch'"
+        } else {
+            $problems += "MISSING: post references '$r', not found in git at all (any case)"
+        }
+    }
+}
+
+# --- 3, 4, 5: build and inspect rendered HTML ---
+$buildDir = Join-Path $env:TEMP "check-post-build-$(Get-Date -Format 'yyyyMMddHHmmss')"
+$buildOutput = hugo -D -F --destination $buildDir 2>&1
+$buildExit = $LASTEXITCODE
+
+if ($buildExit -ne 0) {
+    $problems += "BUILD FAILED (missing snippet/region, or another Hugo error):"
+    $problems += ($buildOutput | Where-Object { $_ -match "ERROR" })
+} else {
+    $renderedFile = Join-Path $buildDir "posts/programming-languages-then-and-now/index.html"
+    if (-not (Test-Path $renderedFile)) {
+        $problems += "BUILD SUCCEEDED but rendered file not found: $renderedFile"
+    } else {
+        $html = Get-Content -Raw $renderedFile
+
+        if ($html -match '\{\{<') {
+            $problems += 'Literal "{{<" found in rendered HTML -- a shortcode call was not processed.'
+        }
+        if ($html -match '```') {
+            $problems += 'Literal triple-backtick fence found in rendered HTML -- a shortcode emitted raw markdown instead of calling highlight.'
+        }
+    }
+
+    # Hugo's "Raw HTML omitted" warning is printed to stderr/stdout during build,
+    # scoped by the file path it names -- check specifically for our post.
+    $rawHtmlWarnings = $buildOutput | Where-Object { $_ -match "Raw HTML omitted" -and $_ -match [regex]::Escape($postFile.Replace('/', '\')) -or ($_ -match "Raw HTML omitted" -and $_ -match "programming-languages-then-and-now[\\/]index\.md") }
+    if ($rawHtmlWarnings) {
+        $problems += "Raw HTML omitted warning scoped to this post's index.md:"
+        $problems += $rawHtmlWarnings
+    }
+}
+
+Remove-Item -Recurse -Force $buildDir -ErrorAction SilentlyContinue
+Pop-Location
+
+if ($problems.Count -gt 0) {
+    Write-Host "check-post.ps1 FOUND PROBLEMS:" -ForegroundColor Red
+    $problems | ForEach-Object { Write-Host "  - $_" -ForegroundColor Red }
+    exit 1
+} else {
+    Write-Host "check-post.ps1: all snippet paths match git's exact casing, build succeeds, no literal shortcode/fence/raw-HTML leakage." -ForegroundColor Green
+    exit 0
+}
