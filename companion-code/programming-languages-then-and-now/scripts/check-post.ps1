@@ -185,7 +185,10 @@ if (-not (Test-Path $productivityFile)) {
     $problems += "Productivity data not found: $productivityFile (run scripts/measure-productivity.ps1)"
 } else {
     $prod = Get-Content -Raw $productivityFile | ConvertFrom-Json
-    $postText = Get-Content -Raw $postFile
+    # Scan the RENDERED HTML, not the markdown source -- I1 moved the productivity
+    # tables to a shortcode that derives them from this same JSON at build time, so
+    # the numbers no longer appear in the markdown source at all, only in the output.
+    $postText = if ($buildExit -eq 0 -and (Test-Path $renderedFile)) { Get-Content -Raw $renderedFile } else { "" }
 
     # Pull every numeric value out of productivity.json (medians, range bounds,
     # loc counts, dependency counts, image MB) as a flat list, formatted the

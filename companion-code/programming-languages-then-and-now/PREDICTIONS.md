@@ -75,8 +75,8 @@ with the result printed, Go and Node (both compiled-to-native-code JIT paths: V8
 JIT and Go's static compiler) should land in the same order of magnitude; Python,
 pure-interpreted, should be substantially slower (expect at least 10x).
 
-**Actual:** Go (404ms) and Node (411ms) landed within 2% of each other at
-300,000,000 iterations -- closer than predicted. Python took 13.5s, about 33x
+**Actual:** Go (392ms) and Node (404ms) landed within about 3% of each other at
+300,000,000 iterations -- closer than predicted. Python took 13.2s, about 33x
 slower than Go/Node, more than the predicted 10x+. The ORIGINAL Phase 1 Go result
 (332ms for 2,000,000,000 iterations, an apparent 8x Go-vs-Node advantage) was
 investigated and found to be invalid: the loop's result was never used, so Go's
@@ -224,4 +224,4 @@ few lines.
 
 **Prediction:** Go and Rust produce the smallest final images (static-ish binaries, multi-stage builds); Python needs the full interpreter + stdlib (or a slim variant) in the final image; Kotlin's final image carries a JRE; Rust has the slowest clean build and a much faster incremental rebuild; Go has both the fastest clean build and fastest incremental rebuild.
 
-**Actual:** see `results/productivity.md` for measured (not benchmarked) figures with the exact commands used. Confirmed for Go (fastest clean+incremental, smallest image) and Kotlin (slowest clean build, largest image). C# added in Phase 1b (B3): zero third-party CLI dependencies (matching Go/Python), a mid-pack clean build time (4.5s median), and three image-size variants -- framework-dependent (301MB) and self-contained (300MB) landed almost identical, which was not predicted in advance; Native AOT (207MB) was the smallest of the three and built successfully with only `clang`/`zlib1g-dev` added to the build stage, no external toolchain install needed.
+**Actual:** see `results/productivity.md` and `results/productivity.json` for measured (not benchmarked) figures with the exact commands used. **Mismatch, not a confirmation:** Go is the smallest final image, as predicted, and Kotlin is confirmed slowest clean build and largest image -- but Go is NOT the fastest clean build or the fastest incremental rebuild. Real ranking, clean build (fastest to slowest): Python (1.26s) < C# (4.27s) < TypeScript (4.38s) < Go (6.75s) < Rust (11.59s) < Kotlin (69.1s). Real ranking, incremental rebuild (fastest to slowest): TypeScript (0.95s) < Rust (0.98s) < Python (1.0s) < Kotlin (1.07s) < C# (1.25s) < Go (1.32s) -- Go is in fact the *slowest* to rebuild incrementally of the six, despite having the smallest final image. C# added in Phase 1b: zero third-party CLI dependencies (matching Go/Python), a mid-pack clean build time (4.27s median), and three image-size variants -- framework-dependent (287.4MB) and self-contained (286.2MB) landed almost identical, which was not predicted in advance; Native AOT (197.8MB) was the smallest of the three and built successfully with only `clang`/`zlib1g-dev` added to the build stage, no external toolchain install needed.

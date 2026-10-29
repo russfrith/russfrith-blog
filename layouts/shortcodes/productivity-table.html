@@ -1,0 +1,104 @@
+{{- /*
+Renders the productivity tables (scenarios 9-11) and a one-line derived
+superlative summary directly from results/productivity.json, so the numbers
+in the post can never drift from the last real measurement (I1, Phase 1i) --
+no hand-typed table cell, and no prose superlative the data doesn't itself
+derive.
+
+Usage: {{% productivity-table section="9" %}} / "10" / "11" / "summary"
+(percent-delimited so the markdown table syntax below gets passed through
+Goldmark like any other table, matching every other table in this post).
+*/ -}}
+{{- $slug := .Page.File.ContentBaseName -}}
+{{- $path := printf "companion-code/%s/results/productivity.json" $slug -}}
+{{- if not (fileExists $path) -}}
+  {{- errorf "productivity-table shortcode: file not found: %s" $path -}}
+{{- end -}}
+{{- $data := readFile $path | transform.Unmarshal -}}
+{{- $section := .Get "section" -}}
+
+{{- /* Static facts that don't change per measurement run (base images, display names). */ -}}
+{{- $langs := slice "python" "go" "rust" "typescript" "kotlin" "csharp" -}}
+{{- $displayName := dict "python" "Python" "go" "Go" "rust" "Rust" "typescript" "TypeScript" "kotlin" "Kotlin" "csharp" "C#" -}}
+{{- $baseImage9Order := slice "python" "kotlin" "rust" "typescript" "go" "csharp" -}}
+{{- $depDisplay := dict
+    "python" "0 (stdlib only)"
+    "go" "0 (stdlib only)"
+    "csharp" "0 (BCL only)"
+    "rust" "2 (`ureq`, `clap`)"
+    "typescript" "2 dev-only (`typescript`, `@types/node`); 0 runtime deps"
+    "kotlin" "1 (`kotlinx-coroutines-core`) + its transitive deps"
+-}}
+{{- $imageBase := dict
+    "go" "`gcr.io/distroless/static-debian12`"
+    "rust" "`debian:bookworm-slim` + `ca-certificates`"
+    "python" "`python:3.14.8-slim`"
+    "csharp-native-aot" "`runtime-deps:10.0` + native binary, no managed runtime"
+    "csharp-self-contained" "`runtime-deps:10.0` + bundled private runtime copy"
+    "csharp-framework-dependent" "`runtime:10.0` (shared runtime)"
+    "typescript" "`node:26-bookworm-slim`"
+    "kotlin" "`eclipse-temurin:25-jre` + shadow jar"
+-}}
+
+{{- if eq $section "9" }}
+| Language | Lines of code (wordfreq only) | Direct third-party dependencies |
+|---|---|---|
+{{- range $lang := $baseImage9Order }}
+| {{ index $displayName $lang }} | {{ index $data.linesOfCode $lang }} | {{ index $depDisplay $lang }} |
+{{- end }}
+{{- end -}}
+
+{{- if eq $section "10" }}
+{{- $rows := slice -}}
+{{- range $lang := $langs -}}
+  {{- $bt := index $data.buildTimes $lang -}}
+  {{- $rows = $rows | append (dict "lang" $lang "cleanMedian" $bt.cleanMedian "cleanRange" $bt.cleanRange "incMedian" $bt.incrementalMedian "incRange" $bt.incrementalRange) -}}
+{{- end -}}
+{{- $sorted := sort $rows "cleanMedian" "asc" }}
+| Language | Clean build (`--no-cache`) | Incremental rebuild (layer cache warm) |
+|---|---|---|
+{{- range $r := $sorted }}
+| {{ index $displayName $r.lang }} | {{ $r.cleanMedian }}s ({{ $r.cleanRange }}s) | {{ $r.incMedian }}s ({{ $r.incRange }}s) |
+{{- end }}
+{{- end -}}
+
+{{- if eq $section "11" }}
+{{- $rows := slice -}}
+{{- range $lang := (slice "python" "go" "rust" "typescript" "kotlin") -}}
+  {{- $img := index $data.imageSizes $lang -}}
+  {{- $rows = $rows | append (dict "label" (index $displayName $lang) "mb" $img.mb "base" (index $imageBase $lang)) -}}
+{{- end -}}
+{{- $csVariants := $data.imageSizes.csharp.variants -}}
+{{- $rows = $rows | append (dict "label" "C# (Native AOT)" "mb" (index $csVariants "native-aot").mb "base" (index $imageBase "csharp-native-aot")) -}}
+{{- $rows = $rows | append (dict "label" "C# (self-contained)" "mb" (index $csVariants "self-contained").mb "base" (index $imageBase "csharp-self-contained")) -}}
+{{- $rows = $rows | append (dict "label" "C# (framework-dependent, used elsewhere in this post)" "mb" (index $csVariants "framework-dependent").mb "base" (index $imageBase "csharp-framework-dependent")) -}}
+{{- $sorted := sort $rows "mb" "asc" }}
+| Language | Final image size | Base |
+|---|---|---|
+{{- range $r := $sorted }}
+| {{ $r.label }} | {{ $r.mb }} MB | {{ $r.base }} |
+{{- end }}
+{{- end -}}
+
+{{- if eq $section "summary" }}
+{{- $btRows := slice -}}
+{{- range $lang := $langs -}}
+  {{- $bt := index $data.buildTimes $lang -}}
+  {{- $btRows = $btRows | append (dict "lang" $lang "v" $bt.cleanMedian) -}}
+{{- end -}}
+{{- $btSorted := sort $btRows "v" "asc" -}}
+{{- $fastestBuild := index $btSorted 0 -}}
+{{- $slowestBuild := index $btSorted (sub (len $btSorted) 1) -}}
+{{- $imgRows := slice -}}
+{{- range $lang := (slice "python" "go" "rust" "typescript" "kotlin") -}}
+  {{- $imgRows = $imgRows | append (dict "label" (index $displayName $lang) "v" (index $data.imageSizes $lang).mb) -}}
+{{- end -}}
+{{- $csV := $data.imageSizes.csharp.variants -}}
+{{- $imgRows = $imgRows | append (dict "label" "C# (Native AOT)" "v" (index $csV "native-aot").mb) -}}
+{{- $imgRows = $imgRows | append (dict "label" "C# (self-contained)" "v" (index $csV "self-contained").mb) -}}
+{{- $imgRows = $imgRows | append (dict "label" "C# (framework-dependent)" "v" (index $csV "framework-dependent").mb) -}}
+{{- $imgSorted := sort $imgRows "v" "asc" -}}
+{{- $smallestImg := index $imgSorted 0 -}}
+{{- $largestImg := index $imgSorted (sub (len $imgSorted) 1) -}}
+Derived from `results/productivity.json`: fastest clean build, {{ index $displayName $fastestBuild.lang }} ({{ $fastestBuild.v }}s); slowest clean build, {{ index $displayName $slowestBuild.lang }} ({{ $slowestBuild.v }}s); smallest image, {{ $smallestImg.label }} ({{ $smallestImg.v }} MB); largest image, {{ $largestImg.label }} ({{ $largestImg.v }} MB).
+{{- end -}}

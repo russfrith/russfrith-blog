@@ -367,42 +367,21 @@ Measured three times each, back to back, on one development machine, 2026-10-29;
 
 #### 9. Baseline CLI size and dependency count
 
-| Language | Lines of code (wordfreq only) | Direct third-party dependencies |
-|---|---|---|
-| Python | 55 | 0 (stdlib only) |
-| Kotlin | 78 | 1 (`kotlinx-coroutines-core`) + its transitive deps |
-| Rust | 93 | 2 (`ureq`, `clap`) -- ~30 transitive crates |
-| TypeScript | 106 | 2 dev-only (`typescript`, `@types/node`); 0 runtime deps |
-| Go | 130 | 0 (stdlib only) |
-| C# | 84 | 0 (BCL only) |
+{{% productivity-table section="9" %}}
 
 #### 10. Clean build vs. incremental rebuild time
 
-| Language | Clean build (`--no-cache`) | Incremental rebuild (layer cache warm) |
-|---|---|---|
-| Python | 1.26s (1.16-1.52s) | 1.0s (0.93-1.0s) |
-| C# | 4.27s (4.01-5.06s) | 1.25s (1.22-1.31s) |
-| TypeScript | 4.38s (4.07-4.86s) | 0.95s (0.95-0.97s) |
-| Go | 6.75s (6.28-7.27s) | 1.32s (1.28-1.34s) |
-| Rust | 11.59s (11.42-13.23s) | 0.98s (0.97-1.0s) |
-| Kotlin | 69.1s (65.27-71.1s) | 1.07s (1.06-1.07s) |
+{{% productivity-table section="10" %}}
 
-Incremental rebuild times converge to roughly the same ~1-1.4s across all six once the Docker layer cache is warm and nothing in the source changed; the spread is in the clean build. Kotlin's clean build downloads Gradle 9.5.0 inside the build stage every time `--no-cache` is used. Rust's clean build compiles ~30 transitive crates from source every time.
+Incremental rebuild times converge to roughly the same ~0.9-1.3s across all six once the Docker layer cache is warm and nothing in the source changed; the spread is in the clean build. Kotlin's clean build downloads Gradle 9.5.0 inside the build stage every time `--no-cache` is used. Rust's clean build compiles ~30 transitive crates from source every time.
 
 #### 11. Final container image size
 
 Idiomatic multi-stage builds.
 
-| Language | Final image size | Base |
-|---|---|---|
-| Go | 18.6 MB | `gcr.io/distroless/static-debian12` |
-| Rust | 122.9 MB | `debian:bookworm-slim` + `ca-certificates` |
-| Python | 169.9 MB | `python:3.14.8-slim` |
-| C# (Native AOT) | 197.8 MB | `runtime-deps:10.0` + native binary, no managed runtime |
-| C# (self-contained) | 286.2 MB | `runtime-deps:10.0` + bundled private runtime copy |
-| C# (framework-dependent, used elsewhere in this post) | 287.4 MB | `runtime:10.0` (shared runtime) |
-| TypeScript | 332.5 MB | `node:26-bookworm-slim` |
-| Kotlin | 459.1 MB | `eclipse-temurin:25-jre` + shadow jar |
+{{% productivity-table section="11" %}}
+
+{{% productivity-table section="summary" %}}
 
 All three C# variants build from the same `Program.cs`/`wordfreq.csproj`, varying only the publish mode (`dotnet publish -c Release`, `... --self-contained true -r linux-x64`, `... -p:PublishAot=true -r linux-x64`). Framework-dependent and self-contained landed almost identical in size -- the bundled private runtime in the self-contained build is roughly the same size as the shared runtime layer it replaces. Native AOT, the smallest of the three, built successfully with only `clang`/`zlib1g-dev` added to the build stage -- no separate toolchain install was needed -- and was verified to produce byte-identical `wordfreq` output to the other two variants.
 
@@ -542,7 +521,7 @@ A factual summary, drawn only from the recorded results above and in the compani
 | 6. Hung request | All six core CLIs cancel correctly at the configured timeout; no broken/fixed pair exists for this scenario (stated plainly, not implied) |
 | 7. CPU-heavy blocking | Node and Python asyncio block completely (0 heartbeat ticks) until offloaded to a thread; Go/Rust(multi-thread runtime)/Kotlin(Dispatchers.Default)/C# all kept ticking without the explicit fix in this run, which is a fact about this run's spare thread capacity, not proof the fix is unnecessary; the original ~8x Go-vs-Node gap was investigated and found to be Go's unused-result dead-code elimination, not a real difference |
 | 8. Untrusted JSON | Go and C# (without `required`) split the same way: silent on absence, error on wrong type; Rust (serde) and Kotlin (kotlinx.serialization) are strict on both by default, with an explicit default-value opt-in mirroring Go; TS's assertion lies through both; Python crashes on the first bad payload and never reaches the second |
-| 9-11. Productivity | See `results/productivity.md` (median of 3 runs) -- Go smallest image (18.6 MB) and fastest clean build; Kotlin largest image (459.1 MB) and slowest clean build (Gradle/JVM cold start); C#'s Native AOT variant (197.8 MB) was its smallest of three image variants tried |
+| 9-11. Productivity | See the derived summary under "Productivity" above (computed from `results/productivity.json`, not hand-typed here) -- Go's small image does not mean a fast build: it's slowest to rebuild incrementally of the six; Kotlin is slowest to build clean and largest; C#'s Native AOT variant was its smallest of three image variants tried |
 
 ## What I'd learn next
 

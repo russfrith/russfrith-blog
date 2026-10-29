@@ -47,7 +47,7 @@ itself by relying entirely on their standard library / base class library.
 | Rust | 11.59s (11.42-13.23s) | 0.98s (0.97-1.0s) |
 | Kotlin | 69.1s (65.27-71.1s) | 1.07s (1.06-1.07s) |
 
-Incremental rebuild times converge to roughly the same ~1-1.3s across all six once
+Incremental rebuild times converge to roughly the same ~0.9-1.3s across all six once
 the Docker layer cache is warm and nothing in the source changed; the real spread
 is in the clean build. Kotlin's clean build still includes downloading Gradle
 9.5.0 inside the build stage every time `--no-cache` is used; a production setup
