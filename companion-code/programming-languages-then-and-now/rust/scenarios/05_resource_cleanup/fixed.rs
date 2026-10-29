@@ -16,8 +16,14 @@ impl Drop for Node {
 }
 
 fn main() {
-    let a = Rc::new(Node { name: "a".into(), other: RefCell::new(None) });
-    let b = Rc::new(Node { name: "b".into(), other: RefCell::new(None) });
+    let a = Rc::new(Node {
+        name: "a".into(),
+        other: RefCell::new(None),
+    });
+    let b = Rc::new(Node {
+        name: "b".into(),
+        other: RefCell::new(None),
+    });
     *a.other.borrow_mut() = Some(Rc::downgrade(&b));
     *b.other.borrow_mut() = Some(Rc::downgrade(&a)); // weak reference: no cycle
 

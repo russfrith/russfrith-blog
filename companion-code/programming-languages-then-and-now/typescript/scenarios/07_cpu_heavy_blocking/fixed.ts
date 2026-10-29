@@ -24,7 +24,9 @@ if (isMainThread) {
   console.log("starting CPU-bound work on a worker thread...");
   const worker = new Worker(fileURLToPath(import.meta.url));
   worker.on("message", (result) => {
-    console.log(`CPU-bound work finished after ${Date.now() - start}ms, heartbeat ticks seen: ${ticks}, result: ${result}`);
+    console.log(
+      `CPU-bound work finished after ${Date.now() - start}ms, heartbeat ticks seen: ${ticks}, result: ${result}`,
+    );
     clearInterval(timer);
   });
 } else {

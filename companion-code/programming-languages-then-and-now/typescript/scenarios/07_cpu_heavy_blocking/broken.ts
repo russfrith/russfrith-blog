@@ -20,6 +20,8 @@ const ITERATIONS = 300_000_000; // same workload across every language in this s
 const start = Date.now();
 console.log("starting CPU-bound work on the main thread...");
 const result = cpuBound(ITERATIONS);
-console.log(`CPU-bound work finished after ${Date.now() - start}ms, heartbeat ticks seen: ${ticks}, result: ${result}`);
+console.log(
+  `CPU-bound work finished after ${Date.now() - start}ms, heartbeat ticks seen: ${ticks}, result: ${result}`,
+);
 
 clearInterval(timer);
