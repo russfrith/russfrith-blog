@@ -818,13 +818,6 @@
     "sha256": "68be13075e7c34f76b4419e54b9a9c9fe81806d4294dcd34a5f5fa8658d2c173"
   },
   {
-    "file": "results/productivity.json",
-    "commands": [
-      "docker compose build --no-cache <service> (x3 per language)",
-      "docker compose build <service> (x3 per language, incremental)",
-      "docker image inspect <image> --format '{{.Size}}'",
-      "docker build -f csharp/Dockerfile.aot|.selfcontained|(none) ./csharp"
-    ],
     "images": [
       "programming-languages-then-and-now-python:latest",
       "programming-languages-then-and-now-go:latest",
@@ -833,7 +826,14 @@
       "programming-languages-then-and-now-kotlin:latest",
       "programming-languages-then-and-now-csharp:latest"
     ],
-    "captured": "2026-10-29T02:07:53.4298547-04:00",
-    "sha256": "cb804d2d8eb46f35f70d1e29f0920f97232f5b8d73cd1cee44ceb0de47aa6029"
+    "commands": [
+      "docker compose build --no-cache <service> (x3 per language)",
+      "docker compose build <service> (x3 per language, incremental)",
+      "docker image inspect <image> --format '{{.Size}}'",
+      "docker build -f csharp/Dockerfile.aot|.selfcontained|(none) ./csharp"
+    ],
+    "captured": "2026-10-29T03:01:07.1285454-04:00",
+    "sha256": "a963d52606ceb5a1ea8a19c31a352ac54176d1c74380532e4633a9d23f61fbe8",
+    "file": "results/productivity.json"
   }
 ]

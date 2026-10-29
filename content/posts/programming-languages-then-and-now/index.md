@@ -373,7 +373,7 @@ Measured three times each, back to back, on one development machine, 2026-10-29;
 
 {{% productivity-table section="10" %}}
 
-Incremental rebuild times converge to roughly the same ~0.9-1.3s across all six once the Docker layer cache is warm and nothing in the source changed; the spread is in the clean build. Kotlin's clean build downloads Gradle 9.5.0 inside the build stage every time `--no-cache` is used. Rust's clean build compiles ~30 transitive crates from source every time.
+Incremental rebuild times converge to roughly the same ~0.95-1.3s across all six once the Docker layer cache is warm and nothing in the source changed; the spread is in the clean build. Kotlin's clean build downloads Gradle 9.5.0 inside the build stage every time `--no-cache` is used. Rust's clean build compiles 56 transitive crates from source every time (via `cargo generate-lockfile`; see the table above for how each language's count was measured).
 
 #### 11. Final container image size
 
@@ -447,7 +447,7 @@ Targets: networked services, CLI tooling, infrastructure software. Tooling: a si
 
 ### Rust
 
-Targets: systems programming, performance-critical services, anywhere C/C++ would traditionally be reached for but memory safety matters. Tooling: Cargo, widely regarded as one of the best package-manager-plus-build-tool combinations of any language, bundled from day one. Signature strength: the borrow checker eliminates whole categories of memory-safety bugs at compile time (no use-after-free, no data races in safe code, demonstrated directly in scenario 2). Signature footgun: the borrow checker rejecting correct code (above). Costs, stated plainly: the second-slowest clean build of the six core languages measured here -- 11.59s median, behind only Kotlin's 69.1s (`results/productivity.md`) -- and real friction when the borrow checker can't see through an abstraction you know is safe.
+Targets: systems programming, performance-critical services, anywhere C/C++ would traditionally be reached for but memory safety matters. Tooling: Cargo, widely regarded as one of the best package-manager-plus-build-tool combinations of any language, bundled from day one. Signature strength: the borrow checker eliminates whole categories of memory-safety bugs at compile time (no use-after-free, no data races in safe code, demonstrated directly in scenario 2). Signature footgun: the borrow checker rejecting correct code (above). Costs, stated plainly: the second-slowest clean build of the six core languages measured here -- 11.36s median, behind only Kotlin's 73.66s (`results/productivity.md`) -- and real friction when the borrow checker can't see through an abstraction you know is safe.
 
 <!-- AUTHOR-TODO: what was familiar -->
 <!-- AUTHOR-TODO: what surprised me -->

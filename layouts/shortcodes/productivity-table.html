@@ -21,13 +21,11 @@ Goldmark like any other table, matching every other table in this post).
 {{- $langs := slice "python" "go" "rust" "typescript" "kotlin" "csharp" -}}
 {{- $displayName := dict "python" "Python" "go" "Go" "rust" "Rust" "typescript" "TypeScript" "kotlin" "Kotlin" "csharp" "C#" -}}
 {{- $baseImage9Order := slice "python" "kotlin" "rust" "typescript" "go" "csharp" -}}
-{{- $depDisplay := dict
-    "python" "0 (stdlib only)"
-    "go" "0 (stdlib only)"
-    "csharp" "0 (BCL only)"
-    "rust" "2 (`ureq`, `clap`)"
-    "typescript" "2 dev-only (`typescript`, `@types/node`); 0 runtime deps"
-    "kotlin" "1 (`kotlinx-coroutines-core`) + its transitive deps"
+{{- /* I2: dependency display text is built from productivity.json's real counts,
+     never a hardcoded "~N transitive" guess. */ -}}
+{{- $depNote := dict
+    "rust" "`ureq`, `clap`"
+    "kotlin" "`kotlinx-coroutines-core`"
 -}}
 {{- $imageBase := dict
     "go" "`gcr.io/distroless/static-debian12`"
@@ -44,7 +42,16 @@ Goldmark like any other table, matching every other table in this post).
 | Language | Lines of code (wordfreq only) | Direct third-party dependencies |
 |---|---|---|
 {{- range $lang := $baseImage9Order }}
-| {{ index $displayName $lang }} | {{ index $data.linesOfCode $lang }} | {{ index $depDisplay $lang }} |
+{{- $d := index $data.dependencies $lang }}
+{{- $display := "" }}
+{{- if eq $lang "typescript" }}
+  {{- $display = printf "%v dev-only (`typescript`, `@types/node`); %v runtime deps" $d.devCount $d.count }}
+{{- else if eq $d.count 0.0 }}
+  {{- $display = printf "0 (%s)" $d.note }}
+{{- else }}
+  {{- $display = printf "%v (%s) -- %v total via `%s`" $d.count (index $depNote $lang) $d.transitiveCount $d.transitiveMethod }}
+{{- end }}
+| {{ index $displayName $lang }} | {{ index $data.linesOfCode $lang }} | {{ $display }} |
 {{- end }}
 {{- end -}}
 

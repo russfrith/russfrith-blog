@@ -29,9 +29,9 @@ inline comments aren't special-cased).
 | Go | 130 | 0 (stdlib only) |
 | Python | 55 | 0 (stdlib only) |
 | C# | 84 | 0 (BCL only: `HttpClient`, `System.Text.RegularExpressions`, `SemaphoreSlim`, `CancellationTokenSource`) |
-| Rust | 93 | 2 (`ureq`, `clap`) -- ~30 transitive crates |
-| TypeScript | 106 | 2 dev-only (`typescript`, `@types/node`); 0 runtime deps |
-| Kotlin | 78 | 1 (`kotlinx-coroutines-core`) + its transitive deps, bundled into the shadow jar |
+| Rust | 93 | 2 (`ureq`, `clap`) -- 56 total via `cargo generate-lockfile`; `[[package]]` entries in Cargo.lock, root excluded (direct + transitive) |
+| TypeScript | 106 | 2 dev-only (`typescript`, `@types/node`); 0 runtime deps -- 3 total via `npm install --package-lock-only`; entries in package-lock.json's packages map, root excluded (direct + transitive) |
+| Kotlin | 78 | 1 (`kotlinx-coroutines-core`) -- 5 total via `gradle dependencies --configuration runtimeClasspath`; unique group:artifact pairs, `(c)` constraint lines excluded, bundled into the shadow jar |
 
 Go, Python, and C# all reach zero direct third-party dependencies for the CLI
 itself by relying entirely on their standard library / base class library.
@@ -40,18 +40,18 @@ itself by relying entirely on their standard library / base class library.
 
 | Language | Clean build (`--no-cache`) | Incremental rebuild (layer cache warm) |
 |---|---|---|
-| Python | 1.26s (1.16-1.52s) | 1.0s (0.93-1.0s) |
-| C# | 4.27s (4.01-5.06s) | 1.25s (1.22-1.31s) |
-| TypeScript | 4.38s (4.07-4.86s) | 0.95s (0.95-0.97s) |
-| Go | 6.75s (6.28-7.27s) | 1.32s (1.28-1.34s) |
-| Rust | 11.59s (11.42-13.23s) | 0.98s (0.97-1.0s) |
-| Kotlin | 69.1s (65.27-71.1s) | 1.07s (1.06-1.07s) |
+| Python | 1.4s (1.31-1.46s) | 0.97s (0.95-0.99s) |
+| C# | 4.0s (3.96-4.66s) | 1.17s (1.17-1.21s) |
+| TypeScript | 4.9s (4.43-4.95s) | 0.95s (0.94-0.99s) |
+| Go | 6.06s (6.02-6.54s) | 1.32s (1.3-1.38s) |
+| Rust | 11.36s (11.22-12.79s) | 1.14s (1.13-1.2s) |
+| Kotlin | 73.66s (69.37-74.4s) | 1.0s (1-1.22s) |
 
-Incremental rebuild times converge to roughly the same ~0.9-1.3s across all six once
+Incremental rebuild times converge to roughly the same ~0.95-1.3s across all six once
 the Docker layer cache is warm and nothing in the source changed; the real spread
 is in the clean build. Kotlin's clean build still includes downloading Gradle
 9.5.0 inside the build stage every time `--no-cache` is used; a production setup
-would cache that distribution in a named volume. Rust's clean build compiles ~30
+would cache that distribution in a named volume. Rust's clean build compiles 56
 transitive crates from source every time.
 
 ## 11. Final image size (idiomatic multi-stage build)

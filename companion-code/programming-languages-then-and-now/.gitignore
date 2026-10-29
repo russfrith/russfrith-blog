@@ -47,3 +47,6 @@ typescript/**/node_modules/
 kotlin/**/*.jar
 coroutines.jar
 serialization-*.jar
+
+# Kotlin: Gradle's own cache, left behind by `gradle dependencies` (I2 transitive-count measurement)
+kotlin/**/.gradle/

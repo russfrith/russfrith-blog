@@ -20,6 +20,12 @@ $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 Push-Location $root
 
+# Pinned images used by the transitive-dependency-counting steps below (I2).
+# This script is standalone -- these are NOT inherited from run-scenarios.ps1.
+$rs = "rust:1.96.1-slim-bookworm"
+$node = "node:26-bookworm-slim"
+$cs = "mcr.microsoft.com/dotnet/sdk:10.0"
+
 function Median($nums) {
     $sorted = $nums | Sort-Object
     $n = $sorted.Count
@@ -96,13 +102,66 @@ if ($ktDepStart) {
 # C#: <PackageReference> entries in the .csproj.
 $csDeps = ([regex]::Matches((Get-Content "csharp/wordfreq.csproj" -Raw), '<PackageReference')).Count
 
+Write-Host "`n=== Transitive dependency counts (I2) ===" -ForegroundColor Cyan
+# Rust: cargo generate-lockfile, then every [[package]] entry in Cargo.lock except
+# the root "wordfreq" package itself. Includes the 2 direct deps (ureq, clap) --
+# Cargo.lock doesn't cleanly separate "transitive-only" without extra tooling, so
+# this is "everything in the resolved dependency graph, direct + transitive".
+Remove-Item "rust/Cargo.lock" -Force -ErrorAction SilentlyContinue
+docker run --rm -v "${PWD}/rust:/src" -w /src $rs bash -c "cargo generate-lockfile" 2>&1 | Out-Null
+$rustLockCount = 0
+if (Test-Path "rust/Cargo.lock") {
+    $rustLockCount = ([regex]::Matches((Get-Content "rust/Cargo.lock" -Raw), '(?m)^name = ')).Count - 1
+    Remove-Item "rust/Cargo.lock" -Force
+}
+Write-Host "  rust: $rustLockCount packages in Cargo.lock (direct + transitive, root excluded)"
+
+# TypeScript: npm install --package-lock-only, then every entry in package-lock.json's
+# "packages" map except the root ("" key, the project itself).
+Remove-Item "typescript/package-lock.json" -Force -ErrorAction SilentlyContinue
+$npmCmd = "npm install --package-lock-only"
+docker run --rm -v "${PWD}/typescript:/src" -w /src $node bash -c $npmCmd 2>&1 | Out-Null
+$tsLockCount = 0
+if (Test-Path "typescript/package-lock.json") {
+    # -AsHashTable: package-lock.json's "packages" map has an empty-string key
+    # for the root project itself, which ConvertFrom-Json otherwise rejects.
+    $lock = Get-Content "typescript/package-lock.json" -Raw | ConvertFrom-Json -AsHashtable
+    $tsLockCount = $lock.packages.Count - 1
+    Remove-Item "typescript/package-lock.json" -Force
+}
+Write-Host "  typescript: $tsLockCount packages in package-lock.json (direct + transitive, root excluded)"
+
+# Kotlin: `gradle dependencies --configuration runtimeClasspath`, counting unique
+# group:artifact pairs (version ignored) that are real resolved dependencies, not
+# lines Gradle marks "(c)" (a constraint, not an actual dependency in the graph).
+$gradleCmd = 'apt-get update -qq && apt-get install -y -qq curl unzip > /dev/null 2>&1; curl -fsSL https://services.gradle.org/distributions/gradle-9.5.0-bin.zip -o /tmp/gradle.zip && unzip -q /tmp/gradle.zip -d /opt && /opt/gradle-9.5.0/bin/gradle dependencies --configuration runtimeClasspath --no-daemon'
+$gradleOut = docker run --rm -v "${PWD}/kotlin:/src" -w /src eclipse-temurin:25-jdk bash -c $gradleCmd 2>&1 | Out-String
+$gavSet = [System.Collections.Generic.HashSet[string]]::new()
+foreach ($line in ($gradleOut -split "`n")) {
+    if ($line -match '\(c\)\s*$') { continue }  # constraint, not a real dependency
+    $m = [regex]::Match($line, '([\w.]+):([\w.-]+):[\w.+-]+')
+    if ($m.Success) { [void]$gavSet.Add("$($m.Groups[1].Value):$($m.Groups[2].Value)") }
+}
+$kotlinTransitiveCount = $gavSet.Count
+Write-Host "  kotlin: $kotlinTransitiveCount unique group:artifact entries in the runtimeClasspath dependency graph"
+
+# C#: `dotnet restore`, then every entry in obj/project.assets.json's "libraries"
+# map (direct + transitive NuGet packages; 0 here since there are 0 PackageReferences).
+docker run --rm -v "${PWD}/csharp:/src" -w /src $cs bash -c "dotnet restore" 2>&1 | Out-Null
+$csTransitiveCount = 0
+if (Test-Path "csharp/obj/project.assets.json") {
+    $assets = Get-Content "csharp/obj/project.assets.json" -Raw | ConvertFrom-Json
+    $csTransitiveCount = ($assets.libraries.PSObject.Properties | Measure-Object).Count
+}
+Write-Host "  csharp: $csTransitiveCount entries in obj/project.assets.json's libraries map"
+
 $deps = @{
     python     = @{ count = $pyDeps; note = "stdlib only" }
     go         = @{ count = $goDeps; note = "stdlib only" }
-    rust       = @{ count = $rustDeps; note = "ureq, clap" }
-    typescript = @{ count = $tsRuntimeDeps; devCount = $tsDevDeps; note = "0 runtime; $tsDevDeps dev-only (typescript, @types/node)" }
-    kotlin     = @{ count = $kotlinDeps; note = "kotlinx-coroutines-core" }
-    csharp     = @{ count = $csDeps; note = "BCL only" }
+    rust       = @{ count = $rustDeps; note = "ureq, clap"; transitiveCount = $rustLockCount; transitiveMethod = "cargo generate-lockfile; [[package]] entries in Cargo.lock, root excluded (direct + transitive)" }
+    typescript = @{ count = $tsRuntimeDeps; devCount = $tsDevDeps; note = "0 runtime; $tsDevDeps dev-only (typescript, @types/node)"; transitiveCount = $tsLockCount; transitiveMethod = "npm install --package-lock-only; entries in package-lock.json's packages map, root excluded (direct + transitive)" }
+    kotlin     = @{ count = $kotlinDeps; note = "kotlinx-coroutines-core"; transitiveCount = $kotlinTransitiveCount; transitiveMethod = "gradle dependencies --configuration runtimeClasspath; unique group:artifact pairs, (c) constraint lines excluded" }
+    csharp     = @{ count = $csDeps; note = "BCL only"; transitiveCount = $csTransitiveCount; transitiveMethod = "dotnet restore; entries in obj/project.assets.json's libraries map" }
 }
 $deps.GetEnumerator() | ForEach-Object { Write-Host "  $($_.Key): $($_.Value.count) ($($_.Value.note))" }
 
