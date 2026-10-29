@@ -29,6 +29,12 @@
 #      somewhere in the post's "Productivity" section (H4) -- a number present
 #      in the JSON but missing from the post means the post's tables are stale
 #      relative to the last real measurement.
+#   9. prose claims (scripts/claims.psd1): comparative/derived numbers stated
+#      in the post's own sentences (race frequencies, the Go-vs-Node CPU-heavy
+#      percentage, C# Debug/Release timings, iteration counts, etc.) must
+#      match the real source file they're derived from, within a stated
+#      tolerance -- these are numbers no other check here covers, because
+#      they're prose, not a table cell or an embedded transcript.
 #
 # Usage (from repo root):
 #   ./companion-code/programming-languages-then-and-now/scripts/check-post.ps1
@@ -239,6 +245,83 @@ if (-not (Test-Path $productivityFile)) {
     }
 }
 
+# --- 9: claims.psd1 -- prose numbers checked against their real source ---
+$claimsFile = "$companionDir/scripts/claims.psd1"
+if (-not (Test-Path $claimsFile)) {
+    $problems += "Claims file not found: $claimsFile"
+} else {
+    $claims = (Import-PowerShellDataFile -Path $claimsFile).Claims
+    $postTextForClaims = if ($buildExit -eq 0 -and (Test-Path $renderedFile)) { Get-Content -Raw $renderedFile } else { "" }
+
+    function ClaimNum($s) { return [double]($s -replace '[,_]', '') }
+
+    foreach ($claim in $claims) {
+        $postMatch = [regex]::Match($postTextForClaims, $claim.PostPattern)
+        if (-not $postMatch.Success) {
+            $problems += "CLAIM '$($claim.Name)': post pattern not found -- '$($claim.PostPattern)'"
+            continue
+        }
+
+        switch ($claim.Kind) {
+            "simple" {
+                $claimed = ClaimNum $postMatch.Groups[1].Value
+                $srcPath = Join-Path $companionDir $claim.SourceFile
+                $srcMatch = [regex]::Match((Get-Content -Raw $srcPath), $claim.SourcePattern)
+                if (-not $srcMatch.Success) { $problems += "CLAIM '$($claim.Name)': source pattern not found in $($claim.SourceFile)"; continue }
+                $actual = ClaimNum $srcMatch.Groups[1].Value
+                if ([math]::Abs($claimed - $actual) -gt $claim.Tolerance) {
+                    $problems += "CLAIM MISMATCH '$($claim.Name)': post says $claimed, $($claim.SourceFile) says $actual (tolerance $($claim.Tolerance))"
+                }
+            }
+            "percentdiff" {
+                $claimed = ClaimNum $postMatch.Groups[1].Value
+                $a = ClaimNum ([regex]::Match((Get-Content -Raw (Join-Path $companionDir $claim.SourceFileA)), $claim.SourcePatternA).Groups[1].Value)
+                $b = ClaimNum ([regex]::Match((Get-Content -Raw (Join-Path $companionDir $claim.SourceFileB)), $claim.SourcePatternB).Groups[1].Value)
+                $actual = [math]::Abs($a - $b) / $a * 100
+                if ([math]::Abs($claimed - $actual) -gt $claim.Tolerance) {
+                    $problems += "CLAIM MISMATCH '$($claim.Name)': post says ${claimed}%, actual is $([math]::Round($actual,2))% (tolerance $($claim.Tolerance))"
+                }
+            }
+            "avg2" {
+                $claimed = ClaimNum $postMatch.Groups[1].Value
+                $srcText = Get-Content -Raw (Join-Path $companionDir $claim.SourceFile)
+                $matches = [regex]::Matches($srcText, $claim.SourcePattern)
+                if ($matches.Count -lt 2) { $problems += "CLAIM '$($claim.Name)': fewer than 2 source matches in $($claim.SourceFile)"; continue }
+                $actual = (([double]$matches[0].Groups[1].Value) + ([double]$matches[1].Groups[1].Value)) / 2
+                if ([math]::Abs($claimed - $actual) -gt $claim.Tolerance) {
+                    $problems += "CLAIM MISMATCH '$($claim.Name)': post says $claimed, avg of first 2 in $($claim.SourceFile) is $actual (tolerance $($claim.Tolerance))"
+                }
+            }
+            "range2" {
+                $claimedMin = ClaimNum $postMatch.Groups[1].Value
+                $claimedMax = ClaimNum $postMatch.Groups[2].Value
+                $srcText = Get-Content -Raw (Join-Path $companionDir $claim.SourceFile)
+                $matches = [regex]::Matches($srcText, $claim.SourcePattern)
+                if ($matches.Count -lt 2) { $problems += "CLAIM '$($claim.Name)': fewer than 2 source matches in $($claim.SourceFile)"; continue }
+                $last2 = @($matches)[-2..-1] | ForEach-Object { [double]$_.Groups[1].Value }
+                $actualMin = ($last2 | Measure-Object -Minimum).Minimum
+                $actualMax = ($last2 | Measure-Object -Maximum).Maximum
+                if ([math]::Abs($claimedMin - $actualMin) -gt $claim.Tolerance -or [math]::Abs($claimedMax - $actualMax) -gt $claim.Tolerance) {
+                    $problems += "CLAIM MISMATCH '$($claim.Name)': post says $claimedMin-$claimedMax, last 2 in $($claim.SourceFile) are $actualMin-$actualMax (tolerance $($claim.Tolerance))"
+                }
+            }
+            "ticks-zero" {
+                foreach ($f in $claim.SourceFiles) {
+                    $srcMatch = [regex]::Match((Get-Content -Raw (Join-Path $companionDir $f)), $claim.SourcePattern)
+                    if (-not $srcMatch.Success) { $problems += "CLAIM '$($claim.Name)': source pattern not found in $f"; continue }
+                    $actual = ClaimNum $srcMatch.Groups[1].Value
+                    if ($actual -ne 0) {
+                        $problems += "CLAIM MISMATCH '$($claim.Name)': post says 0 heartbeat ticks, $f shows $actual"
+                    }
+                }
+            }
+            default {
+                $problems += "CLAIM '$($claim.Name)': unknown Kind '$($claim.Kind)'"
+            }
+        }
+    }
+}
+
 Remove-Item -Recurse -Force $buildDir -ErrorAction SilentlyContinue
 Pop-Location
 
@@ -247,6 +330,6 @@ if ($problems.Count -gt 0) {
     $problems | ForEach-Object { Write-Host "  - $_" -ForegroundColor Red }
     exit 1
 } else {
-    Write-Host "check-post.ps1: all snippet paths match git's exact casing, build succeeds, no literal shortcode/fence/raw-HTML leakage, every transcript block matches its source file verbatim, every embedded output file matches the provenance manifest, productivity numbers match results/productivity.json." -ForegroundColor Green
+    Write-Host "check-post.ps1: all snippet paths match git's exact casing, build succeeds, no literal shortcode/fence/raw-HTML leakage, every transcript block matches its source file verbatim, every embedded output file matches the provenance manifest, productivity numbers match results/productivity.json, all claims.psd1 prose claims match their source." -ForegroundColor Green
     exit 0
 }
