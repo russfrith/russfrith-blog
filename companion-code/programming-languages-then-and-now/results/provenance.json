@@ -1,0 +1,590 @@
+[
+  {
+    "commands": [
+      "python broken.py",
+      "python fixed.py"
+    ],
+    "file": "python/scenarios/01_absent_null/output.txt",
+    "sha256": "e1284af78d762b2ac12d670657f21ffb9ff4ff85fb5f433869c3c7d13bc4085a",
+    "images": [
+      "python:3.14.8-slim"
+    ],
+    "captured": "2026-10-28T23:00:48.6764273-04:00"
+  },
+  {
+    "commands": [
+      "python demo.py"
+    ],
+    "file": "python/scenarios/03_integer_overflow/output.txt",
+    "sha256": "53095dbb0343f1d7a7282431f2ff5139128cee42500f94d267cfbd8ad15afbbf",
+    "images": [
+      "python:3.14.8-slim"
+    ],
+    "captured": "2026-10-28T23:00:49.1492267-04:00"
+  },
+  {
+    "commands": [
+      "python broken.py",
+      "python fixed.py"
+    ],
+    "file": "python/scenarios/04_ignored_errors/output.txt",
+    "sha256": "1640f3a6b55688bb7f97e8f0e8619af2e847bb30790f78595652d813534528e9",
+    "images": [
+      "python:3.14.8-slim"
+    ],
+    "captured": "2026-10-28T23:00:50.1206455-04:00"
+  },
+  {
+    "commands": [
+      "python broken.py",
+      "python fixed.py"
+    ],
+    "file": "python/scenarios/05_resource_cleanup/output.txt",
+    "sha256": "54ffd928f905f774c9bfc450bc3d79adbfd2214151ad4bd5e43da2aba122a706",
+    "images": [
+      "python:3.14.8-slim"
+    ],
+    "captured": "2026-10-28T23:00:51.0712438-04:00"
+  },
+  {
+    "commands": [
+      "python broken.py",
+      "python fixed.py"
+    ],
+    "file": "python/scenarios/08_untrusted_json/output.txt",
+    "sha256": "fb9e7b3c1fdefdaf854b68b0bd403f89daf58d9afdd8b49eb1cb5f3901de3b55",
+    "images": [
+      "python:3.14.8-slim"
+    ],
+    "captured": "2026-10-28T23:00:52.5918454-04:00"
+  },
+  {
+    "commands": [
+      "python broken.py",
+      "python fixed.py"
+    ],
+    "file": "python/scenarios/footgun_mutable_default/output.txt",
+    "sha256": "37c0436e4c57f2875b69203d4a489b16a55658b55b0ef5628ae22e13b56eb4bb",
+    "images": [
+      "python:3.14.8-slim"
+    ],
+    "captured": "2026-10-28T23:00:53.5608803-04:00"
+  },
+  {
+    "commands": [
+      "go run broken.go",
+      "go run fixed.go"
+    ],
+    "file": "go/scenarios/01_absent_null/output.txt",
+    "sha256": "0cc432ac08dc2d6f3126126c4b887c2b6691c5da709861f3299f1cea8cb4a40e",
+    "images": [
+      "golang:1.26.4-bookworm"
+    ],
+    "captured": "2026-10-28T23:00:59.5724585-04:00"
+  },
+  {
+    "commands": [
+      "go run broken.go",
+      "go run fixed.go"
+    ],
+    "file": "go/scenarios/03_integer_overflow/output.txt",
+    "sha256": "cf571413e848a247abc721f3e3b229e4c2c4b4b6a416b81b72da682146ae89f2",
+    "images": [
+      "golang:1.26.4-bookworm"
+    ],
+    "captured": "2026-10-28T23:01:04.9072470-04:00"
+  },
+  {
+    "commands": [
+      "go run broken.go",
+      "go run fixed.go"
+    ],
+    "file": "go/scenarios/04_ignored_errors/output.txt",
+    "sha256": "3bfff9cd5da5912c6738a05becef891a649ec445fdb519ffe98563ae16c7e02f",
+    "images": [
+      "golang:1.26.4-bookworm"
+    ],
+    "captured": "2026-10-28T23:01:10.1591944-04:00"
+  },
+  {
+    "commands": [
+      "go run broken.go",
+      "go run fixed.go"
+    ],
+    "file": "go/scenarios/05_resource_cleanup/output.txt",
+    "sha256": "872092b6fa8a0f6aaecd61781e51fc9efa8927bde13c1d524f9a7d6834a6e2c6",
+    "images": [
+      "golang:1.26.4-bookworm"
+    ],
+    "captured": "2026-10-28T23:01:15.3965783-04:00"
+  },
+  {
+    "commands": [
+      "go run broken.go",
+      "go run fixed.go"
+    ],
+    "file": "go/scenarios/08_untrusted_json/output.txt",
+    "sha256": "b61ae5a991dfa27ac1cc9b0ca64436f4ee036201b65ea1594d4f323ab0eb7330",
+    "images": [
+      "golang:1.26.4-bookworm"
+    ],
+    "captured": "2026-10-28T23:01:25.6068986-04:00"
+  },
+  {
+    "commands": [
+      "go run broken.go",
+      "go run fixed.go"
+    ],
+    "file": "go/scenarios/footgun_nil_interface/output.txt",
+    "sha256": "b5e87b01904ee132ee2b53ad095d6f3af378bb149d6a5d347266103e780a4f93",
+    "images": [
+      "golang:1.26.4-bookworm"
+    ],
+    "captured": "2026-10-28T23:01:30.8970584-04:00"
+  },
+  {
+    "commands": [
+      "node broken.ts",
+      "node fixed.ts"
+    ],
+    "file": "typescript/scenarios/01_absent_null/output.txt",
+    "sha256": "d7fb3cb5f2bef7558aa6c2a704a743dd6e833f63fdd29882f84fb2cee6d1dac6",
+    "images": [
+      "node:26-bookworm-slim"
+    ],
+    "captured": "2026-10-28T23:01:31.9812907-04:00"
+  },
+  {
+    "commands": [
+      "node demo.ts"
+    ],
+    "file": "typescript/scenarios/03_integer_overflow/output.txt",
+    "sha256": "85562a41b717274c76a50692e48d6425448b82600a4fd2fe15e262c29e82fb52",
+    "images": [
+      "node:26-bookworm-slim"
+    ],
+    "captured": "2026-10-28T23:01:32.4839268-04:00"
+  },
+  {
+    "commands": [
+      "node broken.ts",
+      "node fixed.ts"
+    ],
+    "file": "typescript/scenarios/04_ignored_errors/output.txt",
+    "sha256": "7a6841041c79b2e4bff60eef6c229afffb02e5722f95499986e21ad1239fc8bf",
+    "images": [
+      "node:26-bookworm-slim"
+    ],
+    "captured": "2026-10-28T23:01:33.5119581-04:00"
+  },
+  {
+    "commands": [
+      "node broken.ts",
+      "node fixed.ts"
+    ],
+    "file": "typescript/scenarios/05_resource_cleanup/output.txt",
+    "sha256": "7005805650a71a4ce666603e780ed93f83dcbfa1273012cd57b48fb890f3980f",
+    "images": [
+      "node:26-bookworm-slim"
+    ],
+    "captured": "2026-10-28T23:01:34.5286773-04:00"
+  },
+  {
+    "commands": [
+      "node broken.ts",
+      "node fixed.ts"
+    ],
+    "file": "typescript/scenarios/footgun_type_erasure/output.txt",
+    "sha256": "d50dec3d30eabccf37be13270d9503c501850e3ad7405ce30b3d3e4405736dc1",
+    "images": [
+      "node:26-bookworm-slim"
+    ],
+    "captured": "2026-10-28T23:01:35.5284084-04:00"
+  },
+  {
+    "commands": [
+      "node broken.ts",
+      "node fixed.ts"
+    ],
+    "file": "typescript/scenarios/08_untrusted_json/output.txt",
+    "sha256": "ce58d99495237568bbd4bd55ab458a0733ad7283b4a573a1f65de1845f875e83",
+    "images": [
+      "node:26-bookworm-slim"
+    ],
+    "captured": "2026-10-28T23:01:36.6582913-04:00"
+  },
+  {
+    "commands": [
+      "gcc -O0 -g -Wall broken.c -o broken",
+      "./broken",
+      "gcc -O0 -g -Wall fixed.c -o fixed",
+      "./fixed"
+    ],
+    "file": "c/scenarios/01-absent-null/output.txt",
+    "sha256": "ae714a1501e0092274d41dffd48ba4cda1e4cf2dd5bfc6e3e5828b2285e45a8a",
+    "images": [
+      "gcc:16.2"
+    ],
+    "captured": "2026-10-28T23:01:38.7684924-04:00"
+  },
+  {
+    "commands": [
+      "gcc -O0 -g -Wall broken.c -o broken",
+      "./broken",
+      "gcc -O0 -g -Wall fixed.c -o fixed",
+      "./fixed"
+    ],
+    "file": "c/scenarios/03-integer-overflow/output.txt",
+    "sha256": "3cddb46c7a3f94826786df4cd76ff0fb0658494a7fa6f6e45ebe1d46ed584338",
+    "images": [
+      "gcc:16.2"
+    ],
+    "captured": "2026-10-28T23:01:40.6987394-04:00"
+  },
+  {
+    "commands": [
+      "gcc -O0 -g -Wall broken.c -o broken",
+      "./broken",
+      "gcc -O0 -g -Wall fixed.c -o fixed",
+      "./fixed"
+    ],
+    "file": "c/scenarios/04-ignored-errors/output.txt",
+    "sha256": "0fbe080bbdcb229465c3b2bffedae7e5b2e5480ce2133ced8a3f9bb089788d08",
+    "images": [
+      "gcc:16.2"
+    ],
+    "captured": "2026-10-28T23:01:42.7479135-04:00"
+  },
+  {
+    "commands": [
+      "gcc -O0 -g -Wall broken.c -o broken",
+      "./broken",
+      "gcc -O0 -g -Wall fixed.c -o fixed",
+      "./fixed",
+      "gcc -O0 -g -fsanitize=address broken.c -o broken_asan",
+      "./broken_asan"
+    ],
+    "file": "c/scenarios/05-resource-cleanup/output.txt",
+    "sha256": "7b122d72177d63fae167ed1bfee8057a39032562f48171d404527adc111569b3",
+    "images": [
+      "gcc:16.2"
+    ],
+    "captured": "2026-10-28T23:01:45.7762413-04:00"
+  },
+  {
+    "commands": [
+      "rustc -O broken.rs -o broken && ./broken",
+      "rustc -O fixed.rs -o fixed && ./fixed"
+    ],
+    "file": "rust/scenarios/01_absent_null/output.txt",
+    "sha256": "fbf233edc5c3131c10be5f457d5a6c93f9e2444e848f7be80b08f46a911ead0d",
+    "images": [
+      "rust:1.96.1-slim-bookworm"
+    ],
+    "captured": "2026-10-28T23:01:47.4311214-04:00"
+  },
+  {
+    "commands": [
+      "rustc broken.rs -o broken_debug && ./broken_debug   (debug profile: overflow-checks on)",
+      "rustc -O broken.rs -o broken && ./broken   (release-style profile: overflow-checks off)",
+      "rustc -O fixed.rs -o fixed && ./fixed"
+    ],
+    "file": "rust/scenarios/03_integer_overflow/output.txt",
+    "sha256": "bcef6ba70f1d22dac36e193579de8750eba93738f8d16c145e19e0ea29e305a5",
+    "images": [
+      "rust:1.96.1-slim-bookworm"
+    ],
+    "captured": "2026-10-28T23:01:49.2811665-04:00"
+  },
+  {
+    "commands": [
+      "rustc -O broken.rs -o broken && ./broken",
+      "rustc -O fixed.rs -o fixed && ./fixed"
+    ],
+    "file": "rust/scenarios/04_ignored_errors/output.txt",
+    "sha256": "c3194ed9d4b66e3b726c137fc8e311cb3f3ba768df128fa94ede89b5cdf22a91",
+    "images": [
+      "rust:1.96.1-slim-bookworm"
+    ],
+    "captured": "2026-10-28T23:01:50.5831746-04:00"
+  },
+  {
+    "commands": [
+      "rustc -O broken.rs -o broken && ./broken",
+      "rustc -O fixed.rs -o fixed && ./fixed"
+    ],
+    "file": "rust/scenarios/05_resource_cleanup/output.txt",
+    "sha256": "7fdd4bcc4d9e19d9b7b6372d9f5dbb1e7e7c59a75f1fd7f34a4446997bab1135",
+    "images": [
+      "rust:1.96.1-slim-bookworm"
+    ],
+    "captured": "2026-10-28T23:01:52.0618678-04:00"
+  },
+  {
+    "commands": [
+      "cargo build --release",
+      "./target/release/strict",
+      "./target/release/defaulted"
+    ],
+    "file": "rust/scenarios/08_untrusted_json/output.txt",
+    "sha256": "866df2d8784c95f882e28703666370e383dd9c71f69459d856656813ca6220b6",
+    "images": [
+      "rust:1.96.1-slim-bookworm"
+    ],
+    "captured": "2026-10-28T23:02:07.4329863-04:00"
+  },
+  {
+    "commands": [
+      "rustc broken.rs -o broken",
+      "rustc fixed.rs -o fixed && ./fixed"
+    ],
+    "file": "rust/scenarios/footgun_borrow_checker/output.txt",
+    "sha256": "98954bec3c2bcb96ae034779bdc7b21c3c5ae248da542307f6a0640c78137794",
+    "images": [
+      "rust:1.96.1-slim-bookworm"
+    ],
+    "captured": "2026-10-28T23:02:08.5767378-04:00"
+  },
+  {
+    "commands": [
+      "rustc compile_reject_plain_mut.rs -o out1",
+      "rustc compile_reject_rc.rs -o out2"
+    ],
+    "file": "rust/scenarios/02_data_race/compile_reject_output.txt",
+    "sha256": "a60eda140f2a1e2d1867347e82777f2e47fc7ae166b9ab8a6e9708cca0f9a3a4",
+    "images": [
+      "rust:1.96.1-slim-bookworm"
+    ],
+    "captured": "2026-10-28T23:02:09.6758602-04:00"
+  },
+  {
+    "commands": [
+      "kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar",
+      "kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar"
+    ],
+    "file": "kotlin/scenarios/01_absent_null/output.txt",
+    "sha256": "269a6a49f06a146189adf723387d18938d0ceb39db8863eae2a00bdafccaf2c4",
+    "images": [
+      "kotlinc-2.4.0"
+    ],
+    "captured": "2026-10-28T23:02:18.1054511-04:00"
+  },
+  {
+    "commands": [
+      "kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar",
+      "kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar"
+    ],
+    "file": "kotlin/scenarios/03_integer_overflow/output.txt",
+    "sha256": "624afb6add4875e6228694e0e57584b66bed1c3e7e6a988899b85b338b1f110a",
+    "images": [
+      "kotlinc-2.4.0"
+    ],
+    "captured": "2026-10-28T23:02:26.3721708-04:00"
+  },
+  {
+    "commands": [
+      "kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar",
+      "kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar"
+    ],
+    "file": "kotlin/scenarios/04_ignored_errors/output.txt",
+    "sha256": "32ab38fa2a8d73d4b70b77044f505c1661e3b5a5f654145a7b4933a2b4caa7d7",
+    "images": [
+      "kotlinc-2.4.0"
+    ],
+    "captured": "2026-10-28T23:02:34.5855721-04:00"
+  },
+  {
+    "commands": [
+      "kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar",
+      "kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar"
+    ],
+    "file": "kotlin/scenarios/05_resource_cleanup/output.txt",
+    "sha256": "cf74e1ef176a331726b4bf4480e6a005fd879c4dc11ed25ac812b4798ceefc3a",
+    "images": [
+      "kotlinc-2.4.0"
+    ],
+    "captured": "2026-10-28T23:02:42.6902275-04:00"
+  },
+  {
+    "commands": [
+      "kotlinc Broken.kt -include-runtime -d broken.jar",
+      "java -jar broken.jar",
+      "kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar"
+    ],
+    "file": "kotlin/scenarios/footgun_platform_types/output.txt",
+    "sha256": "cd30e5aa67d81528f023d287f67d5efa8b31bf35bed9335264f6ec81bce877d8",
+    "images": [
+      "kotlinc-2.4.0"
+    ],
+    "captured": "2026-10-28T23:02:51.6249525-04:00"
+  },
+  {
+    "commands": [
+      "kotlinc -Xplugin=serialization-plugin.jar -cp \"serialization-core.jar:serialization-json.jar\" Strict.kt -include-runtime -d strict.jar",
+      "java -cp \"strict.jar:serialization-core.jar:serialization-json.jar\" StrictKt",
+      "kotlinc -Xplugin=serialization-plugin.jar -cp \"serialization-core.jar:serialization-json.jar\" Defaulted.kt -include-runtime -d defaulted.jar",
+      "java -cp \"defaulted.jar:serialization-core.jar:serialization-json.jar\" DefaultedKt"
+    ],
+    "file": "kotlin/scenarios/08_untrusted_json/output.txt",
+    "sha256": "2dad2ca1e8bb6c2e497b336573001b77e51645bada87d797af12cba901fc881e",
+    "images": [
+      "kotlinc-2.4.0"
+    ],
+    "captured": "2026-10-28T23:03:03.8384717-04:00"
+  },
+  {
+    "commands": [
+      "dotnet run   (broken/)",
+      "dotnet run   (fixed/)",
+      "dotnet run   (indexer_demo/ -- Dictionary indexer vs TryGetValue)"
+    ],
+    "file": "csharp/scenarios/01_absent_null/output.txt",
+    "sha256": "47cd4e08154077e82ec19dc467cfbe84a71bac101e3c0edfc808d677bf7af58d",
+    "images": [
+      "mcr.microsoft.com/dotnet/sdk:10.0"
+    ],
+    "captured": "2026-10-28T23:03:16.3812568-04:00"
+  },
+  {
+    "commands": [
+      "dotnet run   (broken/ -- default unchecked context)",
+      "dotnet run   (fixed/ -- explicit `checked(...)`)",
+      "dotnet run   (checked_project/ -- same plain code, project-level <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>, no `checked` keyword in source)"
+    ],
+    "file": "csharp/scenarios/03_integer_overflow/output.txt",
+    "sha256": "92ca92f27f8bcc2e2126ad945d4306e673633870379b9e539da8500e73bf832c",
+    "images": [
+      "mcr.microsoft.com/dotnet/sdk:10.0"
+    ],
+    "captured": "2026-10-28T23:03:28.8552793-04:00"
+  },
+  {
+    "commands": [
+      "dotnet run   (broken/)",
+      "dotnet run   (fixed/)"
+    ],
+    "file": "csharp/scenarios/04_ignored_errors/output.txt",
+    "sha256": "56f2bc92e44fd67701c35909bd26eba759d5aa98437fcdd0af6155a58a221bf3",
+    "images": [
+      "mcr.microsoft.com/dotnet/sdk:10.0"
+    ],
+    "captured": "2026-10-28T23:03:37.4837090-04:00"
+  },
+  {
+    "commands": [
+      "dotnet run   (broken/)",
+      "dotnet run   (fixed/)"
+    ],
+    "file": "csharp/scenarios/05_resource_cleanup/output.txt",
+    "sha256": "6d8e0549b4aeb840620f888e8d61680d19bbffd76ed5a539359d4bfe18d8474b",
+    "images": [
+      "mcr.microsoft.com/dotnet/sdk:10.0"
+    ],
+    "captured": "2026-10-28T23:03:45.6643790-04:00"
+  },
+  {
+    "commands": [
+      "dotnet run   (broken/ -- plain record, no `required`)",
+      "dotnet run   (fixed/ -- `required int Count`)"
+    ],
+    "file": "csharp/scenarios/08_untrusted_json/output.txt",
+    "sha256": "41a1a746ff9b4bee2872e2ec4bc7d4245960d868e876f8e633799e34832b5067",
+    "images": [
+      "mcr.microsoft.com/dotnet/sdk:10.0"
+    ],
+    "captured": "2026-10-28T23:03:53.8592099-04:00"
+  },
+  {
+    "commands": [
+      "dotnet run   (broken/)",
+      "dotnet run   (fixed/)"
+    ],
+    "file": "csharp/scenarios/footgun_async_void/output.txt",
+    "sha256": "70bac0bb66cbaa8d57c71438a74364e2261e57b6174e842d05eb1ccae07c0d9b",
+    "images": [
+      "mcr.microsoft.com/dotnet/sdk:10.0"
+    ],
+    "captured": "2026-10-28T23:04:01.9479425-04:00"
+  },
+  {
+    "commands": [
+      "gcc -O0 -g -Wall broken.c -o broken -lpthread && ./broken",
+      "broken run retried up to 5x until it lost an update (attempt 1)",
+      "gcc -O0 -g -Wall fixed.c -o fixed -lpthread && ./fixed"
+    ],
+    "file": "c/scenarios/02-data-race/output.txt",
+    "sha256": "b4ce0ec8f1a239d5843b404f77300c1dd1e4b11dfd648a9170392d1963618b52",
+    "images": [
+      "gcc:16.2"
+    ],
+    "captured": "2026-10-28T23:04:03.0688265-04:00"
+  },
+  {
+    "commands": [
+      "dotnet run   (broken/)",
+      "broken run retried up to 5x until it lost an update (attempt 1)",
+      "dotnet run   (fixed/)"
+    ],
+    "file": "csharp/scenarios/02_data_race/output.txt",
+    "sha256": "d18b23338153da158779afa37455e893ac4ac0a9fe5b700794de7b1ae367c504",
+    "images": [
+      "mcr.microsoft.com/dotnet/sdk:10.0"
+    ],
+    "captured": "2026-10-28T23:04:11.4917560-04:00"
+  },
+  {
+    "commands": [
+      "kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar",
+      "broken run retried up to 5x until it lost an update (attempt 1)",
+      "kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar"
+    ],
+    "file": "kotlin/scenarios/02_data_race/output.txt",
+    "sha256": "85b5e93ce69833707432da0e0124d6306d2d6fdea33df11f101769c79c6e48a2",
+    "images": [
+      "kotlinc-2.4.0"
+    ],
+    "captured": "2026-10-28T23:04:20.1816991-04:00"
+  },
+  {
+    "commands": [
+      "python broken.py",
+      "broken run retried up to 5x until it lost an update (attempt 1)",
+      "python fixed.py"
+    ],
+    "file": "python/scenarios/02_data_race/output.txt",
+    "sha256": "13714554e5ad25f13d8c76da241d26520bbd837c2c1a5e50c5de3c845925cebd",
+    "images": [
+      "python:3.14.8-slim"
+    ],
+    "captured": "2026-10-28T23:04:21.2370003-04:00"
+  },
+  {
+    "commands": [
+      "node broken.ts",
+      "broken run retried up to 5x until it lost an update (attempt 1)",
+      "node fixed.ts"
+    ],
+    "file": "typescript/scenarios/02_data_race/output.txt",
+    "sha256": "d563f40ac25f1e7ce97694f0620fd53c976489b079008c41e72f830d7875ed72",
+    "images": [
+      "node:26-bookworm-slim"
+    ],
+    "captured": "2026-10-28T23:04:22.3568477-04:00"
+  },
+  {
+    "commands": [
+      "docker compose run --rm python --top 5 --concurrency 1 --timeout 2 /data/urls-hang.txt",
+      "docker compose run --rm go --top 5 --concurrency 1 --timeout 2 /data/urls-hang.txt",
+      "docker compose run --rm rust --top 5 --concurrency 1 --timeout 2 /data/urls-hang.txt",
+      "docker compose run --rm typescript --top 5 --concurrency 1 --timeout 2 /data/urls-hang.txt",
+      "docker compose run --rm kotlin --top 5 --concurrency 1 --timeout 2 /data/urls-hang.txt",
+      "docker compose run --rm csharp --top 5 --concurrency 1 --timeout 2 /data/urls-hang.txt"
+    ],
+    "file": "shared/scenarios/06_hung_cancellation/output.txt",
+    "sha256": "9906252e6312df02adc74f61402aa885877de5fd18dd1c2e48980475c76f5af7",
+    "images": [
+      "docker compose (python/go/rust/typescript/kotlin/csharp services)"
+    ],
+    "captured": "2026-10-28T23:04:39.6339414-04:00"
+  }
+]

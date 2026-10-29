@@ -291,9 +291,17 @@ $scenarios = @(
     @{ Name="typescript/03_integer_overflow"; Expected="typescript/scenarios/03_integer_overflow/output.txt"; Steps=@(
         S "typescript/scenarios/03_integer_overflow" $node "node demo.ts$exit0"
     )}
+    @{ Name="typescript/04_ignored_errors"; Expected="typescript/scenarios/04_ignored_errors/output.txt"; Steps=@(
+        S "typescript/scenarios/04_ignored_errors" $node "node broken.ts$exit0"
+        S "typescript/scenarios/04_ignored_errors" $node "node fixed.ts$exit0"
+    )}
     @{ Name="typescript/05_resource_cleanup"; Expected="typescript/scenarios/05_resource_cleanup/output.txt"; Steps=@(
         S "typescript/scenarios/05_resource_cleanup" $node "node broken.ts$exit0"
         S "typescript/scenarios/05_resource_cleanup" $node "node fixed.ts$exit0"
+    )}
+    @{ Name="typescript/footgun_type_erasure"; Expected="typescript/scenarios/footgun_type_erasure/output.txt"; Steps=@(
+        S "typescript/scenarios/footgun_type_erasure" $node "node broken.ts$exit0"
+        S "typescript/scenarios/footgun_type_erasure" $node "node fixed.ts$exit0"
     )}
     @{ Name="typescript/08_untrusted_json"; Expected="typescript/scenarios/08_untrusted_json/output.txt"; Steps=@(
         S "typescript/scenarios/08_untrusted_json" $node "node broken.ts" $true
@@ -499,7 +507,7 @@ if ($Update) {
             $m = [regex]::Match($candidate, 'counter\s*=\s*(\d+)')
             if ($m.Success -and [int]$m.Groups[1].Value -lt $counterExpected) {
                 $brokenOut = $candidate
-                Write-Host "  ($name: broken run lost an update on attempt $attempt)" -ForegroundColor DarkGray
+                Write-Host "  (${name}: broken run lost an update on attempt $attempt)" -ForegroundColor DarkGray
                 break
             }
         }

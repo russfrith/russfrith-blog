@@ -1,6 +1,6 @@
 $ python broken.py
-['a']
 [python 3.14.8, gil_enabled=True]
+['a']
 ['a', 'b']
 EXIT:0
 

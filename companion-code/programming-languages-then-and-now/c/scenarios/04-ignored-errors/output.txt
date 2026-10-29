@@ -2,8 +2,8 @@ $ gcc -O0 -g -Wall broken.c -o broken
 
 
 $ ./broken
-EXIT:139
 bash: line 1:     7 Segmentation fault      (core dumped) ./broken
+EXIT:139
 
 $ gcc -O0 -g -Wall fixed.c -o fixed
 

@@ -1,5 +1,5 @@
 $ node broken.ts
-counter = 266974 (expected 400000)
+counter = 313613 (expected 400000)
 EXIT:0
 
 $ node fixed.ts
@@ -7,13 +7,4 @@ counter = 400000 (expected 400000)
 EXIT:0
 
 Runtime: Node.js v26.12.1 (node:26-bookworm-slim)
-
-$ npx tsc --noEmit --strict --target ES2023 --module NodeNext --moduleResolution NodeNext --esModuleInterop --skipLibCheck --types node broken.ts
-(no errors)
-EXIT:0
-
-$ npx tsc --noEmit --strict --target ES2023 --module NodeNext --moduleResolution NodeNext --esModuleInterop --skipLibCheck --types node fixed.ts
-(no errors)
-EXIT:0
-
 Type checker: TypeScript 5.9.3.

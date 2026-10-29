@@ -17,6 +17,7 @@ target/
 # Rust: cargo build output only (never matches src/bin/, which is source)
 rust/**/target/
 rust/scenarios/*/broken
+rust/scenarios/*/broken_debug
 rust/scenarios/*/fixed
 rust/scenarios/*/out1
 rust/scenarios/*/out2

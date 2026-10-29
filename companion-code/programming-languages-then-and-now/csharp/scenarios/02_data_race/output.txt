@@ -1,5 +1,5 @@
 $ dotnet run   (broken/)
-counter = 365913 (expected 400000)
+counter = 338487 (expected 400000)
 
 $ dotnet run   (fixed/)
 counter = 400000 (expected 400000)

@@ -4,13 +4,14 @@ error[E0499]: cannot borrow `v` as mutable more than once at a time
    |
 11 |     let a = get_mut(&mut v, 0);
    |                     ------ first mutable borrow occurs here
-12 |     let b = get_mut(&mut v, 1);
+12 |     let b = get_mut(&mut v, 1); // ERROR: second mutable borrow of `v` while `a` is live
    |                     ^^^^^^ second mutable borrow occurs here
 13 |     *a += 1;
    |     ------- first borrow later used here
 
 error: aborting due to 1 previous error
-EXIT:1 (compile failure -- never runs)
+
+For more information about this error, try `rustc --explain E0499`.
 
 $ rustc fixed.rs -o fixed && ./fixed
 [2, 3, 3]

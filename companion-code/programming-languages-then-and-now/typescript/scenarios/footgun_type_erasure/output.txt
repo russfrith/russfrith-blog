@@ -1,11 +1,18 @@
 $ node broken.ts
 file:///src/broken.ts:10
-console.log(`Hello, ${user.name.toUpperCase()}`);
+console.log(`Hello, ${user.name.toUpperCase()}`); // runtime TypeError, far from the `as`
                                 ^
 
 TypeError: Cannot read properties of undefined (reading 'toUpperCase')
     at Object.<anonymous> (file:///src/broken.ts:10:33)
-    ...
+    at Module._compile (node:internal/modules/cjs/loader:1968:14)
+    at Object..js (node:internal/modules/cjs/loader:2108:10)
+    at Module.load (node:internal/modules/cjs/loader:1690:32)
+    at Module._load (node:internal/modules/cjs/loader:1480:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+    at node:internal/main/run_main_module:33:47
+
 Node.js v26.12.1
 EXIT:1
 
@@ -14,12 +21,4 @@ not a valid User
 EXIT:0
 
 Runtime: Node.js v26.12.1 (node:26-bookworm-slim)
-$ npx tsc --noEmit --strict --target ES2023 --module NodeNext --moduleResolution NodeNext --esModuleInterop --skipLibCheck --types node broken.ts
-(no errors)
-EXIT:0
-
-$ npx tsc --noEmit --strict --target ES2023 --module NodeNext --moduleResolution NodeNext --esModuleInterop --skipLibCheck --types node fixed.ts
-(no errors)
-EXIT:0
-
 Type checker: TypeScript 5.9.3.
