@@ -76,6 +76,7 @@ $normalizers = @(
     @{ Pattern = 'at \d+\.\d+'; Replace = 'at <T>' }
     @{ Pattern = '\bPID \d+\b'; Replace = 'PID <N>' }
     @{ Pattern = 'line \d+:\s+\d+ Segmentation fault'; Replace = 'Segmentation fault' }  # bash job-control PID noise
+    @{ Pattern = '# \.\.\. \(\d+ lines omitted\)'; Replace = '# ... (<N> lines omitted)' }  # Elide marker count varies with e.g. cargo's registry cache state
 )
 
 function Normalize([string]$text) {
