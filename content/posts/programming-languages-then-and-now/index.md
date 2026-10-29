@@ -367,6 +367,8 @@ Measured three times each, back to back, on one development machine, 2026-10-29;
 
 #### 9. Baseline CLI size and dependency count
 
+Lines of code counts a line if it's non-empty and doesn't start with the language's line-comment marker, after trimming whitespace -- a simple rule, not a semantic parse, so it reads lower than a raw `wc -l` on the same file.
+
 {{% productivity-table section="9" %}}
 
 #### 10. Clean build vs. incremental rebuild time
