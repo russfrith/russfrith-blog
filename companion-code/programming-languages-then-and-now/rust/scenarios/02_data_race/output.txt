@@ -6,11 +6,12 @@ warning: creating a shared reference to mutable static
    |                              ^^^^^^^ shared reference to mutable static
    |
    = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+   = note: for more information, see <https://doc.rust-lang.org/edition-guide/rust-2024/static-mut-references.html>
    = note: `#[warn(static_mut_refs)]` (part of `#[warn(rust_2024_compatibility)]`) on by default
 
 warning: 1 warning emitted
 
-counter = 358 (expected 400)
+counter = 200000 (expected 400000)
 EXIT:0
 
 $ rustc -O fixed.rs -o fixed && ./fixed

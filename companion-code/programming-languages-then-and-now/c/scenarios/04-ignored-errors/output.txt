@@ -1,9 +1,13 @@
 $ gcc -O0 -g -Wall broken.c -o broken
+
+
 $ ./broken
-Segmentation fault (core dumped)
 EXIT:139
+bash: line 1:     7 Segmentation fault      (core dumped) ./broken
 
 $ gcc -O0 -g -Wall fixed.c -o fixed
+
+
 $ ./fixed
 fopen: No such file or directory
 EXIT:1

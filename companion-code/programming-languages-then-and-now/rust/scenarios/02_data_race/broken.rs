@@ -5,7 +5,7 @@
 use std::thread;
 
 static mut COUNTER: i64 = 0;
-const ITERATIONS: i64 = 200;
+const ITERATIONS: i64 = 200_000;
 
 fn main() {
     let mut handles = vec![];

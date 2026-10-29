@@ -1,5 +1,6 @@
 $ rustc -O broken.rs -o broken && ./broken
-thread 'main' (45) panicked at broken.rs:9:23:
+
+thread 'main' (46) panicked at broken.rs:9:23:
 no entry found for key
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 EXIT:101

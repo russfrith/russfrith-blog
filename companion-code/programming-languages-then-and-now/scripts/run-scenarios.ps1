@@ -18,11 +18,12 @@
 # Usage (from companion-code/programming-languages-then-and-now):
 #   docker compose up -d mockserver
 #   ./scripts/run-scenarios.ps1                 # check mode (default)
-#   ./scripts/run-scenarios.ps1 -Update          # regenerate output.txt files
-#                                                 # listed in $updateTargets from
-#                                                 # a real run (use after a
-#                                                 # deliberate source change --
-#                                                 # never hand-edit output.txt)
+#   ./scripts/run-scenarios.ps1 -Update          # regenerate EVERY output-diff
+#                                                 # scenario's output.txt from a
+#                                                 # real run, so the committed
+#                                                 # text is provably exactly
+#                                                 # what ran -- never hand-edit
+#                                                 # output.txt
 #
 # Exits non-zero (and lists every failure) in check mode.
 #
@@ -363,17 +364,10 @@ if (-not $Update) {
 }
 
 # ============================================================================
-# --update mode: regenerate specific output.txt files from a real run.
-# Every file here was hand-edited after its original capture at some point;
-# this replaces that edit with the real, current, verbatim output.
+# --update mode: regenerate every output-diff scenario's output.txt from a real
+# run, so the committed text is provably exactly what ran (not hand-edited).
 # ============================================================================
-$updateTargets = @(
-    @{ Name="python/01_absent_null"; Scenario=($scenarios | Where-Object { $_.Name -eq "python/01_absent_null" }) }
-    @{ Name="python/08_untrusted_json"; Scenario=($scenarios | Where-Object { $_.Name -eq "python/08_untrusted_json" }) }
-    @{ Name="kotlin/01_absent_null"; Scenario=($scenarios | Where-Object { $_.Name -eq "kotlin/01_absent_null" }) }
-    @{ Name="kotlin/footgun_platform_types"; Scenario=($scenarios | Where-Object { $_.Name -eq "kotlin/footgun_platform_types" }) }
-    @{ Name="rust/04_ignored_errors"; Scenario=($scenarios | Where-Object { $_.Name -eq "rust/04_ignored_errors" }) }
-)
+$updateTargets = $scenarios | ForEach-Object { @{ Name = $_.Name; Scenario = $_ } }
 
 if ($Update) {
     foreach ($t in $updateTargets) {
@@ -472,19 +466,17 @@ $pyRaceResult = Test-Property "property: python/02_data_race (broken<400, fixed=
     if ($brokenVal -ge 400) { return "broken total was $brokenVal, expected less than 400 (this race is known to need the induced delay already in the source -- see NOTES.md)" }
     return $true
 }
-$rsRaceResult = Test-Property "property: rust/02_data_race (broken<400 [reduced-iteration demo], fixed=400000 [full-iteration Arc<Mutex<_>>])" {
-    # NOTE: broken.rs and fixed.rs intentionally use DIFFERENT iteration counts --
-    # broken.rs was reduced to 200/thread (400 total) specifically to make the
-    # race reliable with an induced yield; fixed.rs was never changed from the
-    # original 200,000/thread (400,000 total). This asymmetry is real, not a bug
-    # -- see NOTES.md.
+$rsRaceResult = Test-Property "property: rust/02_data_race (broken<400000, fixed=400000)" {
+    # broken.rs and fixed.rs use the SAME iteration count (200,000/thread, 400,000
+    # total) -- broken.rs's thread::yield_now() between the raw read and raw write
+    # is what makes the race reliable, not a reduced iteration count. See NOTES.md.
     $hostDir = Join-Path $root "rust/scenarios/02_data_race"
     $brokenOut = docker run --rm -v "${hostDir}:/src" -w /src $rs bash -c "rustc -O broken.rs -o broken 2>/dev/null; ./broken" 2>&1 | Out-String
     $fixedOut = docker run --rm -v "${hostDir}:/src" -w /src $rs bash -c "rustc -O fixed.rs -o fixed 2>/dev/null && ./fixed" 2>&1 | Out-String
     $brokenVal = [int]([regex]::Match($brokenOut, 'counter\s*=\s*(\d+)').Groups[1].Value)
     $fixedVal = [int]([regex]::Match($fixedOut, 'counter\s*=\s*(\d+)').Groups[1].Value)
     if ($fixedVal -ne 400000) { return "fixed total was $fixedVal, expected exactly 400000" }
-    if ($brokenVal -ge 400) { return "broken total was $brokenVal, expected less than 400" }
+    if ($brokenVal -ge 400000) { return "broken total was $brokenVal, expected less than 400000" }
     return $true
 }
 

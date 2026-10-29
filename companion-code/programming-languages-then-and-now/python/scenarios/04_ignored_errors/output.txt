@@ -1,11 +1,11 @@
 $ python broken.py
-[python 3.14.8, gil_enabled=True]
 done
+[python 3.14.8, gil_enabled=True]
 EXIT:0
 
 $ python fixed.py
-[python 3.14.8, gil_enabled=True]
 file not found: [Errno 2] No such file or directory: '/no/such/path.txt'
+[python 3.14.8, gil_enabled=True]
 EXIT:0
 
 Interpreter: Python 3.14.8 (python:3.14.8-slim), default GIL build (confirmed by
