@@ -10,6 +10,13 @@
 #   5. no "Raw HTML omitted" Goldmark warning scoped to this post (would mean
 #      a snippet's content got treated as unsafe raw HTML instead of being
 #      highlighted properly).
+#   6. verbatim guard for transcript blocks (layouts/partials/transcript.html):
+#      for every captured output.txt rendered through the colored transcript
+#      renderer, stripping the HTML tags and unescaping entities reproduces the
+#      source file's bytes exactly -- and every block that should have routed
+#      through the transcript renderer (lang="text", or a file named output.txt
+#      or ending in _output.txt) actually did, rather than silently falling
+#      back to Chroma's plain (uncolored) text lexer.
 #
 # Usage (from repo root):
 #   ./companion-code/programming-languages-then-and-now/scripts/check-post.ps1
@@ -73,6 +80,56 @@ if ($buildExit -ne 0) {
         $problems += "Raw HTML omitted warning scoped to this post's index.md:"
         $problems += $rawHtmlWarnings
     }
+
+    # --- 6: transcript verbatim guard ---
+    # Every snippet reference in document order, with its lang (explicit or extension-inferred,
+    # matching layouts/shortcodes/snippet.html's own default-map logic) and whether it should
+    # have routed through the transcript renderer.
+    $extMap = @{ ".py"="python"; ".go"="go"; ".rs"="rust"; ".ts"="typescript"; ".kt"="kotlin"; ".cs"="csharp"; ".csproj"="xml"; ".c"="c"; ".h"="c"; ".sh"="bash"; ".ps1"="powershell"; ".yml"="yaml"; ".yaml"="yaml"; ".txt"="text"; ".md"="text" }
+    $shortcodeCalls = (Select-String -Path $postFile -Pattern '\{\{<\s*snippet(out)?\s+file="([^"]+)"(?:\s+region="[^"]*")?(?:\s+lang="([^"]+)")?' -AllMatches).Matches
+    $transcriptFiles = @()
+    foreach ($m in $shortcodeCalls) {
+        $f = $m.Groups[2].Value
+        $langOverride = $m.Groups[3].Value
+        $base = Split-Path $f -Leaf
+        $ext = [IO.Path]::GetExtension($f)
+        $lang = if ($langOverride) { $langOverride } elseif ($extMap.ContainsKey($ext)) { $extMap[$ext] } else { "text" }
+        $isTranscript = ($lang -eq "text") -or ($base -eq "output.txt") -or ($base.EndsWith("_output.txt"))
+        if ($isTranscript) { $transcriptFiles += $f }
+    }
+
+    if ($buildExit -eq 0 -and (Test-Path $renderedFile)) {
+        $html = Get-Content -Raw $renderedFile
+        $blockPattern = '<div class="highlight transcript"><pre[^>]*><code class="language-text" data-lang="text">(.*?)</code></pre></div>'
+        $transcriptBlocks = [regex]::Matches($html, $blockPattern, [Text.RegularExpressions.RegexOptions]::Singleline)
+
+        # Any lang="text" block NOT wrapped in class="highlight transcript" means a text-lang
+        # snippet silently fell back to Chroma's plain (uncolored) lexer instead of routing
+        # through the transcript renderer.
+        $plainTextBlocks = [regex]::Matches($html, '<div class="highlight"><pre[^>]*><code class="language-text" data-lang="text">', [Text.RegularExpressions.RegexOptions]::Singleline)
+        if ($plainTextBlocks.Count -gt 0) {
+            $problems += "$($plainTextBlocks.Count) lang=`"text`" block(s) rendered via Chroma's plain text lexer instead of the transcript renderer (missing the 'transcript' class)."
+        }
+
+        if ($transcriptBlocks.Count -ne $transcriptFiles.Count) {
+            $problems += "Transcript block count mismatch: post has $($transcriptFiles.Count) transcript-eligible snippet refs, rendered HTML has $($transcriptBlocks.Count) transcript blocks."
+        } else {
+            for ($i = 0; $i -lt $transcriptBlocks.Count; $i++) {
+                $srcPath = Join-Path $companionDir $transcriptFiles[$i]
+                if (-not (Test-Path $srcPath)) { continue }  # already reported by the casing/missing check above
+                $sourceText = Get-Content -Raw $srcPath
+                $innerHtml = $transcriptBlocks[$i].Groups[1].Value
+                $stripped = [regex]::Replace($innerHtml, '<[^>]+>', '')
+                $decoded = [System.Net.WebUtility]::HtmlDecode($stripped)
+                # normalize line endings -- the source may be read with either, HTML has none
+                $decodedNorm = $decoded -replace "`r`n", "`n"
+                $sourceNorm = $sourceText -replace "`r`n", "`n"
+                if ($decodedNorm -ne $sourceNorm) {
+                    $problems += "VERBATIM MISMATCH: transcript block for '$($transcriptFiles[$i])' does not exactly match its source file after stripping tags and decoding entities."
+                }
+            }
+        }
+    }
 }
 
 Remove-Item -Recurse -Force $buildDir -ErrorAction SilentlyContinue
@@ -83,6 +140,6 @@ if ($problems.Count -gt 0) {
     $problems | ForEach-Object { Write-Host "  - $_" -ForegroundColor Red }
     exit 1
 } else {
-    Write-Host "check-post.ps1: all snippet paths match git's exact casing, build succeeds, no literal shortcode/fence/raw-HTML leakage." -ForegroundColor Green
+    Write-Host "check-post.ps1: all snippet paths match git's exact casing, build succeeds, no literal shortcode/fence/raw-HTML leakage, every transcript block matches its source file verbatim." -ForegroundColor Green
     exit 0
 }

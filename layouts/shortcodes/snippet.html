@@ -54,5 +54,18 @@ back through Goldmark -- so a hand-written ``` fence here would render as
 literal backtick text, not a highlighted code block. Hugo's `highlight`
 template function runs the same Chroma highlighter real fenced code blocks use
 and returns already-rendered, already-safe HTML, which is what belongs here.
+
+Captured terminal transcripts (lang="text", or a file named output.txt / ending
+in _output.txt) route through the transcript partial instead: Chroma's text
+lexer colors nothing, which makes long transcripts hard to follow, so this
+colors prompts/exit codes/failures/etc. by line while keeping the exact same
+div.highlight > pre > code wrapper the copy-button script and layout CSS
+expect.
 */ -}}
-{{ highlight $body $lang "" }}
+{{- $baseName := path.Base $file -}}
+{{- $isTranscript := or (eq $lang "text") (eq $baseName "output.txt") (strings.HasSuffix $baseName "_output.txt") -}}
+{{- if $isTranscript -}}
+  {{ partial "transcript.html" (dict "body" $body) }}
+{{- else -}}
+  {{ highlight $body $lang "" }}
+{{- end -}}

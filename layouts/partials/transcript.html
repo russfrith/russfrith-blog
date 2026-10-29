@@ -1,0 +1,59 @@
+{{- /*
+Renders a terminal transcript (captured $ command + output, from an output.txt
+companion file) as colored spans, reusing the exact div.highlight > pre > code
+wrapper markup Hugo's `highlight` function produces for lang="text", so the
+theme's copy-button script (targets pre > code), horizontal-scroll CSS, and
+block chrome all treat it identically to any other code block.
+
+Classification is per LINE (not per token): the first matching rule below wins.
+Takes: .body (raw file text, as returned by readFile).
+*/ -}}
+{{- $body := .body -}}
+{{- $hasTrailingNL := strings.HasSuffix $body "\n" -}}
+{{- $rawLines := split $body "\n" -}}
+{{- $lines := $rawLines -}}
+{{- if $hasTrailingNL -}}
+  {{- $lines = first (sub (len $rawLines) 1) $rawLines -}}
+{{- end -}}
+{{- /* Word-boundary markers avoid false positives like "error" matching inside
+     prose words such as "errors"; phrase markers are specific enough to stay
+     as plain substrings. */ -}}
+{{- $failWordMarkers := slice "error" "panic" "Exception" "Traceback" "SUMMARY" -}}
+{{- $failPhraseMarkers := slice "Segmentation fault" "WARNING: DATA RACE" "LeakSanitizer" -}}
+{{- $footerPrefixes := slice "Toolchain:" "Interpreter:" "SDK:" "Runtime:" "Type checker:" "Compiler:" -}}
+<div class="highlight transcript"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-text" data-lang="text">{{- range $i, $line := $lines -}}
+{{- $isLastLine := eq $i (sub (len $lines) 1) -}}
+{{- $trimmed := strings.TrimSpace $line -}}
+{{- $class := "" -}}
+{{- if strings.HasPrefix $trimmed "$ " -}}
+  {{- $class = "t-prompt" -}}
+{{- else if eq $trimmed "EXIT:0" -}}
+  {{- $class = "t-exit-ok" -}}
+{{- else if and (strings.HasPrefix $trimmed "EXIT:") (ne $trimmed "EXIT:0") -}}
+  {{- $class = "t-exit-fail" -}}
+{{- else if strings.HasPrefix $trimmed "at " -}}
+  {{- $class = "t-stackframe" -}}
+{{- else -}}
+  {{- $hasFail := false -}}
+  {{- range $m := $failWordMarkers -}}
+    {{- if findRE (printf `\b%s\b` $m) $line -}}{{- $hasFail = true -}}{{- end -}}
+  {{- end -}}
+  {{- range $m := $failPhraseMarkers -}}
+    {{- if in $line $m -}}{{- $hasFail = true -}}{{- end -}}
+  {{- end -}}
+  {{- if $hasFail -}}
+    {{- $class = "t-fail" -}}
+  {{- else if in $line "warning:" -}}
+    {{- $class = "t-warn" -}}
+  {{- else if or (strings.HasPrefix $trimmed "-->") (in $line "note:") (in $line "help:") (findRE `File "[^"]+", line \d+` $line) (findRE `[\w./\\-]+\.[a-zA-Z]{1,5}:\d+` $line) -}}
+    {{- $class = "t-loc" -}}
+  {{- else if eq $trimmed "(no errors)" -}}
+    {{- $class = "t-ok" -}}
+  {{- else -}}
+    {{- range $p := $footerPrefixes -}}
+      {{- if strings.HasPrefix $trimmed $p -}}{{- $class = "t-footer" -}}{{- end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+<span style="display:flex;"><span{{ if $class }} class="{{ $class }}"{{ end }}>{{ $line }}{{ if or (not $isLastLine) $hasTrailingNL }}
+{{ end }}</span></span>{{- end -}}</code></pre></div>

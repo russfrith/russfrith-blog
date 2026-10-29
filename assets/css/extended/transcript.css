@@ -1,0 +1,75 @@
+/*
+Colors for captured terminal transcripts (output.txt files), rendered by
+layouts/partials/transcript.html instead of Chroma's uncolored "text" lexer.
+
+Chroma's `highlight` function always emits a hardcoded dark background on the
+<pre> itself (inline style, confirmed in both light and dark site themes --
+the theme's --code-block-bg variable never actually reaches it), so every
+code block on this site, including these transcripts, keeps the same dark
+background regardless of page theme. These variables are still wired through
+the theme's :root / :root[data-theme="dark"] mechanism for correctness, but
+carry the same values in both blocks since the background they sit on
+doesn't change.
+*/
+:root {
+    --t-prompt: #66d9ef;
+    --t-exit-ok: #a6e22e;
+    --t-exit-fail: #f92672;
+    --t-fail: #f92672;
+    --t-warn: #fd971f;
+    --t-loc: #ae81ff;
+    --t-stackframe: #9a9a90;
+    --t-ok: #a6e22e;
+    --t-footer: #9a9a90;
+}
+
+:root[data-theme="dark"] {
+    --t-prompt: #66d9ef;
+    --t-exit-ok: #a6e22e;
+    --t-exit-fail: #f92672;
+    --t-fail: #f92672;
+    --t-warn: #fd971f;
+    --t-loc: #ae81ff;
+    --t-stackframe: #9a9a90;
+    --t-ok: #a6e22e;
+    --t-footer: #9a9a90;
+}
+
+.highlight.transcript .t-prompt {
+    color: var(--t-prompt);
+    font-weight: 600;
+}
+
+.highlight.transcript .t-exit-ok {
+    color: var(--t-exit-ok);
+}
+
+.highlight.transcript .t-exit-fail {
+    color: var(--t-exit-fail);
+    font-weight: 600;
+}
+
+.highlight.transcript .t-fail {
+    color: var(--t-fail);
+}
+
+.highlight.transcript .t-warn {
+    color: var(--t-warn);
+}
+
+.highlight.transcript .t-loc {
+    color: var(--t-loc);
+}
+
+.highlight.transcript .t-stackframe {
+    color: var(--t-stackframe);
+}
+
+.highlight.transcript .t-ok {
+    color: var(--t-ok);
+}
+
+.highlight.transcript .t-footer {
+    color: var(--t-footer);
+    font-style: italic;
+}
