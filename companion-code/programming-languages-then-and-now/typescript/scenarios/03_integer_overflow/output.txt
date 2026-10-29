@@ -5,4 +5,3 @@ BigInt(MAX_SAFE_INTEGER) + 2n = 9007199254740993
 EXIT:0
 
 Runtime: Node.js v26.12.1 (node:26-bookworm-slim)
-Type checker: TypeScript 5.9.3.

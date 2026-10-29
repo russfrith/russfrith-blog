@@ -1,6 +1,7 @@
 $ gcc -O0 -g -Wall broken.c -o broken -lpthread && ./broken
-counter = 200000 (expected 400000)
+counter = 210314 (expected 400000)
 EXIT:0
+# lost an update in 5 of 5 runs
 
 $ gcc -O0 -g -Wall fixed.c -o fixed -lpthread && ./fixed
 counter = 400000 (expected 400000)

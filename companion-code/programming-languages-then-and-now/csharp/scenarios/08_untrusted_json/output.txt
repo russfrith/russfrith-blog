@@ -6,4 +6,4 @@ $ dotnet run   (fixed/ -- `required int Count`)
 http://mockserver:8080/json/missing-field: decode error (correctly caught): JSON deserialization for type 'Item' was missing required properties including: 'Count'.
 http://mockserver:8080/json/wrong-type: decode error (correctly caught): The JSON value could not be converted to System.Int32. Path: $.count | LineNumber: 0 | BytePositionInLine: 52.
 
-SDK: .NET 10.0.402, System.Text.Json (part of the BCL, no extra package)
+SDK: .NET 10.0.402 (mcr.microsoft.com/dotnet/sdk:10.0)

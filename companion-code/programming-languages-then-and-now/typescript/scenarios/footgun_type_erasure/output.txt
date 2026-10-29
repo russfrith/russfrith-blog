@@ -21,4 +21,3 @@ not a valid User
 EXIT:0
 
 Runtime: Node.js v26.12.1 (node:26-bookworm-slim)
-Type checker: TypeScript 5.9.3.

@@ -7,5 +7,4 @@ $ node fixed.ts
 validation failed: count missing or wrong type
 EXIT:0
 
-Runtime: Node.js v26.12.1 (node:26-bookworm-slim), running .ts directly via Node's built-in TypeScript type stripping -- no tsc/ts-node step needed to execute these.
-Type checker: TypeScript 5.9.3.
+Runtime: Node.js v26.12.1 (node:26-bookworm-slim)

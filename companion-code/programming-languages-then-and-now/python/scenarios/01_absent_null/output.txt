@@ -12,4 +12,4 @@ $ python fixed.py
 count absent
 EXIT:0
 
-Interpreter: Python 3.14.8 (python:3.14.8-slim), default GIL build (confirmed by
+Interpreter: Python 3.14.8 (python:3.14.8-slim)

@@ -1,10 +1,10 @@
 $ node broken.ts
-counter = 313613 (expected 400000)
+counter = 246857 (expected 400000)
 EXIT:0
+# lost an update in 4 of 5 runs
 
 $ node fixed.ts
 counter = 400000 (expected 400000)
 EXIT:0
 
 Runtime: Node.js v26.12.1 (node:26-bookworm-slim)
-Type checker: TypeScript 5.9.3.

@@ -1,6 +1,7 @@
 $ kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar
-counter = 313635 (expected 400000)
+counter = 342853 (expected 400000)
 EXIT:0
+# lost an update in 5 of 5 runs
 
 $ kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar
 counter = 400000 (expected 400000)

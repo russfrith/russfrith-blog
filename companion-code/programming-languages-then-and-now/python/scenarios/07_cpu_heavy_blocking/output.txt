@@ -1,22 +1,14 @@
-Workload equalized across every language in this scenario to 300,000,000 sqrt
-additions; the result is printed so the loop can't be eliminated as dead code.
-
 $ python broken.py
 [python 3.14.8, gil_enabled=True]
 starting CPU-bound work inside the event loop...
-CPU-bound work finished after 14.312s, heartbeat ticks seen: 0, result: 3464101606477.5415
+CPU-bound work finished after 13.234s, heartbeat ticks seen: 0, result: 3464101606477.5415
 
 $ python fixed.py
 [python 3.14.8, gil_enabled=True]
 starting CPU-bound work in an executor thread...
-heartbeat tick 1 at 842.977
-heartbeat tick 2 at 843.082
-heartbeat tick 3 at 843.188
-heartbeat tick 4 at 843.293
-...
-heartbeat tick 128 at 856.370
-CPU-bound work finished after 13.601s, heartbeat ticks seen: 128, result: 3464101606477.5415
+heartbeat tick 1 at 28309.284
+heartbeat tick 2 at 28309.389
+# ... (123 lines omitted)
+CPU-bound work finished after 13.259s, heartbeat ticks seen: 125, result: 3464101606477.5415
 
-Interpreter: Python 3.14.8 (python:3.14.8-slim), default GIL build. Build
-configuration: n/a -- CPython is an interpreter, not compiled ahead of time; no
-debug/release distinction applies to the script itself.
+Interpreter: Python 3.14.8 (python:3.14.8-slim)

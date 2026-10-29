@@ -1,5 +1,6 @@
 $ dotnet run   (broken/)
-counter = 338487 (expected 400000)
+counter = 343684 (expected 400000)
+# lost an update in 3 of 5 runs
 
 $ dotnet run   (fixed/)
 counter = 400000 (expected 400000)

@@ -1,47 +1,29 @@
 $ docker compose run --rm python --top 5 --concurrency 1 --timeout 2 /data/urls-hang.txt
- Container programming-languages-then-and-now-mockserver-1 Running 
- Container programming-languages-then-and-now-python-run-22095e068b2b Creating 
- Container programming-languages-then-and-now-python-run-22095e068b2b Created 
 wordfreq: fetch failed: http://mockserver:8080/hang: timed out
-wordfreq: fetched 1 url(s) in 2.018s
-EXIT:1  wall=2.95s
+wordfreq: fetched 1 url(s) in 2.020s
+EXIT:1  wall=2.98s
 
 $ docker compose run --rm go --top 5 --concurrency 1 --timeout 2 /data/urls-hang.txt
- Container programming-languages-then-and-now-mockserver-1 Running 
- Container programming-languages-then-and-now-go-run-4b2c44f9a78c Creating 
- Container programming-languages-then-and-now-go-run-4b2c44f9a78c Created 
 wordfreq: fetch failed: http://mockserver:8080/hang: Get "http://mockserver:8080/hang": context deadline exceeded (Client.Timeout exceeded while awaiting headers)
-wordfreq: fetched 1 url(s) in 2.001460525s
-EXIT:1  wall=2.65s
+wordfreq: fetched 1 url(s) in 2.002432714s
+EXIT:1  wall=2.64s
 
 $ docker compose run --rm rust --top 5 --concurrency 1 --timeout 2 /data/urls-hang.txt
- Container programming-languages-then-and-now-mockserver-1 Running 
- Container programming-languages-then-and-now-rust-run-7471e81d60d0 Creating 
- Container programming-languages-then-and-now-rust-run-7471e81d60d0 Created 
 wordfreq: fetch failed: http://mockserver:8080/hang: http://mockserver:8080/hang: Network Error: Network Error: Error encountered in the status line: timed out reading response
-wordfreq: fetched 1 url(s) in 2.003s
-EXIT:1  wall=2.65s
+wordfreq: fetched 1 url(s) in 2.017s
+EXIT:1  wall=2.67s
 
 $ docker compose run --rm typescript --top 5 --concurrency 1 --timeout 2 /data/urls-hang.txt
- Container programming-languages-then-and-now-mockserver-1 Running 
- Container programming-languages-then-and-now-typescript-run-5974ad07c851 Creating 
- Container programming-languages-then-and-now-typescript-run-5974ad07c851 Created 
 wordfreq: fetch failed: http://mockserver:8080/hang: This operation was aborted
-wordfreq: fetched 1 url(s) in 2.010s
-EXIT:1  wall=2.69s
+wordfreq: fetched 1 url(s) in 2.009s
+EXIT:1  wall=2.67s
 
 $ docker compose run --rm kotlin --top 5 --concurrency 1 --timeout 2 /data/urls-hang.txt
- Container programming-languages-then-and-now-mockserver-1 Running 
- Container programming-languages-then-and-now-kotlin-run-7d74cb6ce65d Creating 
- Container programming-languages-then-and-now-kotlin-run-7d74cb6ce65d Created 
 wordfreq: fetch failed: http://mockserver:8080/hang: request timed out
-wordfreq: fetched 1 url(s) in 2.045s
-EXIT:1  wall=3.39s
+wordfreq: fetched 1 url(s) in 2.051s
+EXIT:1  wall=3.34s
 
 $ docker compose run --rm csharp --top 5 --concurrency 1 --timeout 2 /data/urls-hang.txt
- Container programming-languages-then-and-now-mockserver-1 Running 
- Container programming-languages-then-and-now-csharp-run-c79a4d63b95c Creating 
- Container programming-languages-then-and-now-csharp-run-c79a4d63b95c Created 
 wordfreq: fetch failed: http://mockserver:8080/hang: timed out
-wordfreq: fetched 1 url(s) in 2.012s
-EXIT:1  wall=2.78s
+wordfreq: fetched 1 url(s) in 2.011s
+EXIT:1  wall=2.76s

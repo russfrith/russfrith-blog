@@ -1,11 +1,8 @@
 $ go run demo.go
 starting CPU-bound work on the main goroutine, heartbeat goroutine running concurrently...
-heartbeat tick 1 at 2026-10-28T05:20:23.061770169Z
-heartbeat tick 2 at 2026-10-28T05:20:23.16209978Z
-heartbeat tick 3 at 2026-10-28T05:20:23.26247045Z
-heartbeat tick 4 at 2026-10-28T05:20:23.361660284Z
-CPU-bound work finished after 404.469077ms, heartbeat ticks seen: 4, result: 3464101606477.541504
+heartbeat tick 1 at 2026-10-29T05:07:41.259936394Z
+heartbeat tick 2 at 2026-10-29T05:07:41.360274253Z
+heartbeat tick 3 at 2026-10-29T05:07:41.460651238Z
+CPU-bound work finished after 392.299041ms, heartbeat ticks seen: 3, result: 3464101606477.541504
 
-Toolchain: go1.26.4 (golang:1.26.4-bookworm). Build configuration: `go run demo.go`
-(Go has no separate debug/release build mode the way .NET does; `go run` and
-`go build` produce the same optimized machine code either way).
+Toolchain: go1.26.4 (golang:1.26.4-bookworm)

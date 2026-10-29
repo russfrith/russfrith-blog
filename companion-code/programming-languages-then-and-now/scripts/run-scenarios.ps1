@@ -228,6 +228,61 @@ $cs = "mcr.microsoft.com/dotnet/sdk:10.0"
 $gcc = "gcc:16.2"
 $exit0 = '; echo "EXIT:$?"'
 
+# G2: footers are generated from a real version command run in the same
+# container -Update is about to use for the scenario, never copied from the
+# previously-committed file. $script:lastFooterCommand/$script:lastFooterRaw
+# are set by each call so the caller can record them in provenance.json.
+function Get-Footer($lang) {
+    switch ($lang) {
+        "go" {
+            $cmd = "go version"
+            $raw = (docker run --rm $go bash -c $cmd 2>&1 | Out-String).Trim()
+            $ver = [regex]::Match($raw, 'go(\d+\.\d+\.\d+)').Groups[1].Value
+            $footer = "Toolchain: go$ver ($go)"
+        }
+        "rust" {
+            $cmd = "rustc --version"
+            $raw = (docker run --rm $rs bash -c $cmd 2>&1 | Out-String).Trim()
+            $ver = [regex]::Match($raw, 'rustc (\S+)').Groups[1].Value
+            $footer = "Toolchain: rustc $ver ($rs)"
+        }
+        "python" {
+            $cmd = "python --version"
+            $raw = (docker run --rm $py bash -c $cmd 2>&1 | Out-String).Trim()
+            $ver = [regex]::Match($raw, 'Python (\S+)').Groups[1].Value
+            $footer = "Interpreter: Python $ver ($py)"
+        }
+        "node" {
+            $cmd = "node --version"
+            $raw = (docker run --rm $node bash -c $cmd 2>&1 | Out-String).Trim()
+            $footer = "Runtime: Node.js $raw ($node)"
+        }
+        "gcc" {
+            $cmd = "gcc --version"
+            $raw = (docker run --rm $gcc bash -c $cmd 2>&1 | Out-String).Trim()
+            $firstLine = ($raw -split "`n")[0]
+            $footer = "Compiler: $firstLine"
+        }
+        "csharp" {
+            $cmd = "dotnet --version"
+            $raw = (docker run --rm $cs bash -c $cmd 2>&1 | Out-String).Trim()
+            $footer = "SDK: .NET $raw ($cs)"
+        }
+        "kotlin" {
+            $cmd = "kotlinc -version 2>&1; java -version 2>&1"
+            $raw = (docker run --rm $kt bash -c $cmd 2>&1 | Out-String).Trim()
+            $ktVer = [regex]::Match($raw, 'kotlinc-jvm (\S+)').Groups[1].Value
+            $jdkMajor = [regex]::Match($raw, 'openjdk version "(\d+)').Groups[1].Value
+            $vendor = if ($raw -match 'Temurin') { "Eclipse Temurin" } else { "JDK" }
+            $footer = "Toolchain: kotlinc $ktVer, JVM: $vendor $jdkMajor"
+        }
+        default { throw "Get-Footer: unknown lang '$lang'" }
+    }
+    $script:lastFooterCommand = $cmd
+    $script:lastFooterRaw = $raw
+    return $footer
+}
+
 # ============================================================================
 # Output-diff scenarios
 # ============================================================================
@@ -357,7 +412,10 @@ $scenarios = @(
         S "rust/scenarios/05_resource_cleanup" $rs "rustc -O fixed.rs -o fixed && ./fixed$exit0"
     )}
     @{ Name="rust/08_untrusted_json"; Expected="rust/scenarios/08_untrusted_json/output.txt"; Steps=@(
-        S "rust/scenarios/08_untrusted_json" $rs "cargo build --release" $true
+        # G2: the download+compile log length depends on the container's cargo
+        # registry cache state (empty vs warm), which isn't reproducible --
+        # elide it to just the final "Finished" line.
+        (S "rust/scenarios/08_untrusted_json" $rs "cargo build --release" $true -elide @{Head=0; Tail=1})
         S "rust/scenarios/08_untrusted_json" $rs "./target/release/strict" $true
         S "rust/scenarios/08_untrusted_json" $rs "./target/release/defaulted" $true
     )}
@@ -451,14 +509,27 @@ $updateTargets = $scenarios | ForEach-Object { @{ Name = $_.Name; Scenario = $_ 
 # how it was produced, so check-post.ps1 can later verify the committed file
 # still matches what was actually captured.
 $provenanceEntries = @()
-function Add-Provenance($expected, $expectedFile, $commands, $images) {
+function Add-Provenance($expected, $expectedFile, $commands, $images, $versionCommand, $versionRaw) {
     $hash = (Get-FileHash -Path $expectedFile -Algorithm SHA256).Hash.ToLower()
     $script:provenanceEntries += @{
         file = $expected
         commands = @($commands)
         images = @($images | Select-Object -Unique)
+        versionCommand = $versionCommand
+        versionOutput = $versionRaw
         captured = (Get-Date).ToString("o")
         sha256 = $hash
+    }
+}
+
+# G2: infer which Get-Footer language a scenario's Name prefix maps to.
+function Get-LangFromName($name) {
+    $prefix = $name.Split('/')[0]
+    switch ($prefix) {
+        "c" { return "gcc" }
+        "csharp" { return "csharp" }
+        "typescript" { return "node" }
+        default { return $prefix }  # go, rust, python, kotlin already match
     }
 }
 
@@ -467,15 +538,16 @@ if ($Update) {
         $s = $t.Scenario
         if (-not $s) { Write-Host "SKIP (not found in table): $($t.Name)" -ForegroundColor Yellow; continue }
         $expectedFile = Join-Path $root $s.Expected
-        $existing = Get-Content -Raw $expectedFile
-        $toolchainLines = ($existing -split "`n") | Where-Object { $_ -match '^(Toolchain|Interpreter|SDK|Runtime|Compiler|Type checker):' }
+        $lang = Get-LangFromName $s.Name
+        $freshFooter = Get-Footer $lang
         $actual = Run-Steps $s.Steps
         $newContent = $actual.TrimEnd() + "`n"
+        $toolchainLines = @($freshFooter)
         if ($toolchainLines.Count -gt 0) {
             $newContent += "`n" + ($toolchainLines -join "`n") + "`n"
         }
         Set-Content -Path $expectedFile -Value $newContent -NoNewline
-        Add-Provenance $s.Expected $expectedFile ($s.Steps | ForEach-Object { $_.Display }) ($s.Steps | ForEach-Object { $_.Image })
+        Add-Provenance $s.Expected $expectedFile ($s.Steps | ForEach-Object { $_.Display }) ($s.Steps | ForEach-Object { $_.Image }) $lastFooterCommand $lastFooterRaw
         Write-Host "UPDATED: $($s.Expected)" -ForegroundColor Cyan
     }
 
@@ -489,10 +561,11 @@ if ($Update) {
     # regenerated in Phase 1e) are NOT part of this generic mechanism -- see
     # the Phase 1f report for why.
     # ------------------------------------------------------------------------
-    function Invoke-RaceCapture($name, $expected, $brokenStep, $fixedSteps, $counterExpected) {
+    function Invoke-RaceCapture($name, $expected, $brokenStep, $fixedSteps, $counterExpected, $lang, $alsoCountPattern) {
         $expectedFile = Join-Path $root $expected
-        $existing = Get-Content -Raw $expectedFile
-        $toolchainLines = ($existing -split "`n") | Where-Object { $_ -match '^(Toolchain|Interpreter|SDK|Runtime|Compiler|Type checker):' }
+        $freshFooter = Get-Footer $lang
+        $footerCmd = $lastFooterCommand
+        $footerRaw = $lastFooterRaw
 
         $fixedOut = Run-Steps $fixedSteps
         $fixedMatch = [regex]::Match($fixedOut, 'counter\s*=\s*(\d+)')
@@ -501,50 +574,60 @@ if ($Update) {
             return
         }
 
-        $brokenOut = $null
+        # G3: always run the broken version all 5 times (never stop early) so the
+        # loss frequency is real, not just "whichever run we happened to stop on".
+        $runs = @()
         for ($attempt = 1; $attempt -le 5; $attempt++) {
             $candidate = Invoke-Step $brokenStep
             $m = [regex]::Match($candidate, 'counter\s*=\s*(\d+)')
-            if ($m.Success -and [int]$m.Groups[1].Value -lt $counterExpected) {
-                $brokenOut = $candidate
-                Write-Host "  (${name}: broken run lost an update on attempt $attempt)" -ForegroundColor DarkGray
-                break
-            }
+            $lost = $m.Success -and [int]$m.Groups[1].Value -lt $counterExpected
+            $runs += @{ Attempt = $attempt; Output = $candidate; Lost = $lost }
         }
-        if (-not $brokenOut) {
+        $lostCount = ($runs | Where-Object { $_.Lost }).Count
+        $firstLost = $runs | Where-Object { $_.Lost } | Select-Object -First 1
+
+        if (-not $firstLost) {
             Write-Host "SKIP (broken run never lost an update in 5 tries): $name" -ForegroundColor Yellow
             return
         }
 
-        $newContent = ($brokenOut.TrimEnd() + "`n`n" + $fixedOut.TrimEnd()) + "`n"
-        if ($toolchainLines.Count -gt 0) {
-            $newContent += "`n" + ($toolchainLines -join "`n") + "`n"
+        $brokenOut = $firstLost.Output.TrimEnd() + "`n# lost an update in $lostCount of 5 runs`n"
+        Write-Host "  (${name}: lost an update in $lostCount of 5 runs, showing attempt $($firstLost.Attempt))" -ForegroundColor DarkGray
+
+        $extraNotes = @()
+        if ($alsoCountPattern) {
+            $alsoCount = ($runs | Where-Object { $_.Output -match $alsoCountPattern }).Count
+            $extraNotes += "'$alsoCountPattern' observed in $alsoCount of 5 runs"
+            Write-Host "  (${name}: '$alsoCountPattern' observed in $alsoCount of 5 runs)" -ForegroundColor DarkGray
         }
+
+        $newContent = ($brokenOut.TrimEnd() + "`n`n" + $fixedOut.TrimEnd()) + "`n"
+        $newContent += "`n$freshFooter`n"
         Set-Content -Path $expectedFile -Value $newContent -NoNewline
-        $attemptNote = "broken run retried up to 5x until it lost an update (attempt $attempt)"
-        Add-Provenance $expected $expectedFile (@($brokenStep.Display, $attemptNote) + ($fixedSteps | ForEach-Object { $_.Display })) (@($brokenStep.Image) + ($fixedSteps | ForEach-Object { $_.Image }))
+        $freqNote = "lost an update in $lostCount of 5 runs (shown: attempt $($firstLost.Attempt))"
+        Add-Provenance $expected $expectedFile (@($brokenStep.Display, $freqNote) + $extraNotes + ($fixedSteps | ForEach-Object { $_.Display })) (@($brokenStep.Image) + ($fixedSteps | ForEach-Object { $_.Image })) $footerCmd $footerRaw
         Write-Host "UPDATED: $expected" -ForegroundColor Cyan
     }
 
     Invoke-RaceCapture "c/02_data_race" "c/scenarios/02-data-race/output.txt" `
         (S "c/scenarios/02-data-race" $gcc "gcc -O0 -g -Wall broken.c -o broken -lpthread && ./broken$exit0" $false "gcc -O0 -g -Wall broken.c -o broken -lpthread && ./broken") `
         @((S "c/scenarios/02-data-race" $gcc "gcc -O0 -g -Wall fixed.c -o fixed -lpthread && ./fixed$exit0" $false "gcc -O0 -g -Wall fixed.c -o fixed -lpthread && ./fixed")) `
-        400000
+        400000 "gcc"
 
     Invoke-RaceCapture "csharp/02_data_race" "csharp/scenarios/02_data_race/output.txt" `
         (S "csharp/scenarios/02_data_race/broken" $cs "rm -rf bin obj && dotnet run" $false "dotnet run   (broken/)") `
         @((S "csharp/scenarios/02_data_race/fixed" $cs "rm -rf bin obj && dotnet run" $false "dotnet run   (fixed/)")) `
-        400000
+        400000 "csharp"
 
     Invoke-RaceCapture "kotlin/02_data_race" "kotlin/scenarios/02_data_race/output.txt" `
         (S "kotlin/scenarios/02_data_race" $kt "kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar$exit0" $false "kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar") `
         @((S "kotlin/scenarios/02_data_race" $kt "kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar$exit0" $false "kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar")) `
-        400000
+        400000 "kotlin"
 
     Invoke-RaceCapture "python/02_data_race" "python/scenarios/02_data_race/output.txt" `
         (S "python/scenarios/02_data_race" $py "python broken.py$exit0" $false "python broken.py") `
         @((S "python/scenarios/02_data_race" $py "python fixed.py$exit0" $false "python fixed.py")) `
-        400
+        400 "python"
 
     # Note: this drops any tsc-check lines from the committed file, same as the
     # broader Phase 1e -Update pass did for 01/03/05/08 -- type-checking for
@@ -553,7 +636,79 @@ if ($Update) {
     Invoke-RaceCapture "typescript/02_data_race" "typescript/scenarios/02_data_race/output.txt" `
         (S "typescript/scenarios/02_data_race" $node "node broken.ts$exit0" $false "node broken.ts") `
         @((S "typescript/scenarios/02_data_race" $node "node fixed.ts$exit0" $false "node fixed.ts")) `
-        400000
+        400000 "node"
+
+    # G1: Go and Rust 02_data_race -- their broken step's own output already
+    # carries extra deterministic text (Go's -race detector report, Rust's
+    # compiler warning about the shared mutable static); Invoke-RaceCapture only
+    # looks for "counter = N" in it, so both reuse the same mechanism as-is.
+    Invoke-RaceCapture "go/02_data_race" "go/scenarios/02_data_race/output.txt" `
+        (S "go/scenarios/02_data_race" $go "go run -race broken.go$exit0" $false "go run -race broken.go") `
+        @((S "go/scenarios/02_data_race" $go "go run -race fixed.go$exit0" $false "go run -race fixed.go")) `
+        400000 "go" "WARNING: DATA RACE"
+
+    Invoke-RaceCapture "rust/02_data_race" "rust/scenarios/02_data_race/output.txt" `
+        (S "rust/scenarios/02_data_race" $rs "rustc -O broken.rs -o broken && ./broken$exit0" $false "rustc -O broken.rs -o broken && ./broken") `
+        @((S "rust/scenarios/02_data_race" $rs "rustc -O fixed.rs -o fixed && ./fixed$exit0" $false "rustc -O fixed.rs -o fixed && ./fixed")) `
+        400000 "rust"
+
+    # ------------------------------------------------------------------------
+    # G1: Scenario 7 (CPU-heavy work blocking an event loop) for all six
+    # languages -- direct capture (not the $scenarios diff table) since
+    # heartbeat tick counts/timestamps are inherently timing-sensitive, same
+    # reasoning as the race captures. Tick counts stay small (4-10) for every
+    # language except Python's single-threaded run (128 ticks over ~13s),
+    # which is the one genuinely unbounded case and gets Elide.
+    # ------------------------------------------------------------------------
+    function Invoke-ScenarioCapture($name, $expected, $steps, $lang) {
+        $expectedFile = Join-Path $root $expected
+        $freshFooter = Get-Footer $lang
+        $out = Run-Steps $steps
+        $newContent = $out.TrimEnd() + "`n`n$freshFooter`n"
+        Set-Content -Path $expectedFile -Value $newContent -NoNewline
+        Add-Provenance $expected $expectedFile ($steps | ForEach-Object { $_.Display }) ($steps | ForEach-Object { $_.Image }) $lastFooterCommand $lastFooterRaw
+        Write-Host "UPDATED: $expected" -ForegroundColor Cyan
+    }
+
+    Invoke-ScenarioCapture "go/07_cpu_heavy_blocking" "go/scenarios/07_cpu_heavy_blocking/output.txt" @(
+        (S "go/scenarios/07_cpu_heavy_blocking" $go "go run demo.go")
+    ) "go"
+
+    Invoke-ScenarioCapture "python/07_cpu_heavy_blocking" "python/scenarios/07_cpu_heavy_blocking/output.txt" @(
+        (S "python/scenarios/07_cpu_heavy_blocking" $py "python broken.py")
+        (S "python/scenarios/07_cpu_heavy_blocking" $py "python fixed.py" $false "" @{Head=4; Tail=1})
+    ) "python"
+
+    Invoke-ScenarioCapture "rust/07_cpu_heavy_blocking" "rust/scenarios/07_cpu_heavy_blocking/output.txt" @(
+        (S "rust/scenarios/07_cpu_heavy_blocking" $rs "cargo build --release" $false "" @{Head=0; Tail=1})
+        (S "rust/scenarios/07_cpu_heavy_blocking" $rs "./target/release/current_thread_broken" $false '`./target/release/current_thread_broken`   (#[tokio::main(flavor = "current_thread")])')
+        (S "rust/scenarios/07_cpu_heavy_blocking" $rs "./target/release/multi_thread_broken" $false '`./target/release/multi_thread_broken`   (#[tokio::main], default multi-thread runtime)')
+        (S "rust/scenarios/07_cpu_heavy_blocking" $rs "./target/release/fixed" $false '`./target/release/fixed`   (spawn_blocking)')
+    ) "rust"
+
+    Invoke-ScenarioCapture "kotlin/07_cpu_heavy_blocking" "kotlin/scenarios/07_cpu_heavy_blocking/output.txt" @(
+        (S "kotlin/scenarios/07_cpu_heavy_blocking" $kt "kotlinc -cp coroutines.jar SingleThreadBroken.kt -include-runtime -d single.jar")
+        (S "kotlin/scenarios/07_cpu_heavy_blocking" $kt "kotlinc -cp coroutines.jar DefaultDispatcherBroken.kt -include-runtime -d default.jar")
+        (S "kotlin/scenarios/07_cpu_heavy_blocking" $kt "kotlinc -cp coroutines.jar Fixed.kt -include-runtime -d fixed.jar")
+        (S "kotlin/scenarios/07_cpu_heavy_blocking" $kt 'java -cp "single.jar:coroutines.jar" SingleThreadBrokenKt')
+        (S "kotlin/scenarios/07_cpu_heavy_blocking" $kt 'java -cp "default.jar:coroutines.jar" DefaultDispatcherBrokenKt')
+        (S "kotlin/scenarios/07_cpu_heavy_blocking" $kt 'java -cp "fixed.jar:coroutines.jar" FixedKt')
+    ) "kotlin"
+
+    Invoke-ScenarioCapture "csharp/07_cpu_heavy_blocking" "csharp/scenarios/07_cpu_heavy_blocking/output.txt" @(
+        (S "csharp/scenarios/07_cpu_heavy_blocking/broken" $cs "rm -rf bin obj && dotnet run" $false "dotnet run   (broken/ -- CpuBound() called directly, no Task.Run; Debug config, dotnet run's default)")
+        (S "csharp/scenarios/07_cpu_heavy_blocking/fixed" $cs "rm -rf bin obj && dotnet run" $false "dotnet run   (fixed/ -- Task.Run; Debug config)")
+        (S "csharp/scenarios/07_cpu_heavy_blocking/broken" $cs "rm -rf bin obj && dotnet run -c Release" $false "dotnet run -c Release   (broken/)")
+        (S "csharp/scenarios/07_cpu_heavy_blocking/fixed" $cs "rm -rf bin obj && dotnet run -c Release" $false "dotnet run -c Release   (fixed/)")
+    ) "csharp"
+
+    # TypeScript's tsc-check lines are dropped here too, same policy as every
+    # other TypeScript scenario since Phase 1e/1f -- see the note above the
+    # typescript/02_data_race race capture.
+    Invoke-ScenarioCapture "typescript/07_cpu_heavy_blocking" "typescript/scenarios/07_cpu_heavy_blocking/output.txt" @(
+        (S "typescript/scenarios/07_cpu_heavy_blocking" $node "node broken.ts")
+        (S "typescript/scenarios/07_cpu_heavy_blocking" $node "node fixed.ts")
+    ) "node"
 
     # Scenario 6: `docker compose run`, not a bind-mounted pinned image -- doesn't
     # fit S()/Invoke-Step's shape, so captured directly here instead.
@@ -568,7 +723,12 @@ if ($Update) {
         $out = docker compose run --rm $lang --top 5 --concurrency 1 --timeout 2 /data/urls-hang.txt 2>&1 | Out-String
         $code = $LASTEXITCODE
         $sw.Stop()
-        $s6Content += "`$ $cmdDisplay`n$($out.TrimEnd())`nEXIT:$code  wall=$([math]::Round($sw.Elapsed.TotalSeconds, 2))s`n`n"
+        # G2: compose prints its own container-lifecycle lines (Creating/Created/
+        # Running) to stderr -- strip them from the CAPTURED OUTPUT only; the
+        # command shown above ($cmdDisplay) is exactly what a reader would type.
+        $outLines = ($out.TrimEnd() -split "`n") | Where-Object { $_ -notmatch '^\s*Container\s+\S+\s+(Running|Creating|Created|Starting|Started)\s*$' }
+        $outClean = $outLines -join "`n"
+        $s6Content += "`$ $cmdDisplay`n$outClean`nEXIT:$code  wall=$([math]::Round($sw.Elapsed.TotalSeconds, 2))s`n`n"
     }
     Set-Content -Path $scenario6Expected -Value ($s6Content.TrimEnd() + "`n") -NoNewline
     Add-Provenance "shared/scenarios/06_hung_cancellation/output.txt" $scenario6Expected $s6Commands @("docker compose (python/go/rust/typescript/kotlin/csharp services)")

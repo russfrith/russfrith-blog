@@ -1,26 +1,13 @@
 $ node broken.ts
 starting CPU-bound work on the main thread...
-CPU-bound work finished after 411ms, heartbeat ticks seen: 0, result: 3464101606477.5415
+CPU-bound work finished after 404ms, heartbeat ticks seen: 0, result: 3464101606477.5415
 
 $ node fixed.ts
 starting CPU-bound work on a worker thread...
-heartbeat tick 1 at 1793164854343
-heartbeat tick 2 at 1793164854442
-heartbeat tick 3 at 1793164854542
-heartbeat tick 4 at 1793164854643
-CPU-bound work finished after 435ms, heartbeat ticks seen: 4, result: 3464101606477.5415
+heartbeat tick 1 at 1793250538717
+heartbeat tick 2 at 1793250538818
+heartbeat tick 3 at 1793250538918
+heartbeat tick 4 at 1793250539018
+CPU-bound work finished after 437ms, heartbeat ticks seen: 4, result: 3464101606477.5415
 
-Runtime: Node.js v26.12.1 (node:26-bookworm-slim). Build configuration: n/a --
-run directly via `node broken.ts`/`node fixed.ts` (Node's built-in TypeScript
-type stripping, no separate build/bundle step; V8 JITs at runtime, no
-debug/release distinction applies).
-
-$ npx tsc --noEmit --strict --target ES2023 --module NodeNext --moduleResolution NodeNext --esModuleInterop --skipLibCheck --types node broken.ts
-(no errors)
-EXIT:0
-
-$ npx tsc --noEmit --strict --target ES2023 --module NodeNext --moduleResolution NodeNext --esModuleInterop --skipLibCheck --types node fixed.ts
-(no errors)
-EXIT:0
-
-Type checker: TypeScript 5.9.3.
+Runtime: Node.js v26.12.1 (node:26-bookworm-slim)

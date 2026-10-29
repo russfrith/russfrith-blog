@@ -14,4 +14,4 @@ http://mockserver:8080/json/missing-field: Item(id=1, label=widget, count=0) (no
 http://mockserver:8080/json/wrong-type: decode error: Unexpected JSON token at offset 38: Unexpected symbol 'n' in numeric literal at path: $.count
 JSON input: {"id": 2, "label": "gadget", "count": "not-a-number"}
 
-Toolchain: kotlinc 2.4.0, kotlinx.serialization compiler plugin 2.4.0,
+Toolchain: kotlinc 2.4.0, JVM: Eclipse Temurin 25

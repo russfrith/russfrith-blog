@@ -1,12 +1,26 @@
-Workload: 300,000,000 sqrt additions, same as every other language in this
-scenario; result printed.
-
 $ kotlinc -cp coroutines.jar SingleThreadBroken.kt -include-runtime -d single.jar
-(2 opt-in warnings for newSingleThreadContext/withContext/close -- compiles clean otherwise)
+SingleThreadBroken.kt:18:22: warning: this declaration needs opt-in. Its usage should be marked with '@kotlinx.coroutines.ExperimentalCoroutinesApi' or '@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)'
+    val dispatcher = newSingleThreadContext("single")
+                     ^^^^^^^^^^^^^^^^^^^^^^
+SingleThreadBroken.kt:18:22: warning: this is a delicate API and its use requires care. Make sure you fully read and understand documentation of the declaration that is marked as a delicate API.
+    val dispatcher = newSingleThreadContext("single")
+                     ^^^^^^^^^^^^^^^^^^^^^^
+SingleThreadBroken.kt:19:17: warning: this declaration needs opt-in. Its usage should be marked with '@kotlinx.coroutines.ExperimentalCoroutinesApi' or '@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)'
+    withContext(dispatcher) {
+                ^^^^^^^^^^
+SingleThreadBroken.kt:35:5: warning: this declaration needs opt-in. Its usage should be marked with '@kotlinx.coroutines.ExperimentalCoroutinesApi' or '@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)'
+    dispatcher.close()
+    ^^^^^^^^^^
+
+$ kotlinc -cp coroutines.jar DefaultDispatcherBroken.kt -include-runtime -d default.jar
+
+
+$ kotlinc -cp coroutines.jar Fixed.kt -include-runtime -d fixed.jar
+
 
 $ java -cp "single.jar:coroutines.jar" SingleThreadBrokenKt
 starting CPU-bound work directly on a single-threaded dispatcher...
-CPU-bound work finished after 486ms, heartbeat ticks seen: 0, result: 3.4641016064775415E12
+CPU-bound work finished after 475ms, heartbeat ticks seen: 0, result: 3.4641016064775415E12
 
 $ java -cp "default.jar:coroutines.jar" DefaultDispatcherBrokenKt
 starting CPU-bound work directly on Dispatchers.Default...
@@ -14,7 +28,7 @@ heartbeat tick 1
 heartbeat tick 2
 heartbeat tick 3
 heartbeat tick 4
-CPU-bound work finished after 486ms, heartbeat ticks seen: 4, result: 3.4641016064775415E12
+CPU-bound work finished after 485ms, heartbeat ticks seen: 4, result: 3.4641016064775415E12
 
 $ java -cp "fixed.jar:coroutines.jar" FixedKt
 starting CPU-bound work via withContext(Dispatchers.Default)...
@@ -22,9 +36,6 @@ heartbeat tick 1
 heartbeat tick 2
 heartbeat tick 3
 heartbeat tick 4
-CPU-bound work finished after 496ms, heartbeat ticks seen: 4, result: 3.4641016064775415E12
+CPU-bound work finished after 492ms, heartbeat ticks seen: 4, result: 3.4641016064775415E12
 
-Toolchain: kotlinc 2.4.0, kotlinx-coroutines-core-jvm 1.10.1, JVM: Eclipse Temurin 25.
-Build configuration: plain `kotlinc` with no optimization flags (kotlinc has no
-separate debug/release mode); run with `java -cp ...`, the JVM's default JIT
-tiering applies to all three jars identically.
+Toolchain: kotlinc 2.4.0, JVM: Eclipse Temurin 25

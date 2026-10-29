@@ -11,8 +11,9 @@ warning: creating a shared reference to mutable static
 
 warning: 1 warning emitted
 
-counter = 200000 (expected 400000)
+counter = 200093 (expected 400000)
 EXIT:0
+# lost an update in 5 of 5 runs
 
 $ rustc -O fixed.rs -o fixed && ./fixed
 counter = 400000 (expected 400000)

@@ -35,10 +35,11 @@ Goroutine 9 (running) created at:
   main.main()
       /src/broken.go:17 +0x84
 ==================
-counter = 322288 (expected 400000)
+counter = 366720 (expected 400000)
 Found 2 data race(s)
 exit status 66
 EXIT:1
+# lost an update in 5 of 5 runs
 
 $ go run -race fixed.go
 counter = 400000 (expected 400000)

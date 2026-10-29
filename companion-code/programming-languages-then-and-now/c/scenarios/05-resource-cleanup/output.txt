@@ -19,9 +19,9 @@ $ ./broken_asan
 ==7==ERROR: LeakSanitizer: detected memory leaks
 
 Direct leak of 128 byte(s) in 1 object(s) allocated from:
-    #0 0x7af409e2a35f in malloc (/usr/local/lib64/libasan.so.8+0x12435f)
+    #0 0x7c60fc67135f in malloc (/usr/local/lib64/libasan.so.8+0x12435f)
     #1 0x000000401187 in main /src/broken.c:8
-    #2 0x7af409b3bca7  (/lib/x86_64-linux-gnu/libc.so.6+0x29ca7) (BuildId: 5e5b51f4c39af9ac589408c1dc432ba390a273cc)
+    #2 0x7c60fc382ca7  (/lib/x86_64-linux-gnu/libc.so.6+0x29ca7) (BuildId: 5e5b51f4c39af9ac589408c1dc432ba390a273cc)
 
 SUMMARY: AddressSanitizer: 128 byte(s) leaked in 1 allocation(s).
 EXIT:1

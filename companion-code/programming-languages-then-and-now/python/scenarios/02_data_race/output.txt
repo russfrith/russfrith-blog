@@ -1,11 +1,12 @@
 $ python broken.py
 [python 3.14.8, gil_enabled=True]
-counter = 200 (expected 400)
+counter = 201 (expected 400)
 EXIT:0
+# lost an update in 5 of 5 runs
 
 $ python fixed.py
 [python 3.14.8, gil_enabled=True]
 counter = 400 (expected 400)
 EXIT:0
 
-Interpreter: Python 3.14.8 (python:3.14.8-slim), default GIL build (confirmed by
+Interpreter: Python 3.14.8 (python:3.14.8-slim)
