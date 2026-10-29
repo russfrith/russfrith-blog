@@ -14,6 +14,34 @@ Three verdict types:
   session's tooling couldn't verify it. Left as-is rather than removed, since "the
   tool couldn't reach it" is not the same as "the claim is wrong."
 
+## Phase 1f re-verification (F6)
+
+Rebuilt the fetch rig using a second, independent method -- a real headless Edge
+instance driven over the Chrome DevTools Protocol (navigate, read
+`document.body.innerText`), not the WebFetch tool -- specifically to rule out
+"this is a WebFetch-specific block." Result: every one of the six BLOCKED items
+below is blocked at the HOSTING SERVER'S OWN edge (CloudFront/Akamai access-denied
+pages, or a PDF viewer that doesn't expose extractable text), not by WebFetch. A
+real browser gets the identical block. This is a genuine network-reachability
+limit of this environment, not a tooling choice -- re-running WebFetch again
+would not help.
+
+| URL | Result via real headless browser |
+|---|---|
+| blog.jetbrains.com/.../strategic-partnership-with-spring/ | CloudFront 403 ("Request blocked") |
+| blog.jetbrains.com/.../kotlin-on-android-now-official/ | CloudFront 403 ("Request blocked") |
+| nokia.com/bell-labs/.../chist.html (Ritchie, C) | Akamai edge "Access Denied" |
+| apps.dtic.mil/sti/pdfs/ADA090709.pdf (Ada) | Edge "The request is blocked" |
+| nvlpubs.nist.gov .../nbshandbook106.pdf (COBOL) | Loads (into Chrome's native PDF viewer) but exposes no extractable DOM text |
+| informatik.uni-bremen.de .../wirth-Turing-Award.pdf (Pascal) | Same as COBOL -- PDF viewer, no extractable text |
+
+Per F6, the post's wording for all six of these claims was reworded (not simply
+re-cited) to stop implying this post's own tooling verified the linked page's
+text, and the JetBrains Spring-partnership 27% figure was removed outright
+(an unverifiable specific statistic, rather than a general claim) -- see the
+post's "Eras and pivot points"/"What changed after the 2000s" sections and the
+Kotlin language notes.
+
 ## Why languages exist
 
 | Claim | URL | Passage | Verdict |
