@@ -17,6 +17,12 @@
 #      through the transcript renderer (lang="text", or a file named output.txt
 #      or ending in _output.txt) actually did, rather than silently falling
 #      back to Chroma's plain (uncolored) text lexer.
+#   7. provenance manifest (results/provenance.json, written by
+#      run-scenarios.ps1 -Update): every embedded output.txt/*_output.txt's
+#      sha256 must match its manifest entry, and every one must HAVE a manifest
+#      entry -- a mismatch means the committed file was hand-edited (or just
+#      not regenerated) since the manifest was last written; a missing entry
+#      means that file isn't covered by -Update at all yet.
 #
 # Usage (from repo root):
 #   ./companion-code/programming-languages-then-and-now/scripts/check-post.ps1
@@ -132,6 +138,32 @@ if ($buildExit -ne 0) {
     }
 }
 
+# --- 7: provenance manifest check ---
+$provenanceFile = "$companionDir/results/provenance.json"
+$embeddedOutputs = (Select-String -Path $postFile -Pattern 'file="([^"]+(?:output\.txt|_output\.txt))"' -AllMatches).Matches |
+    ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique
+
+if (-not (Test-Path $provenanceFile)) {
+    $problems += "Provenance manifest not found: $provenanceFile (run scripts/run-scenarios.ps1 -Update)"
+} else {
+    $manifest = Get-Content -Raw $provenanceFile | ConvertFrom-Json
+    $manifestByFile = @{}
+    foreach ($entry in $manifest) { $manifestByFile[$entry.file] = $entry }
+
+    foreach ($f in $embeddedOutputs) {
+        $fullPath = "$companionDir/$f"
+        if (-not (Test-Path $fullPath)) { continue }  # already reported by the casing/missing check above
+        if (-not $manifestByFile.ContainsKey($f)) {
+            $problems += "PROVENANCE MISSING: '$f' is embedded in the post but has no entry in results/provenance.json"
+            continue
+        }
+        $actualHash = (Get-FileHash -Path $fullPath -Algorithm SHA256).Hash.ToLower()
+        if ($actualHash -ne $manifestByFile[$f].sha256) {
+            $problems += "PROVENANCE MISMATCH: '$f' sha256 does not match results/provenance.json -- committed file differs from what was last captured"
+        }
+    }
+}
+
 Remove-Item -Recurse -Force $buildDir -ErrorAction SilentlyContinue
 Pop-Location
 
@@ -140,6 +172,6 @@ if ($problems.Count -gt 0) {
     $problems | ForEach-Object { Write-Host "  - $_" -ForegroundColor Red }
     exit 1
 } else {
-    Write-Host "check-post.ps1: all snippet paths match git's exact casing, build succeeds, no literal shortcode/fence/raw-HTML leakage, every transcript block matches its source file verbatim." -ForegroundColor Green
+    Write-Host "check-post.ps1: all snippet paths match git's exact casing, build succeeds, no literal shortcode/fence/raw-HTML leakage, every transcript block matches its source file verbatim, every embedded output file matches the provenance manifest." -ForegroundColor Green
     exit 0
 }

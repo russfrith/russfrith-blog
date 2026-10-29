@@ -33,6 +33,10 @@ Takes: .body (raw file text, as returned by readFile).
   {{- $class = "t-exit-fail" -}}
 {{- else if strings.HasPrefix $trimmed "at " -}}
   {{- $class = "t-stackframe" -}}
+{{- else if strings.HasPrefix $trimmed "# " -}}
+  {{- /* Elision markers and Annotate-field lines -- both written only by the
+       capture tool, never hand-typed (see scripts/run-scenarios.ps1). */ -}}
+  {{- $class = "t-comment" -}}
 {{- else -}}
   {{- $hasFail := false -}}
   {{- range $m := $failWordMarkers -}}

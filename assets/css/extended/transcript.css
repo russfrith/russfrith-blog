@@ -21,6 +21,7 @@ doesn't change.
     --t-stackframe: #9a9a90;
     --t-ok: #a6e22e;
     --t-footer: #9a9a90;
+    --t-comment: #9a9a90;
 }
 
 :root[data-theme="dark"] {
@@ -33,6 +34,7 @@ doesn't change.
     --t-stackframe: #9a9a90;
     --t-ok: #a6e22e;
     --t-footer: #9a9a90;
+    --t-comment: #9a9a90;
 }
 
 .highlight.transcript .t-prompt {
@@ -71,5 +73,10 @@ doesn't change.
 
 .highlight.transcript .t-footer {
     color: var(--t-footer);
+    font-style: italic;
+}
+
+.highlight.transcript .t-comment {
+    color: var(--t-comment);
     font-style: italic;
 }

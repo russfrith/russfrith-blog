@@ -122,9 +122,17 @@ function Filter-Lines($lines) {
 # show it after the LAST of several split compile/run steps). Rather than
 # guess, every $cmd string includes its own "; echo EXIT:$?" exactly where the
 # committed transcript has one, so the comparison is honest either way.
-function S($dir, $image, $cmd, $net, $display) {
+# Elide: @{Head=N; Tail=M} -- for steps with long, uninteresting-in-the-middle
+# output (heartbeat ticks, etc), keep the first N and last M lines of THIS
+# STEP's own captured output and replace the middle with a
+# "# ... (K lines omitted)" marker, written by this function, never hand-typed.
+#
+# Annotate: a string or array of strings -- written as "# <text>" line(s) after
+# the step's output. Lives in the scenario's definition here (visible in code
+# review), not typed into output.txt directly -- see F2's output.txt convention.
+function S($dir, $image, $cmd, $net, $display, $elide, $annotate) {
     $autoDisplay = $cmd -replace [regex]::Escape($exit0), ''
-    return @{ Dir = $dir; Image = $image; Cmd = $cmd; Net = [bool]$net; Display = $(if ($display) { $display } else { $autoDisplay }) }
+    return @{ Dir = $dir; Image = $image; Cmd = $cmd; Net = [bool]$net; Display = $(if ($display) { $display } else { $autoDisplay }); Elide = $elide; Annotate = $annotate }
 }
 
 function Invoke-Step($step) {
@@ -132,7 +140,29 @@ function Invoke-Step($step) {
     $networkArgs = @()
     if ($step.Net) { $networkArgs = @("--network", $network) }
     $out = docker run --rm @networkArgs -v "${hostDir}:/src" -w /src $step.Image bash -c $step.Cmd 2>&1 | Out-String
-    return "`$ $($step.Display)`n$($out.TrimEnd())`n`n"
+    $outTrimmed = $out.TrimEnd()
+
+    if ($step.Elide) {
+        $outLines = @($outTrimmed -split "`n")
+        $head = [int]$step.Elide.Head
+        $tail = [int]$step.Elide.Tail
+        if ($outLines.Count -gt ($head + $tail)) {
+            $omitted = $outLines.Count - $head - $tail
+            $headLines = if ($head -gt 0) { $outLines[0..($head - 1)] } else { @() }
+            $tailLines = if ($tail -gt 0) { $outLines[($outLines.Count - $tail)..($outLines.Count - 1)] } else { @() }
+            $parts = @()
+            if ($headLines.Count -gt 0) { $parts += ($headLines -join "`n") }
+            $parts += "# ... ($omitted lines omitted)"
+            if ($tailLines.Count -gt 0) { $parts += ($tailLines -join "`n") }
+            $outTrimmed = $parts -join "`n"
+        }
+    }
+
+    $result = "`$ $($step.Display)`n$outTrimmed`n"
+    if ($step.Annotate) {
+        foreach ($a in @($step.Annotate)) { $result += "# $a`n" }
+    }
+    return $result + "`n"
 }
 
 function Run-Steps($steps) {
@@ -291,11 +321,24 @@ $scenarios = @(
         S "c/scenarios/04-ignored-errors" $gcc "gcc -O0 -g -Wall fixed.c -o fixed"
         S "c/scenarios/04-ignored-errors" $gcc "./fixed$exit0"
     )}
+    @{ Name="c/05-resource-cleanup"; Expected="c/scenarios/05-resource-cleanup/output.txt"; Steps=@(
+        S "c/scenarios/05-resource-cleanup" $gcc "gcc -O0 -g -Wall broken.c -o broken"
+        S "c/scenarios/05-resource-cleanup" $gcc "./broken$exit0"
+        S "c/scenarios/05-resource-cleanup" $gcc "gcc -O0 -g -Wall fixed.c -o fixed"
+        S "c/scenarios/05-resource-cleanup" $gcc "./fixed$exit0"
+        S "c/scenarios/05-resource-cleanup" $gcc "gcc -O0 -g -fsanitize=address broken.c -o broken_asan"
+        S "c/scenarios/05-resource-cleanup" $gcc "./broken_asan$exit0"
+    )}
 
-    # --- Rust (single-file scenarios; 07/08 and compile-reject are property scenarios below) ---
+    # --- Rust (single-file scenarios; 07 is capture-only below, 02/compile-reject is deterministic) ---
     @{ Name="rust/01_absent_null"; Expected="rust/scenarios/01_absent_null/output.txt"; Steps=@(
         S "rust/scenarios/01_absent_null" $rs "rustc -O broken.rs -o broken && ./broken$exit0"
         S "rust/scenarios/01_absent_null" $rs "rustc -O fixed.rs -o fixed && ./fixed$exit0"
+    )}
+    @{ Name="rust/03_integer_overflow"; Expected="rust/scenarios/03_integer_overflow/output.txt"; Steps=@(
+        S "rust/scenarios/03_integer_overflow" $rs "rustc broken.rs -o broken_debug && ./broken_debug$exit0" $false "rustc broken.rs -o broken_debug && ./broken_debug   (debug profile: overflow-checks on)"
+        S "rust/scenarios/03_integer_overflow" $rs "rustc -O broken.rs -o broken && ./broken$exit0" $false "rustc -O broken.rs -o broken && ./broken   (release-style profile: overflow-checks off)"
+        S "rust/scenarios/03_integer_overflow" $rs "rustc -O fixed.rs -o fixed && ./fixed$exit0"
     )}
     @{ Name="rust/04_ignored_errors"; Expected="rust/scenarios/04_ignored_errors/output.txt"; Steps=@(
         S "rust/scenarios/04_ignored_errors" $rs "rustc -O broken.rs -o broken && ./broken$exit0"
@@ -304,6 +347,19 @@ $scenarios = @(
     @{ Name="rust/05_resource_cleanup"; Expected="rust/scenarios/05_resource_cleanup/output.txt"; Steps=@(
         S "rust/scenarios/05_resource_cleanup" $rs "rustc -O broken.rs -o broken && ./broken$exit0"
         S "rust/scenarios/05_resource_cleanup" $rs "rustc -O fixed.rs -o fixed && ./fixed$exit0"
+    )}
+    @{ Name="rust/08_untrusted_json"; Expected="rust/scenarios/08_untrusted_json/output.txt"; Steps=@(
+        S "rust/scenarios/08_untrusted_json" $rs "cargo build --release" $true
+        S "rust/scenarios/08_untrusted_json" $rs "./target/release/strict" $true
+        S "rust/scenarios/08_untrusted_json" $rs "./target/release/defaulted" $true
+    )}
+    @{ Name="rust/footgun_borrow_checker"; Expected="rust/scenarios/footgun_borrow_checker/output.txt"; Steps=@(
+        S "rust/scenarios/footgun_borrow_checker" $rs "rustc broken.rs -o broken"
+        S "rust/scenarios/footgun_borrow_checker" $rs "rustc fixed.rs -o fixed && ./fixed$exit0"
+    )}
+    @{ Name="rust/02_data_race_compile_reject"; Expected="rust/scenarios/02_data_race/compile_reject_output.txt"; Steps=@(
+        S "rust/scenarios/02_data_race" $rs "rustc compile_reject_plain_mut.rs -o out1"
+        S "rust/scenarios/02_data_race" $rs "rustc compile_reject_rc.rs -o out2"
     )}
 
     # --- Kotlin (single-file scenarios; 07/08 are property scenarios below) ---
@@ -328,6 +384,12 @@ $scenarios = @(
         S "kotlin/scenarios/footgun_platform_types" $kt "java -jar broken.jar$exit0"
         S "kotlin/scenarios/footgun_platform_types" $kt "kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar$exit0"
     )}
+    @{ Name="kotlin/08_untrusted_json"; Expected="kotlin/scenarios/08_untrusted_json/output.txt"; Steps=@(
+        S "kotlin/scenarios/08_untrusted_json" $kt 'kotlinc -Xplugin=serialization-plugin.jar -cp "serialization-core.jar:serialization-json.jar" Strict.kt -include-runtime -d strict.jar' $true
+        S "kotlin/scenarios/08_untrusted_json" $kt 'java -cp "strict.jar:serialization-core.jar:serialization-json.jar" StrictKt' $true
+        S "kotlin/scenarios/08_untrusted_json" $kt 'kotlinc -Xplugin=serialization-plugin.jar -cp "serialization-core.jar:serialization-json.jar" Defaulted.kt -include-runtime -d defaulted.jar' $true
+        S "kotlin/scenarios/08_untrusted_json" $kt 'java -cp "defaulted.jar:serialization-core.jar:serialization-json.jar" DefaultedKt' $true
+    )}
 
     # --- C# (03/05 never show an EXIT: line at all; 01/footgun_async_void do, after each step) ---
     @{ Name="csharp/01_absent_null"; Expected="csharp/scenarios/01_absent_null/output.txt"; Steps=@(
@@ -340,9 +402,17 @@ $scenarios = @(
         S "csharp/scenarios/03_integer_overflow/fixed" $cs "rm -rf bin obj && dotnet run" "" 'dotnet run   (fixed/ -- explicit `checked(...)`)'
         S "csharp/scenarios/03_integer_overflow/checked_project" $cs "rm -rf bin obj && dotnet run" "" 'dotnet run   (checked_project/ -- same plain code, project-level <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>, no `checked` keyword in source)'
     )}
+    @{ Name="csharp/04_ignored_errors"; Expected="csharp/scenarios/04_ignored_errors/output.txt"; Steps=@(
+        S "csharp/scenarios/04_ignored_errors/broken" $cs "rm -rf bin obj && dotnet run" "" "dotnet run   (broken/)"
+        S "csharp/scenarios/04_ignored_errors/fixed" $cs "rm -rf bin obj && dotnet run" "" "dotnet run   (fixed/)"
+    )}
     @{ Name="csharp/05_resource_cleanup"; Expected="csharp/scenarios/05_resource_cleanup/output.txt"; Steps=@(
         S "csharp/scenarios/05_resource_cleanup/broken" $cs "rm -rf bin obj && dotnet run" "" "dotnet run   (broken/)"
         S "csharp/scenarios/05_resource_cleanup/fixed" $cs "rm -rf bin obj && dotnet run" "" "dotnet run   (fixed/)"
+    )}
+    @{ Name="csharp/08_untrusted_json"; Expected="csharp/scenarios/08_untrusted_json/output.txt"; Steps=@(
+        S "csharp/scenarios/08_untrusted_json/broken" $cs "rm -rf bin obj && dotnet run" $true "dotnet run   (broken/ -- plain record, no ``required``)"
+        S "csharp/scenarios/08_untrusted_json/fixed" $cs "rm -rf bin obj && dotnet run" $true "dotnet run   (fixed/ -- ``required int Count``)"
     )}
     @{ Name="csharp/footgun_async_void"; Expected="csharp/scenarios/footgun_async_void/output.txt"; Steps=@(
         S "csharp/scenarios/footgun_async_void/broken" $cs "rm -rf bin obj && dotnet run$exit0" "" "dotnet run   (broken/)"
@@ -369,6 +439,21 @@ if (-not $Update) {
 # ============================================================================
 $updateTargets = $scenarios | ForEach-Object { @{ Name = $_.Name; Scenario = $_ } }
 
+# F4: provenance manifest -- every file -Update writes gets an entry recording
+# how it was produced, so check-post.ps1 can later verify the committed file
+# still matches what was actually captured.
+$provenanceEntries = @()
+function Add-Provenance($expected, $expectedFile, $commands, $images) {
+    $hash = (Get-FileHash -Path $expectedFile -Algorithm SHA256).Hash.ToLower()
+    $script:provenanceEntries += @{
+        file = $expected
+        commands = @($commands)
+        images = @($images | Select-Object -Unique)
+        captured = (Get-Date).ToString("o")
+        sha256 = $hash
+    }
+}
+
 if ($Update) {
     foreach ($t in $updateTargets) {
         $s = $t.Scenario
@@ -382,8 +467,111 @@ if ($Update) {
             $newContent += "`n" + ($toolchainLines -join "`n") + "`n"
         }
         Set-Content -Path $expectedFile -Value $newContent -NoNewline
+        Add-Provenance $s.Expected $expectedFile ($s.Steps | ForEach-Object { $_.Display }) ($s.Steps | ForEach-Object { $_.Image })
         Write-Host "UPDATED: $($s.Expected)" -ForegroundColor Cyan
     }
+
+    # ------------------------------------------------------------------------
+    # Race captures: the FIXED half is deterministic (run once, via normal
+    # Steps/S()); the BROKEN half is timing-sensitive, so retry it up to 5
+    # times and keep whichever real run actually lost an update -- never
+    # synthesized, always a real captured run. Covers the five races whose
+    # committed transcript is just a "$ cmd / counter = N / EXIT:?" pair; Go's
+    # `-race` detector output (goroutine addresses/stacks) and Rust's (already
+    # regenerated in Phase 1e) are NOT part of this generic mechanism -- see
+    # the Phase 1f report for why.
+    # ------------------------------------------------------------------------
+    function Invoke-RaceCapture($name, $expected, $brokenStep, $fixedSteps, $counterExpected) {
+        $expectedFile = Join-Path $root $expected
+        $existing = Get-Content -Raw $expectedFile
+        $toolchainLines = ($existing -split "`n") | Where-Object { $_ -match '^(Toolchain|Interpreter|SDK|Runtime|Compiler|Type checker):' }
+
+        $fixedOut = Run-Steps $fixedSteps
+        $fixedMatch = [regex]::Match($fixedOut, 'counter\s*=\s*(\d+)')
+        if (-not $fixedMatch.Success -or [int]$fixedMatch.Groups[1].Value -ne $counterExpected) {
+            Write-Host "SKIP (fixed run didn't produce expected counter): $name" -ForegroundColor Yellow
+            return
+        }
+
+        $brokenOut = $null
+        for ($attempt = 1; $attempt -le 5; $attempt++) {
+            $candidate = Invoke-Step $brokenStep
+            $m = [regex]::Match($candidate, 'counter\s*=\s*(\d+)')
+            if ($m.Success -and [int]$m.Groups[1].Value -lt $counterExpected) {
+                $brokenOut = $candidate
+                Write-Host "  ($name: broken run lost an update on attempt $attempt)" -ForegroundColor DarkGray
+                break
+            }
+        }
+        if (-not $brokenOut) {
+            Write-Host "SKIP (broken run never lost an update in 5 tries): $name" -ForegroundColor Yellow
+            return
+        }
+
+        $newContent = ($brokenOut.TrimEnd() + "`n`n" + $fixedOut.TrimEnd()) + "`n"
+        if ($toolchainLines.Count -gt 0) {
+            $newContent += "`n" + ($toolchainLines -join "`n") + "`n"
+        }
+        Set-Content -Path $expectedFile -Value $newContent -NoNewline
+        $attemptNote = "broken run retried up to 5x until it lost an update (attempt $attempt)"
+        Add-Provenance $expected $expectedFile (@($brokenStep.Display, $attemptNote) + ($fixedSteps | ForEach-Object { $_.Display })) (@($brokenStep.Image) + ($fixedSteps | ForEach-Object { $_.Image }))
+        Write-Host "UPDATED: $expected" -ForegroundColor Cyan
+    }
+
+    Invoke-RaceCapture "c/02_data_race" "c/scenarios/02-data-race/output.txt" `
+        (S "c/scenarios/02-data-race" $gcc "gcc -O0 -g -Wall broken.c -o broken -lpthread && ./broken$exit0" $false "gcc -O0 -g -Wall broken.c -o broken -lpthread && ./broken") `
+        @((S "c/scenarios/02-data-race" $gcc "gcc -O0 -g -Wall fixed.c -o fixed -lpthread && ./fixed$exit0" $false "gcc -O0 -g -Wall fixed.c -o fixed -lpthread && ./fixed")) `
+        400000
+
+    Invoke-RaceCapture "csharp/02_data_race" "csharp/scenarios/02_data_race/output.txt" `
+        (S "csharp/scenarios/02_data_race/broken" $cs "rm -rf bin obj && dotnet run" $false "dotnet run   (broken/)") `
+        @((S "csharp/scenarios/02_data_race/fixed" $cs "rm -rf bin obj && dotnet run" $false "dotnet run   (fixed/)")) `
+        400000
+
+    Invoke-RaceCapture "kotlin/02_data_race" "kotlin/scenarios/02_data_race/output.txt" `
+        (S "kotlin/scenarios/02_data_race" $kt "kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar$exit0" $false "kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar") `
+        @((S "kotlin/scenarios/02_data_race" $kt "kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar$exit0" $false "kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar")) `
+        400000
+
+    Invoke-RaceCapture "python/02_data_race" "python/scenarios/02_data_race/output.txt" `
+        (S "python/scenarios/02_data_race" $py "python broken.py$exit0" $false "python broken.py") `
+        @((S "python/scenarios/02_data_race" $py "python fixed.py$exit0" $false "python fixed.py")) `
+        400
+
+    # Note: this drops any tsc-check lines from the committed file, same as the
+    # broader Phase 1e -Update pass did for 01/03/05/08 -- type-checking for
+    # every scenario file is verified separately by the dedicated aggregate tsc
+    # property check (which runs in a temp copy), not duplicated per-file here.
+    Invoke-RaceCapture "typescript/02_data_race" "typescript/scenarios/02_data_race/output.txt" `
+        (S "typescript/scenarios/02_data_race" $node "node broken.ts$exit0" $false "node broken.ts") `
+        @((S "typescript/scenarios/02_data_race" $node "node fixed.ts$exit0" $false "node fixed.ts")) `
+        400000
+
+    # Scenario 6: `docker compose run`, not a bind-mounted pinned image -- doesn't
+    # fit S()/Invoke-Step's shape, so captured directly here instead.
+    $scenario6Expected = Join-Path $root "shared/scenarios/06_hung_cancellation/output.txt"
+    docker compose up -d mockserver 2>&1 | Out-Null
+    $s6Content = ""
+    $s6Commands = @()
+    foreach ($lang in @("python", "go", "rust", "typescript", "kotlin", "csharp")) {
+        $cmdDisplay = "docker compose run --rm $lang --top 5 --concurrency 1 --timeout 2 /data/urls-hang.txt"
+        $s6Commands += $cmdDisplay
+        $sw = [Diagnostics.Stopwatch]::StartNew()
+        $out = docker compose run --rm $lang --top 5 --concurrency 1 --timeout 2 /data/urls-hang.txt 2>&1 | Out-String
+        $code = $LASTEXITCODE
+        $sw.Stop()
+        $s6Content += "`$ $cmdDisplay`n$($out.TrimEnd())`nEXIT:$code  wall=$([math]::Round($sw.Elapsed.TotalSeconds, 2))s`n`n"
+    }
+    Set-Content -Path $scenario6Expected -Value ($s6Content.TrimEnd() + "`n") -NoNewline
+    Add-Provenance "shared/scenarios/06_hung_cancellation/output.txt" $scenario6Expected $s6Commands @("docker compose (python/go/rust/typescript/kotlin/csharp services)")
+    Write-Host "UPDATED: shared/scenarios/06_hung_cancellation/output.txt" -ForegroundColor Cyan
+
+    $provenanceDir = Join-Path $root "results"
+    New-Item -ItemType Directory -Force -Path $provenanceDir | Out-Null
+    $provenanceFile = Join-Path $provenanceDir "provenance.json"
+    ($provenanceEntries | ConvertTo-Json -Depth 6) | Set-Content -Path $provenanceFile
+    Write-Host "Wrote provenance manifest: results/provenance.json ($($provenanceEntries.Count) entries)" -ForegroundColor Cyan
+
     Pop-Location
     Write-Host "`n--update complete. Review the diffs (git diff) before committing -- this does not auto-commit." -ForegroundColor Cyan
     exit 0
