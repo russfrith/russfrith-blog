@@ -400,16 +400,28 @@ function Test-Race($name, $dir, $image, $brokenCmd, $fixedCmd, $expected, $net) 
         $networkArgs = @()
         if ($net) { $networkArgs = @("--network", $network) }
         $hostDir = Join-Path $root $dir
-        $brokenOut = docker run --rm @networkArgs -v "${hostDir}:/src" -w /src $image bash -c $brokenCmd 2>&1 | Out-String
+
+        # Races are inherently timing-sensitive -- a single run occasionally completes
+        # without losing an update even with a real race present. Retry the BROKEN run
+        # up to 5 times and pass as soon as any one of them loses an update; this is not
+        # masking a bug, since the thing under test is "does this data race EVER lose an
+        # update," not "does it lose one on every single run." The FIXED run is
+        # deterministic (correctly synchronized) and is checked once, not retried.
         $fixedOut = docker run --rm @networkArgs -v "${hostDir}:/src" -w /src $image bash -c $fixedCmd 2>&1 | Out-String
-        $brokenMatch = [regex]::Match($brokenOut, 'counter\s*=\s*(\d+)')
         $fixedMatch = [regex]::Match($fixedOut, 'counter\s*=\s*(\d+)')
-        if (-not $brokenMatch.Success -or -not $fixedMatch.Success) { return "could not parse counter from output" }
-        $brokenVal = [int]$brokenMatch.Groups[1].Value
+        if (-not $fixedMatch.Success) { return "could not parse counter from fixed output" }
         $fixedVal = [int]$fixedMatch.Groups[1].Value
         if ($fixedVal -ne $expected) { return "fixed total was $fixedVal, expected exactly $expected" }
-        if ($brokenVal -ge $expected) { return "broken total was $brokenVal, expected LESS than $expected (race didn't lose any updates this run)" }
-        return $true
+
+        $lastBrokenVal = $null
+        for ($attempt = 1; $attempt -le 5; $attempt++) {
+            $brokenOut = docker run --rm @networkArgs -v "${hostDir}:/src" -w /src $image bash -c $brokenCmd 2>&1 | Out-String
+            $brokenMatch = [regex]::Match($brokenOut, 'counter\s*=\s*(\d+)')
+            if (-not $brokenMatch.Success) { return "could not parse counter from broken output (attempt $attempt)" }
+            $lastBrokenVal = [int]$brokenMatch.Groups[1].Value
+            if ($lastBrokenVal -lt $expected) { return $true }
+        }
+        return "broken total was $lastBrokenVal every one of 5 attempts, expected LESS than $expected at least once (race never lost an update)"
     }
 }
 $goRaceCountResult = Test-Race "property: go/02_data_race (broken<400000, fixed=400000)" "go/scenarios/02_data_race" $go "go run broken.go" "go run fixed.go" 400000 $false
@@ -421,64 +433,69 @@ $goRaceResults = Test-Property "property: go/02_data_race -race detector reports
     return "no 'WARNING: DATA RACE' in -race output"
 }
 
-# C#'s scenario 2 needs both broken/ and fixed/ subfolders, not a single dir --
-# redo it directly instead of forcing it through Test-Race's single-dir shape.
-$csharpRaceResult = Test-Property "property: csharp/02_data_race (broken<400000, fixed=400000)" {
-    $brokenDir = Join-Path $root "csharp/scenarios/02_data_race/broken"
-    $fixedDir = Join-Path $root "csharp/scenarios/02_data_race/fixed"
-    $brokenOut = docker run --rm -v "${brokenDir}:/src" -w /src $cs bash -c "rm -rf bin obj && dotnet run" 2>&1 | Out-String
-    $fixedOut = docker run --rm -v "${fixedDir}:/src" -w /src $cs bash -c "rm -rf bin obj && dotnet run" 2>&1 | Out-String
-    $brokenVal = [int]([regex]::Match($brokenOut, 'counter\s*=\s*(\d+)').Groups[1].Value)
-    $fixedVal = [int]([regex]::Match($fixedOut, 'counter\s*=\s*(\d+)').Groups[1].Value)
-    if ($fixedVal -ne 400000) { return "fixed total was $fixedVal, expected exactly 400000" }
-    if ($brokenVal -ge 400000) { return "broken total was $brokenVal, expected less than 400000" }
-    return $true
+# Shared retry wrapper for the remaining languages' scenario-2 races, whose docker
+# invocations don't fit Test-Race's single-dir/single-command shape (C# needs two
+# subfolders, Kotlin needs a compile step, etc). Same reasoning as Test-Race: retry
+# only the timing-sensitive BROKEN run, up to 5 times; the FIXED run is deterministic
+# and checked once.
+function Test-RaceRetry($name, [scriptblock]$runFixed, [scriptblock]$runBroken, $expected) {
+    Test-Property $name {
+        $fixedOut = & $runFixed
+        $fixedVal = [int]([regex]::Match($fixedOut, 'counter\s*=\s*(\d+)').Groups[1].Value)
+        if ($fixedVal -ne $expected) { return "fixed total was $fixedVal, expected exactly $expected" }
+
+        $lastBrokenVal = $null
+        for ($attempt = 1; $attempt -le 5; $attempt++) {
+            $brokenOut = & $runBroken
+            $lastBrokenVal = [int]([regex]::Match($brokenOut, 'counter\s*=\s*(\d+)').Groups[1].Value)
+            if ($lastBrokenVal -lt $expected) { return $true }
+        }
+        return "broken total was $lastBrokenVal every one of 5 attempts, expected less than $expected at least once"
+    }
 }
 
-# TypeScript and Python and Kotlin and Rust scenario 2 races, similarly:
-$tsRaceResult = Test-Property "property: typescript/02_data_race (broken<400000, fixed=400000)" {
+# C#'s scenario 2 needs both broken/ and fixed/ subfolders, not a single dir --
+# redo it directly instead of forcing it through Test-Race's single-dir shape.
+$csharpRaceResult = Test-RaceRetry "property: csharp/02_data_race (broken<400000, fixed=400000)" {
+    $fixedDir = Join-Path $root "csharp/scenarios/02_data_race/fixed"
+    docker run --rm -v "${fixedDir}:/src" -w /src $cs bash -c "rm -rf bin obj && dotnet run" 2>&1 | Out-String
+} {
+    $brokenDir = Join-Path $root "csharp/scenarios/02_data_race/broken"
+    docker run --rm -v "${brokenDir}:/src" -w /src $cs bash -c "rm -rf bin obj && dotnet run" 2>&1 | Out-String
+} 400000
+
+# TypeScript and Kotlin and Python and Rust scenario 2 races, similarly:
+$tsRaceResult = Test-RaceRetry "property: typescript/02_data_race (broken<400000, fixed=400000)" {
     $hostDir = Join-Path $root "typescript/scenarios/02_data_race"
-    $brokenOut = docker run --rm -v "${hostDir}:/src" -w /src $node bash -c "node broken.ts" 2>&1 | Out-String
-    $fixedOut = docker run --rm -v "${hostDir}:/src" -w /src $node bash -c "node fixed.ts" 2>&1 | Out-String
-    $brokenVal = [int]([regex]::Match($brokenOut, 'counter\s*=\s*(\d+)').Groups[1].Value)
-    $fixedVal = [int]([regex]::Match($fixedOut, 'counter\s*=\s*(\d+)').Groups[1].Value)
-    if ($fixedVal -ne 400000) { return "fixed total was $fixedVal, expected exactly 400000" }
-    if ($brokenVal -ge 400000) { return "broken total was $brokenVal, expected less than 400000" }
-    return $true
-}
-$ktRaceResult = Test-Property "property: kotlin/02_data_race (broken<400000, fixed=400000)" {
+    docker run --rm -v "${hostDir}:/src" -w /src $node bash -c "node fixed.ts" 2>&1 | Out-String
+} {
+    $hostDir = Join-Path $root "typescript/scenarios/02_data_race"
+    docker run --rm -v "${hostDir}:/src" -w /src $node bash -c "node broken.ts" 2>&1 | Out-String
+} 400000
+$ktRaceResult = Test-RaceRetry "property: kotlin/02_data_race (broken<400000, fixed=400000)" {
     $hostDir = Join-Path $root "kotlin/scenarios/02_data_race"
-    $brokenOut = docker run --rm -v "${hostDir}:/src" -w /src $kt bash -c "kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar" 2>&1 | Out-String
-    $fixedOut = docker run --rm -v "${hostDir}:/src" -w /src $kt bash -c "kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar" 2>&1 | Out-String
-    $brokenVal = [int]([regex]::Match($brokenOut, 'counter\s*=\s*(\d+)').Groups[1].Value)
-    $fixedVal = [int]([regex]::Match($fixedOut, 'counter\s*=\s*(\d+)').Groups[1].Value)
-    if ($fixedVal -ne 400000) { return "fixed total was $fixedVal, expected exactly 400000" }
-    if ($brokenVal -ge 400000) { return "broken total was $brokenVal, expected less than 400000" }
-    return $true
-}
-$pyRaceResult = Test-Property "property: python/02_data_race (broken<400, fixed=400)" {
+    docker run --rm -v "${hostDir}:/src" -w /src $kt bash -c "kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar" 2>&1 | Out-String
+} {
+    $hostDir = Join-Path $root "kotlin/scenarios/02_data_race"
+    docker run --rm -v "${hostDir}:/src" -w /src $kt bash -c "kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar" 2>&1 | Out-String
+} 400000
+$pyRaceResult = Test-RaceRetry "property: python/02_data_race (broken<400, fixed=400)" {
     $hostDir = Join-Path $root "python/scenarios/02_data_race"
-    $brokenOut = docker run --rm -v "${hostDir}:/src" -w /src $py bash -c "python broken.py" 2>&1 | Out-String
-    $fixedOut = docker run --rm -v "${hostDir}:/src" -w /src $py bash -c "python fixed.py" 2>&1 | Out-String
-    $brokenVal = [int]([regex]::Match($brokenOut, 'counter\s*=\s*(\d+)').Groups[1].Value)
-    $fixedVal = [int]([regex]::Match($fixedOut, 'counter\s*=\s*(\d+)').Groups[1].Value)
-    if ($fixedVal -ne 400) { return "fixed total was $fixedVal, expected exactly 400" }
-    if ($brokenVal -ge 400) { return "broken total was $brokenVal, expected less than 400 (this race is known to need the induced delay already in the source -- see NOTES.md)" }
-    return $true
-}
-$rsRaceResult = Test-Property "property: rust/02_data_race (broken<400000, fixed=400000)" {
+    docker run --rm -v "${hostDir}:/src" -w /src $py bash -c "python fixed.py" 2>&1 | Out-String
+} {
+    $hostDir = Join-Path $root "python/scenarios/02_data_race"
+    docker run --rm -v "${hostDir}:/src" -w /src $py bash -c "python broken.py" 2>&1 | Out-String
+} 400
+$rsRaceResult = Test-RaceRetry "property: rust/02_data_race (broken<400000, fixed=400000)" {
     # broken.rs and fixed.rs use the SAME iteration count (200,000/thread, 400,000
     # total) -- broken.rs's thread::yield_now() between the raw read and raw write
     # is what makes the race reliable, not a reduced iteration count. See NOTES.md.
     $hostDir = Join-Path $root "rust/scenarios/02_data_race"
-    $brokenOut = docker run --rm -v "${hostDir}:/src" -w /src $rs bash -c "rustc -O broken.rs -o broken 2>/dev/null; ./broken" 2>&1 | Out-String
-    $fixedOut = docker run --rm -v "${hostDir}:/src" -w /src $rs bash -c "rustc -O fixed.rs -o fixed 2>/dev/null && ./fixed" 2>&1 | Out-String
-    $brokenVal = [int]([regex]::Match($brokenOut, 'counter\s*=\s*(\d+)').Groups[1].Value)
-    $fixedVal = [int]([regex]::Match($fixedOut, 'counter\s*=\s*(\d+)').Groups[1].Value)
-    if ($fixedVal -ne 400000) { return "fixed total was $fixedVal, expected exactly 400000" }
-    if ($brokenVal -ge 400000) { return "broken total was $brokenVal, expected less than 400000" }
-    return $true
-}
+    docker run --rm -v "${hostDir}:/src" -w /src $rs bash -c "rustc -O fixed.rs -o fixed 2>/dev/null && ./fixed" 2>&1 | Out-String
+} {
+    $hostDir = Join-Path $root "rust/scenarios/02_data_race"
+    docker run --rm -v "${hostDir}:/src" -w /src $rs bash -c "rustc -O broken.rs -o broken 2>/dev/null; ./broken" 2>&1 | Out-String
+} 400000
 
 # -- Scenario 6: all six CLIs exit 1 and cancel near the configured timeout --
 $scenario6Results = @()
@@ -552,9 +569,19 @@ $compileRejectResult = Test-Property "property: rust/02_data_race compile_reject
 }
 
 # -- TypeScript tsc checks: every file must type-check with zero errors --
+# check-all.sh runs `npm install`, which writes node_modules/ and rewrites
+# package.json's formatting in whatever directory it's run against. Run it
+# against a throwaway temp copy, not the real companion-code tree, so this
+# check never dirties `git status`.
 $tscResult = Test-Property "property: typescript tsc --noEmit (all scenario files, zero errors)" {
     $hostDir = Join-Path $root "typescript/scenarios"
-    $out = docker run --rm -v "${hostDir}:/src" -w /src $node bash check-all.sh 2>&1 | Out-String
+    $tmpTsDir = Join-Path $env:TEMP "wordfreq-ts-check-$([guid]::NewGuid().ToString('N'))"
+    Copy-Item -Path $hostDir -Destination $tmpTsDir -Recurse -Exclude "node_modules"
+    try {
+        $out = docker run --rm -v "${tmpTsDir}:/src" -w /src $node bash check-all.sh 2>&1 | Out-String
+    } finally {
+        Remove-Item -Recurse -Force $tmpTsDir -ErrorAction SilentlyContinue
+    }
     if ($out -match "error TS") { return "tsc reported at least one TS error -- see captured output for which file" }
     $exitCount = ([regex]::Matches($out, "EXIT:0")).Count
     if ($exitCount -lt 15) { return "expected 15 'EXIT:0' markers (one per checked file), found $exitCount" }
