@@ -6,35 +6,29 @@ Chroma's `highlight` function always emits a hardcoded dark background on the
 <pre> itself (inline style, confirmed in both light and dark site themes --
 the theme's --code-block-bg variable never actually reaches it), so every
 code block on this site, including these transcripts, keeps the same dark
-background regardless of page theme. These variables are still wired through
-the theme's :root / :root[data-theme="dark"] mechanism for correctness, but
-carry the same values in both blocks since the background they sit on
-doesn't change.
+background regardless of page theme. A :root[data-theme="dark"] override
+block was removed here (Phase 1f cleanup): it duplicated these exact same
+values, so it was reachable but never actually changed anything -- the
+background these colors sit on doesn't change between themes, so there is
+nothing for a dark-mode override to do. If the transcript background is ever
+made theme-aware, a real :root[data-theme="dark"] block (with DIFFERENT
+values, contrast-checked against that background) would need to come back.
+
+Contrast ratios below are against the actual block background, #272822
+(WCAG AA for text requires 4.5:1); t-exit-fail/t-fail originally used
+Monokai's #f92672 at 3.93:1 (fails) -- replaced with #ff6188 at 5.18:1.
 */
 :root {
-    --t-prompt: #66d9ef;
-    --t-exit-ok: #a6e22e;
-    --t-exit-fail: #f92672;
-    --t-fail: #f92672;
-    --t-warn: #fd971f;
-    --t-loc: #ae81ff;
-    --t-stackframe: #9a9a90;
-    --t-ok: #a6e22e;
-    --t-footer: #9a9a90;
-    --t-comment: #9a9a90;
-}
-
-:root[data-theme="dark"] {
-    --t-prompt: #66d9ef;
-    --t-exit-ok: #a6e22e;
-    --t-exit-fail: #f92672;
-    --t-fail: #f92672;
-    --t-warn: #fd971f;
-    --t-loc: #ae81ff;
-    --t-stackframe: #9a9a90;
-    --t-ok: #a6e22e;
-    --t-footer: #9a9a90;
-    --t-comment: #9a9a90;
+    --t-prompt: #66d9ef;    /* 9.01:1 */
+    --t-exit-ok: #a6e22e;   /* 9.58:1 */
+    --t-exit-fail: #ff6188; /* 5.18:1 */
+    --t-fail: #ff6188;      /* 5.18:1 */
+    --t-warn: #fd971f;      /* 6.81:1 */
+    --t-loc: #ae81ff;       /* 5.23:1 */
+    --t-stackframe: #9a9a90; /* 5.24:1 */
+    --t-ok: #a6e22e;        /* 9.58:1 */
+    --t-footer: #9a9a90;    /* 5.24:1 */
+    --t-comment: #9a9a90;   /* 5.24:1 */
 }
 
 .highlight.transcript .t-prompt {
