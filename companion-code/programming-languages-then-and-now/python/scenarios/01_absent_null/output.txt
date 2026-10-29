@@ -8,8 +8,8 @@ KeyError: 'count'
 EXIT:1
 
 $ python fixed.py
-[python 3.14.8, gil_enabled=True]
 count absent
+[python 3.14.8, gil_enabled=True]
 EXIT:0
 
 Interpreter: Python 3.14.8 (python:3.14.8-slim)

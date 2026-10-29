@@ -24,7 +24,18 @@
 #                                                 # text is provably exactly
 #                                                 # what ran -- never hand-edit
 #                                                 # output.txt
+#   ./scripts/run-scenarios.ps1 -Update -Only <name[,name...]>
+#                                                 # regenerate just these scenarios
+#                                                 # (the same Name every PASS/FAIL/
+#                                                 # UPDATED line prints, e.g.
+#                                                 # "go/01_absent_null" or
+#                                                 # "csharp/02_data_race") and merge
+#                                                 # only their entries into
+#                                                 # results/provenance.json by file
+#                                                 # key -- every other file and its
+#                                                 # manifest entry is left alone.
 #
+
 # Exits non-zero (and lists every failure) in check mode.
 #
 # STILL NOT COVERED (documented, not silently skipped):
@@ -37,8 +48,16 @@
 #     execs for the dying process, not reliably reproducible byte-for-byte.
 
 param(
-    [switch]$Update
+    [switch]$Update,
+    # I3: -Update -Only <name[,name...]> regenerates just these scenarios (by the
+    # same Name every PASS/FAIL/UPDATED line already prints) instead of everything,
+    # and merges their provenance entries into results/provenance.json by file key
+    # instead of overwriting the whole manifest.
+    [string[]]$Only
 )
+function Test-Only($name) {
+    return (-not $Only) -or ($Only -contains $name)
+}
 
 $ErrorActionPreference = "Continue"
 $root = Split-Path -Parent $PSScriptRoot
@@ -515,13 +534,31 @@ if (-not $Update) {
 # ============================================================================
 # --update mode: regenerate every output-diff scenario's output.txt from a real
 # run, so the committed text is provably exactly what ran (not hand-edited).
+# -Only <name[,name...]> limits this to specific scenarios (see Test-Only above).
 # ============================================================================
-$updateTargets = $scenarios | ForEach-Object { @{ Name = $_.Name; Scenario = $_ } }
+$updateTargets = $scenarios | Where-Object { Test-Only $_.Name } | ForEach-Object { @{ Name = $_.Name; Scenario = $_ } }
 
-# F4: provenance manifest -- every file -Update writes gets an entry recording
+# F4/I3: provenance manifest -- every file -Update writes gets an entry recording
 # how it was produced, so check-post.ps1 can later verify the committed file
-# still matches what was actually captured.
+# still matches what was actually captured. Starts from whatever's already
+# committed and merges by file key (Add-Provenance replaces an existing entry for
+# the same file rather than appending a duplicate) -- so a -Only run only ever
+# touches the entries for the scenarios it actually regenerated, never the rest.
 $provenanceEntries = @()
+$existingProvenanceFile = Join-Path $root "results/provenance.json"
+if (Test-Path $existingProvenanceFile) {
+    # [ordered]: a plain @{} hashtable enumerates strings in a per-process-random
+    # bucket order (string GetHashCode is randomized), so round-tripping untouched
+    # entries through one would reshuffle every property on every run and make
+    # -Only's git diff noisy across the whole file instead of just the merged
+    # entry. Preserving the original JSON property order keeps passthrough
+    # entries byte-identical.
+    $provenanceEntries = @(Get-Content -Raw $existingProvenanceFile | ConvertFrom-Json | ForEach-Object {
+        $h = [ordered]@{}
+        $_.PSObject.Properties | ForEach-Object { $h[$_.Name] = $_.Value }
+        $h
+    })
+}
 function Get-NormalizedHash($path) {
     # Git normalizes these text files to LF on commit/checkout (see the CRLF
     # warnings PowerShell's own git commands print); hash LF-normalized bytes
@@ -540,14 +577,17 @@ function Get-NormalizedHash($path) {
 
 function Add-Provenance($expected, $expectedFile, $commands, $images, $versionCommand, $versionRaw) {
     $hash = Get-NormalizedHash $expectedFile
-    $script:provenanceEntries += @{
-        file = $expected
-        commands = @($commands)
+    # Merge by file key: drop any existing entry for this file, then add the fresh
+    # one -- never a duplicate, and every other file's entry is left untouched.
+    $script:provenanceEntries = @($script:provenanceEntries | Where-Object { $_.file -ne $expected })
+    $script:provenanceEntries += [ordered]@{
         images = @($images | Select-Object -Unique)
-        versionCommand = $versionCommand
-        versionOutput = $versionRaw
-        captured = (Get-Date).ToString("o")
         sha256 = $hash
+        commands = @($commands)
+        file = $expected
+        captured = (Get-Date).ToString("o")
+        versionOutput = $versionRaw
+        versionCommand = $versionCommand
     }
 }
 
@@ -591,6 +631,7 @@ if ($Update) {
     # the Phase 1f report for why.
     # ------------------------------------------------------------------------
     function Invoke-RaceCapture($name, $expected, $brokenStep, $fixedSteps, $counterExpected, $lang, $alsoCountPattern) {
+        if (-not (Test-Only $name)) { return }
         $expectedFile = Join-Path $root $expected
         $freshFooter = Get-Footer $lang
         $footerCmd = $lastFooterCommand
@@ -690,6 +731,7 @@ if ($Update) {
     # which is the one genuinely unbounded case and gets Elide.
     # ------------------------------------------------------------------------
     function Invoke-ScenarioCapture($name, $expected, $steps, $lang) {
+        if (-not (Test-Only $name)) { return }
         $expectedFile = Join-Path $root $expected
         $freshFooter = Get-Footer $lang
         $out = Run-Steps $steps
@@ -741,33 +783,36 @@ if ($Update) {
 
     # Scenario 6: `docker compose run`, not a bind-mounted pinned image -- doesn't
     # fit S()/Invoke-Step's shape, so captured directly here instead.
-    $scenario6Expected = Join-Path $root "shared/scenarios/06_hung_cancellation/output.txt"
-    docker compose up -d mockserver 2>&1 | Out-Null
-    $s6Content = ""
-    $s6Commands = @()
-    foreach ($lang in @("python", "go", "rust", "typescript", "kotlin", "csharp")) {
-        $cmdDisplay = "docker compose run --rm $lang --top 5 --concurrency 1 --timeout 2 /data/urls-hang.txt"
-        $s6Commands += $cmdDisplay
-        $sw = [Diagnostics.Stopwatch]::StartNew()
-        $out = docker compose run --rm $lang --top 5 --concurrency 1 --timeout 2 /data/urls-hang.txt 2>&1 | Out-String
-        $code = $LASTEXITCODE
-        $sw.Stop()
-        # G2: compose prints its own container-lifecycle lines (Creating/Created/
-        # Running) to stderr -- strip them from the CAPTURED OUTPUT only; the
-        # command shown above ($cmdDisplay) is exactly what a reader would type.
-        $outLines = ($out.TrimEnd() -split "`n") | Where-Object { $_ -notmatch '^\s*Container\s+\S+\s+(Running|Creating|Created|Starting|Started)\s*$' }
-        $outClean = $outLines -join "`n"
-        $s6Content += "`$ $cmdDisplay`n$outClean`nEXIT:$code  wall=$([math]::Round($sw.Elapsed.TotalSeconds, 2))s`n`n"
+    if (Test-Only "shared/06_hung_cancellation") {
+        $scenario6Expected = Join-Path $root "shared/scenarios/06_hung_cancellation/output.txt"
+        docker compose up -d mockserver 2>&1 | Out-Null
+        $s6Content = ""
+        $s6Commands = @()
+        foreach ($lang in @("python", "go", "rust", "typescript", "kotlin", "csharp")) {
+            $cmdDisplay = "docker compose run --rm $lang --top 5 --concurrency 1 --timeout 2 /data/urls-hang.txt"
+            $s6Commands += $cmdDisplay
+            $sw = [Diagnostics.Stopwatch]::StartNew()
+            $out = docker compose run --rm $lang --top 5 --concurrency 1 --timeout 2 /data/urls-hang.txt 2>&1 | Out-String
+            $code = $LASTEXITCODE
+            $sw.Stop()
+            # G2: compose prints its own container-lifecycle lines (Creating/Created/
+            # Running) to stderr -- strip them from the CAPTURED OUTPUT only; the
+            # command shown above ($cmdDisplay) is exactly what a reader would type.
+            $outLines = ($out.TrimEnd() -split "`n") | Where-Object { $_ -notmatch '^\s*Container\s+\S+\s+(Running|Creating|Created|Starting|Started)\s*$' }
+            $outClean = $outLines -join "`n"
+            $s6Content += "`$ $cmdDisplay`n$outClean`nEXIT:$code  wall=$([math]::Round($sw.Elapsed.TotalSeconds, 2))s`n`n"
+        }
+        Set-Content -Path $scenario6Expected -Value ($s6Content.TrimEnd() + "`n") -NoNewline
+        Add-Provenance "shared/scenarios/06_hung_cancellation/output.txt" $scenario6Expected $s6Commands @("docker compose (python/go/rust/typescript/kotlin/csharp services)")
+        Write-Host "UPDATED: shared/scenarios/06_hung_cancellation/output.txt" -ForegroundColor Cyan
     }
-    Set-Content -Path $scenario6Expected -Value ($s6Content.TrimEnd() + "`n") -NoNewline
-    Add-Provenance "shared/scenarios/06_hung_cancellation/output.txt" $scenario6Expected $s6Commands @("docker compose (python/go/rust/typescript/kotlin/csharp services)")
-    Write-Host "UPDATED: shared/scenarios/06_hung_cancellation/output.txt" -ForegroundColor Cyan
 
     $provenanceDir = Join-Path $root "results"
     New-Item -ItemType Directory -Force -Path $provenanceDir | Out-Null
     $provenanceFile = Join-Path $provenanceDir "provenance.json"
     ($provenanceEntries | ConvertTo-Json -Depth 6) | Set-Content -Path $provenanceFile
-    Write-Host "Wrote provenance manifest: results/provenance.json ($($provenanceEntries.Count) entries)" -ForegroundColor Cyan
+    $modeNote = if ($Only) { "merged $($Only.Count) scenario(s) into" } else { "wrote" }
+    Write-Host "$modeNote results/provenance.json ($($provenanceEntries.Count) entries total)" -ForegroundColor Cyan
 
     Pop-Location
     Write-Host "`n--update complete. Review the diffs (git diff) before committing -- this does not auto-commit." -ForegroundColor Cyan

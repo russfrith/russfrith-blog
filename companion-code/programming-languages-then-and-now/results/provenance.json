@@ -3,20 +3,6 @@
     "images": [
       "python:3.14.8-slim"
     ],
-    "sha256": "cc67c592e2a8c7b5ec7c5331c2d54bd947cfb53445c7b54252a13f56919d5076",
-    "commands": [
-      "python broken.py",
-      "python fixed.py"
-    ],
-    "file": "python/scenarios/01_absent_null/output.txt",
-    "captured": "2026-10-29T01:02:09.3140215-04:00",
-    "versionOutput": "Python 3.14.8",
-    "versionCommand": "python --version"
-  },
-  {
-    "images": [
-      "python:3.14.8-slim"
-    ],
     "sha256": "0a09427bc9bde513fe5e81901e17e73b7833d31f9129110007c0d7392dc4c422",
     "commands": [
       "python demo.py"
@@ -835,5 +821,19 @@
     "captured": "2026-10-29T03:01:07.1285454-04:00",
     "sha256": "a963d52606ceb5a1ea8a19c31a352ac54176d1c74380532e4633a9d23f61fbe8",
     "file": "results/productivity.json"
+  },
+  {
+    "images": [
+      "python:3.14.8-slim"
+    ],
+    "sha256": "0ee70a90606ba5ce2dd6c7679f67ee0667ad2414332cee24f983da9cd9028a76",
+    "commands": [
+      "python broken.py",
+      "python fixed.py"
+    ],
+    "file": "python/scenarios/01_absent_null/output.txt",
+    "captured": "2026-10-29T03:10:59.1124987-04:00",
+    "versionOutput": "Python 3.14.8",
+    "versionCommand": "python --version"
   }
 ]
