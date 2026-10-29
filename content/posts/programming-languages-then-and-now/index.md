@@ -242,7 +242,7 @@ C#: a swallowed `catch {}` behaves like Python/Kotlin's equivalent. The more int
 
 #### 5. Resource cleanup and leaks
 
-C, built with `-fsanitize=address` to get a leak detector: an unfreed `malloc` is a straightforward, detectable leak:
+C, built with `-fsanitize=address` to get a leak detector: an unfreed `malloc` is a straightforward, detectable leak. Without the sanitizer, the plain build exits 0 with no crash and no visible symptom at all -- that silence is the point; nothing short of a leak detector reveals anything is wrong:
 
 {{< snippet file="c/scenarios/05-resource-cleanup/output.txt" lang="text" >}}
 
@@ -363,29 +363,29 @@ C#'s `System.Text.Json` splits exactly like Go for a plain property: silent zero
 
 ### Productivity
 
-Measured three times each, back to back, on one development machine, 2026-10-28; median reported, range in parentheses. Full methodology and the "reproduce this" commands are in `companion-code/programming-languages-then-and-now/results/productivity.md`.
+Measured three times each, back to back, on one development machine, 2026-10-29; median reported, range in parentheses. Full methodology and the "reproduce this" commands are in `companion-code/programming-languages-then-and-now/results/productivity.md`.
 
 #### 9. Baseline CLI size and dependency count
 
 | Language | Lines of code (wordfreq only) | Direct third-party dependencies |
 |---|---|---|
-| Python | 56 | 0 (stdlib only) |
-| Kotlin | 85 | 1 (`kotlinx-coroutines-core`) + its transitive deps |
-| Rust | 101 | 2 (`ureq`, `clap`) -- ~30 transitive crates |
-| TypeScript | 113 | 2 dev-only (`typescript`, `@types/node`); 0 runtime deps |
-| Go | 137 | 0 (stdlib only) |
-| C# | 91 | 0 (BCL only) |
+| Python | 55 | 0 (stdlib only) |
+| Kotlin | 78 | 1 (`kotlinx-coroutines-core`) + its transitive deps |
+| Rust | 93 | 2 (`ureq`, `clap`) -- ~30 transitive crates |
+| TypeScript | 106 | 2 dev-only (`typescript`, `@types/node`); 0 runtime deps |
+| Go | 130 | 0 (stdlib only) |
+| C# | 84 | 0 (BCL only) |
 
 #### 10. Clean build vs. incremental rebuild time
 
 | Language | Clean build (`--no-cache`) | Incremental rebuild (layer cache warm) |
 |---|---|---|
-| Python | 1.6s (1.5-1.7s) | 1.1s (1.1-1.2s) |
-| C# | 4.5s (4.4-4.8s) | 1.3s (1.2-1.4s) |
-| TypeScript | 4.6s (4.5-5.5s) | 1.0s (0.9-1.0s) |
-| Go | 6.2s (6.2-6.9s) | 1.2s (1.2-1.2s) |
-| Rust | 14.0s (12.7-14.3s) | 1.1s (1.1-1.2s) |
-| Kotlin | 66.4s (66.1-70.6s) | 1.0s (1.0-1.2s) |
+| Python | 1.26s (1.16-1.52s) | 1.0s (0.93-1.0s) |
+| C# | 4.27s (4.01-5.06s) | 1.25s (1.22-1.31s) |
+| TypeScript | 4.38s (4.07-4.86s) | 0.95s (0.95-0.97s) |
+| Go | 6.75s (6.28-7.27s) | 1.32s (1.28-1.34s) |
+| Rust | 11.59s (11.42-13.23s) | 0.98s (0.97-1.0s) |
+| Kotlin | 69.1s (65.27-71.1s) | 1.07s (1.06-1.07s) |
 
 Incremental rebuild times converge to roughly the same ~1-1.4s across all six once the Docker layer cache is warm and nothing in the source changed; the spread is in the clean build. Kotlin's clean build downloads Gradle 9.5.0 inside the build stage every time `--no-cache` is used. Rust's clean build compiles ~30 transitive crates from source every time.
 
@@ -395,14 +395,14 @@ Idiomatic multi-stage builds.
 
 | Language | Final image size | Base |
 |---|---|---|
-| Go | 19.5 MB | `gcr.io/distroless/static-debian12` |
-| Rust | 129 MB | `debian:bookworm-slim` + `ca-certificates` |
-| Python | 178 MB | `python:3.14.8-slim` |
-| C# (Native AOT) | 207 MB | `runtime-deps:10.0` + native binary, no managed runtime |
-| C# (self-contained) | 300 MB | `runtime-deps:10.0` + bundled private runtime copy |
-| C# (framework-dependent, used elsewhere in this post) | 301 MB | `runtime:10.0` (shared runtime) |
-| TypeScript | 349 MB | `node:26-bookworm-slim` |
-| Kotlin | 481 MB | `eclipse-temurin:25-jre` + shadow jar |
+| Go | 18.6 MB | `gcr.io/distroless/static-debian12` |
+| Rust | 122.9 MB | `debian:bookworm-slim` + `ca-certificates` |
+| Python | 169.9 MB | `python:3.14.8-slim` |
+| C# (Native AOT) | 197.8 MB | `runtime-deps:10.0` + native binary, no managed runtime |
+| C# (self-contained) | 286.2 MB | `runtime-deps:10.0` + bundled private runtime copy |
+| C# (framework-dependent, used elsewhere in this post) | 287.4 MB | `runtime:10.0` (shared runtime) |
+| TypeScript | 332.5 MB | `node:26-bookworm-slim` |
+| Kotlin | 459.1 MB | `eclipse-temurin:25-jre` + shadow jar |
 
 All three C# variants build from the same `Program.cs`/`wordfreq.csproj`, varying only the publish mode (`dotnet publish -c Release`, `... --self-contained true -r linux-x64`, `... -p:PublishAot=true -r linux-x64`). Framework-dependent and self-contained landed almost identical in size -- the bundled private runtime in the self-contained build is roughly the same size as the shared runtime layer it replaces. Native AOT, the smallest of the three, built successfully with only `clang`/`zlib1g-dev` added to the build stage -- no separate toolchain install was needed -- and was verified to produce byte-identical `wordfreq` output to the other two variants.
 
@@ -434,7 +434,7 @@ So this post doesn't read as a scoreboard: one commonly-cited surprise per langu
 
 {{< snippet file="rust/scenarios/footgun_borrow_checker/output.txt" lang="text" >}}
 
-`split_at_mut` proves disjointness by construction and the compiler accepts it.
+The broken version is rejected at compile time, so it never runs at all -- there's no partial execution or runtime symptom to observe, just a build failure. `split_at_mut` proves disjointness by construction and the compiler accepts it.
 
 **TypeScript: type erasure makes `as` a promise, not a check.** A type assertion compiles clean and type-checks clean, then lies at runtime with no exception at the point of the lie:
 
@@ -468,7 +468,7 @@ Targets: networked services, CLI tooling, infrastructure software. Tooling: a si
 
 ### Rust
 
-Targets: systems programming, performance-critical services, anywhere C/C++ would traditionally be reached for but memory safety matters. Tooling: Cargo, widely regarded as one of the best package-manager-plus-build-tool combinations of any language, bundled from day one. Signature strength: the borrow checker eliminates whole categories of memory-safety bugs at compile time (no use-after-free, no data races in safe code, demonstrated directly in scenario 2). Signature footgun: the borrow checker rejecting correct code (above). Costs, stated plainly: the second-slowest clean build of the six core languages measured here -- 14.0s median, behind only Kotlin's 66.4s (`results/productivity.md`) -- and real friction when the borrow checker can't see through an abstraction you know is safe.
+Targets: systems programming, performance-critical services, anywhere C/C++ would traditionally be reached for but memory safety matters. Tooling: Cargo, widely regarded as one of the best package-manager-plus-build-tool combinations of any language, bundled from day one. Signature strength: the borrow checker eliminates whole categories of memory-safety bugs at compile time (no use-after-free, no data races in safe code, demonstrated directly in scenario 2). Signature footgun: the borrow checker rejecting correct code (above). Costs, stated plainly: the second-slowest clean build of the six core languages measured here -- 11.59s median, behind only Kotlin's 69.1s (`results/productivity.md`) -- and real friction when the borrow checker can't see through an abstraction you know is safe.
 
 <!-- AUTHOR-TODO: what was familiar -->
 <!-- AUTHOR-TODO: what surprised me -->
@@ -491,7 +491,7 @@ Platform-anchored: built by JetBrains, officially adopted by Google as a first-c
 
 ### C#
 
-Platform-anchored in its history (.NET and the CLR, originally Windows-only), general-purpose and genuinely cross-platform today (.NET runs natively on Linux and macOS, and this post's own C# container runs on Linux throughout) -- a useful contrast with Kotlin's JVM anchoring and Swift's Apple anchoring, both still platform-rooted in a way C#/.NET no longer is. Tooling: the `dotnet` CLI covers build/test/publish/run with no separate package manager to choose, NuGet for packages. Signature strength: the base class library covers an unusually wide surface (HTTP, JSON, regex, concurrency primitives) without reaching for a single third-party package, demonstrated directly in this post's own CLI and every C# scenario. Signature footgun: `async void` swallowing exceptions past a try/catch that looks like it should work (above). .NET 10 is the current LTS release; Native AOT publishing produced this post's smallest C# container image (207 MB) with no toolchain beyond `clang`/`zlib1g-dev` in the build stage.
+Platform-anchored in its history (.NET and the CLR, originally Windows-only), general-purpose and genuinely cross-platform today (.NET runs natively on Linux and macOS, and this post's own C# container runs on Linux throughout) -- a useful contrast with Kotlin's JVM anchoring and Swift's Apple anchoring, both still platform-rooted in a way C#/.NET no longer is. Tooling: the `dotnet` CLI covers build/test/publish/run with no separate package manager to choose, NuGet for packages. Signature strength: the base class library covers an unusually wide surface (HTTP, JSON, regex, concurrency primitives) without reaching for a single third-party package, demonstrated directly in this post's own CLI and every C# scenario. Signature footgun: `async void` swallowing exceptions past a try/catch that looks like it should work (above). .NET 10 is the current LTS release; Native AOT publishing produced this post's smallest C# container image (197.8 MB) with no toolchain beyond `clang`/`zlib1g-dev` in the build stage.
 
 <!-- AUTHOR-TODO: what was familiar -->
 <!-- AUTHOR-TODO: what surprised me -->
@@ -542,7 +542,7 @@ A factual summary, drawn only from the recorded results above and in the compani
 | 6. Hung request | All six core CLIs cancel correctly at the configured timeout; no broken/fixed pair exists for this scenario (stated plainly, not implied) |
 | 7. CPU-heavy blocking | Node and Python asyncio block completely (0 heartbeat ticks) until offloaded to a thread; Go/Rust(multi-thread runtime)/Kotlin(Dispatchers.Default)/C# all kept ticking without the explicit fix in this run, which is a fact about this run's spare thread capacity, not proof the fix is unnecessary; the original ~8x Go-vs-Node gap was investigated and found to be Go's unused-result dead-code elimination, not a real difference |
 | 8. Untrusted JSON | Go and C# (without `required`) split the same way: silent on absence, error on wrong type; Rust (serde) and Kotlin (kotlinx.serialization) are strict on both by default, with an explicit default-value opt-in mirroring Go; TS's assertion lies through both; Python crashes on the first bad payload and never reaches the second |
-| 9-11. Productivity | See `results/productivity.md` (median of 3 runs) -- Go smallest image (19.5 MB) and fastest clean build; Kotlin largest image (481 MB) and slowest clean build (Gradle/JVM cold start); C#'s Native AOT variant (207 MB) was its smallest of three image variants tried |
+| 9-11. Productivity | See `results/productivity.md` (median of 3 runs) -- Go smallest image (18.6 MB) and fastest clean build; Kotlin largest image (459.1 MB) and slowest clean build (Gradle/JVM cold start); C#'s Native AOT variant (197.8 MB) was its smallest of three image variants tried |
 
 ## What I'd learn next
 
@@ -558,4 +558,5 @@ A factual summary, drawn only from the recorded results above and in the compani
 **Reproduce this**: clone [the repo](https://github.com/russfrith/russfrith-blog), `cd companion-code/programming-languages-then-and-now`, `docker compose up -d mockserver`, then `docker compose run --rm <language> --top N --concurrency N --timeout SECONDS /data/urls-happy.txt` for any of `python`, `go`, `rust`, `typescript`, `kotlin`, `csharp` -- those `docker compose` commands work the same on any OS. `./scripts/run-scenarios.ps1` runs every scenario against the pinned containers and diffs the result against what's committed here; `./scripts/run-acceptance.ps1` runs the shared CLI acceptance suite plus the independent coreutils-only verification. Both of those two scripts are PowerShell specifically; each language's own `scenarios/README.md` gives the plain `docker run` commands for that language's scenarios individually, which aren't PowerShell-specific.
 
 **Versions and sources**: [`VERSIONS.md`](https://github.com/russfrith/russfrith-blog/blob/master/companion-code/programming-languages-then-and-now/VERSIONS.md) (this post's version pins and lookup sources), [`PREDICTIONS.md`](https://github.com/russfrith/russfrith-blog/blob/master/companion-code/programming-languages-then-and-now/PREDICTIONS.md) (predictions recorded before each run, with mismatches flagged).
+
 

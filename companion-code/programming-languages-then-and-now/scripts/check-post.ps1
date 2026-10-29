@@ -23,6 +23,12 @@
 #      entry -- a mismatch means the committed file was hand-edited (or just
 #      not regenerated) since the manifest was last written; a missing entry
 #      means that file isn't covered by -Update at all yet.
+#   8. productivity numbers (results/productivity.json, written by
+#      scripts/measure-productivity.ps1): every line-of-code count, dependency
+#      count, build-time median/range, and image size in that file must appear
+#      somewhere in the post's "Productivity" section (H4) -- a number present
+#      in the JSON but missing from the post means the post's tables are stale
+#      relative to the last real measurement.
 #
 # Usage (from repo root):
 #   ./companion-code/programming-languages-then-and-now/scripts/check-post.ps1
@@ -173,6 +179,63 @@ if (-not (Test-Path $provenanceFile)) {
     }
 }
 
+# --- 8: productivity numbers check ---
+$productivityFile = "$companionDir/results/productivity.json"
+if (-not (Test-Path $productivityFile)) {
+    $problems += "Productivity data not found: $productivityFile (run scripts/measure-productivity.ps1)"
+} else {
+    $prod = Get-Content -Raw $productivityFile | ConvertFrom-Json
+    $postText = Get-Content -Raw $postFile
+
+    # Pull every numeric value out of productivity.json (medians, range bounds,
+    # loc counts, dependency counts, image MB) as a flat list, formatted the
+    # same way Format-Num below formats post-side numbers, so a value present
+    # in the JSON but written differently in the post (e.g. a stale "19.5" vs
+    # the JSON's current "18.6") is still caught as a real mismatch.
+    function Format-Num($n) {
+        # Match how the post renders these: integers bare, decimals to 2 places
+        # with trailing zeros trimmed (matches both "1.26" and "1.0" -> "1").
+        $r = [math]::Round([double]$n, 2)
+        return ($r.ToString("0.##", [System.Globalization.CultureInfo]::InvariantCulture))
+    }
+
+    $expectedNumbers = [System.Collections.Generic.HashSet[string]]::new()
+    foreach ($lang in $prod.buildTimes.PSObject.Properties) {
+        $bt = $lang.Value
+        [void]$expectedNumbers.Add((Format-Num $bt.cleanMedian))
+        [void]$expectedNumbers.Add((Format-Num $bt.incrementalMedian))
+        foreach ($part in ($bt.cleanRange -split '-')) { [void]$expectedNumbers.Add((Format-Num $part)) }
+        foreach ($part in ($bt.incrementalRange -split '-')) { [void]$expectedNumbers.Add((Format-Num $part)) }
+    }
+    foreach ($lang in $prod.linesOfCode.PSObject.Properties) {
+        [void]$expectedNumbers.Add((Format-Num $lang.Value))
+    }
+    foreach ($lang in $prod.dependencies.PSObject.Properties) {
+        [void]$expectedNumbers.Add((Format-Num $lang.Value.count))
+    }
+    foreach ($lang in $prod.imageSizes.PSObject.Properties) {
+        if ($lang.Value.mb) { [void]$expectedNumbers.Add((Format-Num $lang.Value.mb)) }
+        if ($lang.Value.variants) {
+            foreach ($v in $lang.Value.variants.PSObject.Properties) {
+                [void]$expectedNumbers.Add((Format-Num $v.Value.mb))
+            }
+        }
+    }
+
+    # Numbers actually present anywhere in the post (as a safety net against
+    # false positives from e.g. "55" appearing as part of an unrelated number,
+    # we require a word-boundary-ish match: not preceded/followed by a digit).
+    $postNumbers = [System.Collections.Generic.HashSet[string]]::new()
+    foreach ($m in [regex]::Matches($postText, '(?<![\d.])\d+\.?\d*(?![\d])')) {
+        [void]$postNumbers.Add((Format-Num $m.Value))
+    }
+
+    $missingFromPost = $expectedNumbers | Where-Object { -not $postNumbers.Contains($_) }
+    if ($missingFromPost) {
+        $problems += "PRODUCTIVITY STALE: these values from results/productivity.json don't appear anywhere in the post -- $($missingFromPost -join ', ')"
+    }
+}
+
 Remove-Item -Recurse -Force $buildDir -ErrorAction SilentlyContinue
 Pop-Location
 
@@ -181,6 +244,6 @@ if ($problems.Count -gt 0) {
     $problems | ForEach-Object { Write-Host "  - $_" -ForegroundColor Red }
     exit 1
 } else {
-    Write-Host "check-post.ps1: all snippet paths match git's exact casing, build succeeds, no literal shortcode/fence/raw-HTML leakage, every transcript block matches its source file verbatim, every embedded output file matches the provenance manifest." -ForegroundColor Green
+    Write-Host "check-post.ps1: all snippet paths match git's exact casing, build succeeds, no literal shortcode/fence/raw-HTML leakage, every transcript block matches its source file verbatim, every embedded output file matches the provenance manifest, productivity numbers match results/productivity.json." -ForegroundColor Green
     exit 0
 }
