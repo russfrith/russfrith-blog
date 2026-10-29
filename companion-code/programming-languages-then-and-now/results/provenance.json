@@ -3,7 +3,7 @@
     "images": [
       "python:3.14.8-slim"
     ],
-    "sha256": "e0ca1b529d8006686c12f8591f95fddb5a4b5fda971d3990a019197d372e7764",
+    "sha256": "cc67c592e2a8c7b5ec7c5331c2d54bd947cfb53445c7b54252a13f56919d5076",
     "commands": [
       "python broken.py",
       "python fixed.py"
@@ -17,7 +17,7 @@
     "images": [
       "python:3.14.8-slim"
     ],
-    "sha256": "dcfc09ff7204b01ff7ca6d2a3efa0916f37212cf356b71aacc0b48bd1740e5c3",
+    "sha256": "0a09427bc9bde513fe5e81901e17e73b7833d31f9129110007c0d7392dc4c422",
     "commands": [
       "python demo.py"
     ],
@@ -30,7 +30,7 @@
     "images": [
       "python:3.14.8-slim"
     ],
-    "sha256": "457990d4ee5f1a0d0c168bae6298c9cda7d53840a2bc5a23e629282a458ce5a1",
+    "sha256": "5aee2dfe1ca9fc955bf4558c3c18f6934350192eb7f455c0b545a627d12ce653",
     "commands": [
       "python broken.py",
       "python fixed.py"
@@ -44,7 +44,7 @@
     "images": [
       "python:3.14.8-slim"
     ],
-    "sha256": "12c38d4ecc8f065e80b66b1ef811af94a5fed768339310e013463c1eb2ddfa3b",
+    "sha256": "7c194fadea6c2962af61a9b28b7f02c1d9906fb5e4c016b5f855153c13b462e8",
     "commands": [
       "python broken.py",
       "python fixed.py"
@@ -58,7 +58,7 @@
     "images": [
       "python:3.14.8-slim"
     ],
-    "sha256": "74a4ae1206a2e4d41dcab2617a60b28088d96d7e9931babac9162c601fd2046a",
+    "sha256": "4bf211d6d3e1fb5ff394a35b3ae496e2050c11624177297df85f7c7d8d51c43d",
     "commands": [
       "python broken.py",
       "python fixed.py"
@@ -72,7 +72,7 @@
     "images": [
       "python:3.14.8-slim"
     ],
-    "sha256": "64796b92da89e7f88e66a086287c075b6fef64b69b18e0584d3a528c81bb4ed2",
+    "sha256": "2f4621da5e7f175b01cfc359894293c5abf88f7f7c7b979005c4f2c2e39a7250",
     "commands": [
       "python broken.py",
       "python fixed.py"
@@ -86,7 +86,7 @@
     "images": [
       "golang:1.26.4-bookworm"
     ],
-    "sha256": "0cc432ac08dc2d6f3126126c4b887c2b6691c5da709861f3299f1cea8cb4a40e",
+    "sha256": "c3eb0ef6a85bac489b3fca099c0fc10e91c4d1d9ab423f522121ae6a08bf1062",
     "commands": [
       "go run broken.go",
       "go run fixed.go"
@@ -100,7 +100,7 @@
     "images": [
       "golang:1.26.4-bookworm"
     ],
-    "sha256": "cf571413e848a247abc721f3e3b229e4c2c4b4b6a416b81b72da682146ae89f2",
+    "sha256": "d8cb8f1192d3b6189d8b1607906a0a32da509e54b110f5f10892d39591100ded",
     "commands": [
       "go run broken.go",
       "go run fixed.go"
@@ -114,7 +114,7 @@
     "images": [
       "golang:1.26.4-bookworm"
     ],
-    "sha256": "3bfff9cd5da5912c6738a05becef891a649ec445fdb519ffe98563ae16c7e02f",
+    "sha256": "4f5984b420d2171d89e62634ffd471169e453245d6745f08af15affe737c21f9",
     "commands": [
       "go run broken.go",
       "go run fixed.go"
@@ -128,7 +128,7 @@
     "images": [
       "golang:1.26.4-bookworm"
     ],
-    "sha256": "872092b6fa8a0f6aaecd61781e51fc9efa8927bde13c1d524f9a7d6834a6e2c6",
+    "sha256": "15ed951f2fd5117f2db849b4e95354a6fcb4cf94e42909f33b3f715f8f985e3b",
     "commands": [
       "go run broken.go",
       "go run fixed.go"
@@ -142,7 +142,7 @@
     "images": [
       "golang:1.26.4-bookworm"
     ],
-    "sha256": "b61ae5a991dfa27ac1cc9b0ca64436f4ee036201b65ea1594d4f323ab0eb7330",
+    "sha256": "3227a26a4bd0e497e563fd91d1172ad0ec4cd1616e9afb59ff5994fcdfc0e793",
     "commands": [
       "go run broken.go",
       "go run fixed.go"
@@ -156,13 +156,13 @@
     "images": [
       "golang:1.26.4-bookworm"
     ],
-    "sha256": "b5e87b01904ee132ee2b53ad095d6f3af378bb149d6a5d347266103e780a4f93",
+    "sha256": "c2840765297e935cad80a40cc2127e18b26c1c2c353621f5c16cb2b9224b5885",
     "commands": [
       "go run broken.go",
       "go run fixed.go"
     ],
     "file": "go/scenarios/footgun_nil_interface/output.txt",
-    "captured": "2026-10-29T01:02:56.8438690-04:00",
+    "captured": "2026-10-29T01:02:56.843869-04:00",
     "versionOutput": "go version go1.26.4 linux/amd64",
     "versionCommand": "go version"
   },
@@ -170,7 +170,7 @@
     "images": [
       "node:26-bookworm-slim"
     ],
-    "sha256": "d2fde14625ae0270e4ba3a90771c8e7d3906821c23bd987a8983e9603b289c10",
+    "sha256": "d8379cc71539f372373e730c6a8575386e17b1eabd1bfd41c3fb0d091de6bda1",
     "commands": [
       "node broken.ts",
       "node fixed.ts"
@@ -184,7 +184,7 @@
     "images": [
       "node:26-bookworm-slim"
     ],
-    "sha256": "f0d580dee68eccddf31ef8c22b4772c8266fc663d2041c492c68b23e4c8c2413",
+    "sha256": "ce1ee096ad207921fddff44cf8845b8b970fdf1d82eab96af996e58174264763",
     "commands": [
       "node demo.ts"
     ],
@@ -197,13 +197,13 @@
     "images": [
       "node:26-bookworm-slim"
     ],
-    "sha256": "d434e80f619757da7caf2a45b737fa4232acf97671267a4d5f05d2512c84d115",
+    "sha256": "a8ece5fbb7f1e3999b45c6b6a4838316cfd43d3e54cf6bfa3cb0c5e4aa4a5669",
     "commands": [
       "node broken.ts",
       "node fixed.ts"
     ],
     "file": "typescript/scenarios/04_ignored_errors/output.txt",
-    "captured": "2026-10-29T01:03:00.9140430-04:00",
+    "captured": "2026-10-29T01:03:00.914043-04:00",
     "versionOutput": "v26.12.1",
     "versionCommand": "node --version"
   },
@@ -211,7 +211,7 @@
     "images": [
       "node:26-bookworm-slim"
     ],
-    "sha256": "39ad99cb80e0655a6d3a69517d087239007f1103e408359c923667817887b562",
+    "sha256": "eb2fe673b7ef061beeb1c8b39e5f0145cec0818d63eb77481f65ef627b6be75a",
     "commands": [
       "node broken.ts",
       "node fixed.ts"
@@ -225,7 +225,7 @@
     "images": [
       "node:26-bookworm-slim"
     ],
-    "sha256": "ecf271a147b10dfb80fff8eed988be4b697f2509c555df4d93a0d86f31078406",
+    "sha256": "287aad94e4b0d5696632fe1f8a5aef88cfa9c465842e95667e55096462b4f559",
     "commands": [
       "node broken.ts",
       "node fixed.ts"
@@ -239,7 +239,7 @@
     "images": [
       "node:26-bookworm-slim"
     ],
-    "sha256": "20e6a58616950a275d2f592af7800d0c3ab76cdab4af359ee3f3f381d21e26dc",
+    "sha256": "ca93299dd22d78ed3c0c4d15fa2e92ad0c3397fc0a55cb51ac8f25c00336ebd5",
     "commands": [
       "node broken.ts",
       "node fixed.ts"
@@ -253,7 +253,7 @@
     "images": [
       "gcc:16.2"
     ],
-    "sha256": "e8b954a5e87c4bb362576da7a9e391a3502cba523f73f2705c89858e65f8e542",
+    "sha256": "fd9f3dba23a209d011d7fdf02c2cac7251be66aeffb3887b33dbfa3896261bbc",
     "commands": [
       "gcc -O0 -g -Wall broken.c -o broken",
       "./broken",
@@ -269,7 +269,7 @@
     "images": [
       "gcc:16.2"
     ],
-    "sha256": "baf5db5ec3e94a1a68dad522adc73b3f9cce374d8337679e58a190863c963bbd",
+    "sha256": "21dc9e23f70ae55840c7cc996b93ecfa03b77e9987b5918909faf07b83e6b2b0",
     "commands": [
       "gcc -O0 -g -Wall broken.c -o broken",
       "./broken",
@@ -285,7 +285,7 @@
     "images": [
       "gcc:16.2"
     ],
-    "sha256": "f7959cab2f231217337910e39568fab0bd573459adcf179532b6756c140e9f47",
+    "sha256": "6cda21059f5bb9774aeafa47476fc9183b8c042c177979d77cf1b2799a64182c",
     "commands": [
       "gcc -O0 -g -Wall broken.c -o broken",
       "./broken",
@@ -301,7 +301,7 @@
     "images": [
       "gcc:16.2"
     ],
-    "sha256": "282ec3de8edd4605699b85cba9b1be2f3665a0285c5fe061b7348a0e3376b683",
+    "sha256": "041286a96281ae8c076202c011fdd1624bbea2521048961574dc94d27e4deed8",
     "commands": [
       "gcc -O0 -g -Wall broken.c -o broken",
       "./broken",
@@ -319,7 +319,7 @@
     "images": [
       "rust:1.96.1-slim-bookworm"
     ],
-    "sha256": "fbf233edc5c3131c10be5f457d5a6c93f9e2444e848f7be80b08f46a911ead0d",
+    "sha256": "fdb7a08404b42a7329233468557124a78a240d81d3ef30efda715f766e8c182c",
     "commands": [
       "rustc -O broken.rs -o broken && ./broken",
       "rustc -O fixed.rs -o fixed && ./fixed"
@@ -333,7 +333,7 @@
     "images": [
       "rust:1.96.1-slim-bookworm"
     ],
-    "sha256": "af6784b4e0d8485446abcd18b325cb17efe9d1d24a0e5ea937efca5de7baefe0",
+    "sha256": "dc4fd5c8e92e2179fb47e78ce5f60b085026d7e025860c59b1cef0072e19a996",
     "commands": [
       "rustc broken.rs -o broken_debug && ./broken_debug   (debug profile: overflow-checks on)",
       "rustc -O broken.rs -o broken && ./broken   (release-style profile: overflow-checks off)",
@@ -348,7 +348,7 @@
     "images": [
       "rust:1.96.1-slim-bookworm"
     ],
-    "sha256": "c3194ed9d4b66e3b726c137fc8e311cb3f3ba768df128fa94ede89b5cdf22a91",
+    "sha256": "4797cdf03afee2a79b32788ff447926473f3b8cab07449e5912c58ba76639eb6",
     "commands": [
       "rustc -O broken.rs -o broken && ./broken",
       "rustc -O fixed.rs -o fixed && ./fixed"
@@ -362,13 +362,13 @@
     "images": [
       "rust:1.96.1-slim-bookworm"
     ],
-    "sha256": "7fdd4bcc4d9e19d9b7b6372d9f5dbb1e7e7c59a75f1fd7f34a4446997bab1135",
+    "sha256": "e9abaad364aad3b869b3591049e3b4175be9ecb2b3fdf96a67f6a72887de42cd",
     "commands": [
       "rustc -O broken.rs -o broken && ./broken",
       "rustc -O fixed.rs -o fixed && ./fixed"
     ],
     "file": "rust/scenarios/05_resource_cleanup/output.txt",
-    "captured": "2026-10-29T01:03:24.9139210-04:00",
+    "captured": "2026-10-29T01:03:24.913921-04:00",
     "versionOutput": "rustc 1.96.1 (31fca3adb 2026-06-26)",
     "versionCommand": "rustc --version"
   },
@@ -376,7 +376,7 @@
     "images": [
       "rust:1.96.1-slim-bookworm"
     ],
-    "sha256": "043e50b2cffa32c0563c72531decc506b3cd737281227c30913a8fedfe590f72",
+    "sha256": "0c31d3ce9fa3818fafa6e16418b3e6956dad87d5d5e2f677b17d59e2b67dc235",
     "commands": [
       "cargo build --release",
       "./target/release/strict",
@@ -391,7 +391,7 @@
     "images": [
       "rust:1.96.1-slim-bookworm"
     ],
-    "sha256": "98954bec3c2bcb96ae034779bdc7b21c3c5ae248da542307f6a0640c78137794",
+    "sha256": "c2a90406757f0de74ef66c2a327bcf3ea943d8beca2588c9578a4717ff1d8334",
     "commands": [
       "rustc broken.rs -o broken",
       "rustc fixed.rs -o fixed && ./fixed"
@@ -405,7 +405,7 @@
     "images": [
       "rust:1.96.1-slim-bookworm"
     ],
-    "sha256": "a60eda140f2a1e2d1867347e82777f2e47fc7ae166b9ab8a6e9708cca0f9a3a4",
+    "sha256": "3e7f339f6b76e206807102918d35f3c8809bde366ad57442a806f23d24992f31",
     "commands": [
       "rustc compile_reject_plain_mut.rs -o out1",
       "rustc compile_reject_rc.rs -o out2"
@@ -419,7 +419,7 @@
     "images": [
       "kotlinc-2.4.0"
     ],
-    "sha256": "269a6a49f06a146189adf723387d18938d0ceb39db8863eae2a00bdafccaf2c4",
+    "sha256": "423ebd81c19838f043a5541fbb612597316e07400abfd854c73ea315e12a1a40",
     "commands": [
       "kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar",
       "kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar"
@@ -433,7 +433,7 @@
     "images": [
       "kotlinc-2.4.0"
     ],
-    "sha256": "624afb6add4875e6228694e0e57584b66bed1c3e7e6a988899b85b338b1f110a",
+    "sha256": "2075b6e41d26ff1192b389b24e1bd666874dae26247cea29cfd99fa2a4dc539b",
     "commands": [
       "kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar",
       "kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar"
@@ -447,7 +447,7 @@
     "images": [
       "kotlinc-2.4.0"
     ],
-    "sha256": "32ab38fa2a8d73d4b70b77044f505c1661e3b5a5f654145a7b4933a2b4caa7d7",
+    "sha256": "0a713b52193713d0eefab29625e31baa455c759b3b60e6825a79c6ccc86a6317",
     "commands": [
       "kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar",
       "kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar"
@@ -461,7 +461,7 @@
     "images": [
       "kotlinc-2.4.0"
     ],
-    "sha256": "cf74e1ef176a331726b4bf4480e6a005fd879c4dc11ed25ac812b4798ceefc3a",
+    "sha256": "fa413104ff1402ded8a04f7e388a323467436e7ae2f0266c0db75649d560bd03",
     "commands": [
       "kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar",
       "kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar"
@@ -475,7 +475,7 @@
     "images": [
       "kotlinc-2.4.0"
     ],
-    "sha256": "cd30e5aa67d81528f023d287f67d5efa8b31bf35bed9335264f6ec81bce877d8",
+    "sha256": "a853128e3866c62f6f94efd36dfb028111c30bb5d8ee3033c3607f540f50a805",
     "commands": [
       "kotlinc Broken.kt -include-runtime -d broken.jar",
       "java -jar broken.jar",
@@ -490,7 +490,7 @@
     "images": [
       "kotlinc-2.4.0"
     ],
-    "sha256": "849d069d9d66fc65579d3aa5fc758afbc6508477d138ac67406a482012364442",
+    "sha256": "904331775f677e06422e7868f5c6db2cac16ff5d1c2868af75ed0acc5e932f17",
     "commands": [
       "kotlinc -Xplugin=serialization-plugin.jar -cp \"serialization-core.jar:serialization-json.jar\" Strict.kt -include-runtime -d strict.jar",
       "java -cp \"strict.jar:serialization-core.jar:serialization-json.jar\" StrictKt",
@@ -506,7 +506,7 @@
     "images": [
       "mcr.microsoft.com/dotnet/sdk:10.0"
     ],
-    "sha256": "47cd4e08154077e82ec19dc467cfbe84a71bac101e3c0edfc808d677bf7af58d",
+    "sha256": "d19dc6ecb36fc457462745db0c9c45392dff83fb54fe158171f744d698abc01f",
     "commands": [
       "dotnet run   (broken/)",
       "dotnet run   (fixed/)",
@@ -536,7 +536,7 @@
     "images": [
       "mcr.microsoft.com/dotnet/sdk:10.0"
     ],
-    "sha256": "56f2bc92e44fd67701c35909bd26eba759d5aa98437fcdd0af6155a58a221bf3",
+    "sha256": "6ff91971d4598ae79f80b6001046ed1d39a88b47930b109557efaf2cf3839651",
     "commands": [
       "dotnet run   (broken/)",
       "dotnet run   (fixed/)"
@@ -564,7 +564,7 @@
     "images": [
       "mcr.microsoft.com/dotnet/sdk:10.0"
     ],
-    "sha256": "bf536c97379f17c875021233deed840b435ff867338dd5f0cc08a3a53780253d",
+    "sha256": "ccf4e6fc0da1d692a748aff3571327bd4b8d228c537ea567261c4a0389398864",
     "commands": [
       "dotnet run   (broken/ -- plain record, no `required`)",
       "dotnet run   (fixed/ -- `required int Count`)"
@@ -578,7 +578,7 @@
     "images": [
       "mcr.microsoft.com/dotnet/sdk:10.0"
     ],
-    "sha256": "70bac0bb66cbaa8d57c71438a74364e2261e57b6174e842d05eb1ccae07c0d9b",
+    "sha256": "3087b5606e502d59709edf46a9647ee9bd34695f3a5faf9f487d4d438588ff5e",
     "commands": [
       "dotnet run   (broken/)",
       "dotnet run   (fixed/)"
@@ -592,7 +592,7 @@
     "images": [
       "gcc:16.2"
     ],
-    "sha256": "1fe5ee09735eaa971235827a0b6614520e3018b709fb79492805a91aa6365d50",
+    "sha256": "8242bb7f993f70e343d49daba55d8662ca1017c40f4e8008520999bda8368720",
     "commands": [
       "gcc -O0 -g -Wall broken.c -o broken -lpthread && ./broken",
       "lost an update in 5 of 5 runs (shown: attempt 1)",
@@ -622,14 +622,14 @@
     "images": [
       "kotlinc-2.4.0"
     ],
-    "sha256": "ba55bd4a603d23862329efe6316e81954cd26bb7e47bd48b2c13b8b1cc650acf",
+    "sha256": "223cc820bfaa1248a73e1be8010f0d153e771c37005b9af4649521f07f4e8922",
     "commands": [
       "kotlinc Broken.kt -include-runtime -d broken.jar && java -jar broken.jar",
       "lost an update in 5 of 5 runs (shown: attempt 1)",
       "kotlinc Fixed.kt -include-runtime -d fixed.jar && java -jar fixed.jar"
     ],
     "file": "kotlin/scenarios/02_data_race/output.txt",
-    "captured": "2026-10-29T01:06:50.6721110-04:00",
+    "captured": "2026-10-29T01:06:50.672111-04:00",
     "versionOutput": "info: kotlinc-jvm 2.4.0 (JRE 25.0.4.1+1-LTS)\r\nopenjdk version \"25.0.4.1\" 2026-08-18 LTS\r\nOpenJDK Runtime Environment Temurin-25.0.4.1+1 (build 25.0.4.1+1-LTS)\r\nOpenJDK 64-Bit Server VM Temurin-25.0.4.1+1 (build 25.0.4.1+1-LTS, mixed mode, sharing)",
     "versionCommand": "kotlinc -version 2>&1; java -version 2>&1"
   },
@@ -637,7 +637,7 @@
     "images": [
       "python:3.14.8-slim"
     ],
-    "sha256": "258835c16aa0d4e91a6fcff9eb7d9983daf5606a42bc77a6ce78ec9a9c01bbda",
+    "sha256": "5a7171fdc94642317784c42676c3450e63fb8632e480ff97adddd5d9f9c2454d",
     "commands": [
       "python broken.py",
       "lost an update in 5 of 5 runs (shown: attempt 1)",
@@ -652,14 +652,14 @@
     "images": [
       "node:26-bookworm-slim"
     ],
-    "sha256": "5e943f755033c9ea02e21450f5d354ea6efc003dec489e13d1ccb86f1e007200",
+    "sha256": "0cdd8d81912001c883d7a2126887d57d33dbbf20b23847d1d5b32c412c5b6d51",
     "commands": [
       "node broken.ts",
       "lost an update in 4 of 5 runs (shown: attempt 1)",
       "node fixed.ts"
     ],
     "file": "typescript/scenarios/02_data_race/output.txt",
-    "captured": "2026-10-29T01:06:58.1207300-04:00",
+    "captured": "2026-10-29T01:06:58.12073-04:00",
     "versionOutput": "v26.12.1",
     "versionCommand": "node --version"
   },
@@ -667,7 +667,7 @@
     "images": [
       "golang:1.26.4-bookworm"
     ],
-    "sha256": "8d03daee36eb02261a39c3fa384300d16fd48f252692da8ce1977c25a38658f0",
+    "sha256": "8e08309577d5712dbb4b7fee20c57c803461a241ee4a2f9805523f8b7486839d",
     "commands": [
       "go run -race broken.go",
       "lost an update in 5 of 5 runs (shown: attempt 1)",
@@ -683,7 +683,7 @@
     "images": [
       "rust:1.96.1-slim-bookworm"
     ],
-    "sha256": "47397376e1e9770be7222ffd0688821cad416f6141b32af608e153db99b08ff0",
+    "sha256": "f81712747c1346ef905d33cd39f42de7fbde0a4d0cb123d8806bff2161257a6e",
     "commands": [
       "rustc -O broken.rs -o broken && ./broken",
       "lost an update in 5 of 5 runs (shown: attempt 1)",
@@ -698,12 +698,12 @@
     "images": [
       "golang:1.26.4-bookworm"
     ],
-    "sha256": "6cb1f40ace20f60cd064137eaae3ed160cbfb1b1cc6a050d8bbe09649d298b37",
+    "sha256": "ca16e284d4069912c8c9bc55c3fe177386a56e8ffe47a43a708c03bb5f6f916e",
     "commands": [
       "go run demo.go"
     ],
     "file": "go/scenarios/07_cpu_heavy_blocking/output.txt",
-    "captured": "2026-10-29T01:07:41.8253290-04:00",
+    "captured": "2026-10-29T01:07:41.825329-04:00",
     "versionOutput": "go version go1.26.4 linux/amd64",
     "versionCommand": "go version"
   },
@@ -711,7 +711,7 @@
     "images": [
       "python:3.14.8-slim"
     ],
-    "sha256": "c438775c7fb2ff3bccbc525b130df1c54da5f774efe7ba0f64262042e28d27c7",
+    "sha256": "c5e81a62cc0fc7e1192e0e63a560da02360431d2a236156b15ee9e2e7b24e8dd",
     "commands": [
       "python broken.py",
       "python fixed.py"
@@ -725,7 +725,7 @@
     "images": [
       "rust:1.96.1-slim-bookworm"
     ],
-    "sha256": "6a4ef242fa4255f1b7bb421e9020f244b355c12b676609df941ebdc2b8c6791d",
+    "sha256": "90fa16bf3867338c47b32b59e4a7625f108c9a4a82d5bf2cfb86fc4b593ef8cd",
     "commands": [
       "cargo build --release",
       "`./target/release/current_thread_broken`   (#[tokio::main(flavor = \"current_thread\")])",
@@ -741,7 +741,7 @@
     "images": [
       "kotlinc-2.4.0"
     ],
-    "sha256": "c784b3020521c0db4a3f3241e0020ff018959e693d6945396a964c24d9ffad4c",
+    "sha256": "0fa63ab0e86f678e25ed5cf59c7b931cf78c9b5cd7659a1c290cd44573312903",
     "commands": [
       "kotlinc -cp coroutines.jar SingleThreadBroken.kt -include-runtime -d single.jar",
       "kotlinc -cp coroutines.jar DefaultDispatcherBroken.kt -include-runtime -d default.jar",
@@ -759,7 +759,7 @@
     "images": [
       "mcr.microsoft.com/dotnet/sdk:10.0"
     ],
-    "sha256": "2fbdae83dea10827c8bcd14085572e51ca6a2afeacb0b02580b34c3cc984bfc5",
+    "sha256": "945106ef5c811963dc0d360d05aa957cd703d10db563db3015230b51bf7b7ac2",
     "commands": [
       "dotnet run   (broken/ -- CpuBound() called directly, no Task.Run; Debug config, dotnet run's default)",
       "dotnet run   (fixed/ -- Task.Run; Debug config)",
@@ -775,7 +775,7 @@
     "images": [
       "node:26-bookworm-slim"
     ],
-    "sha256": "412614d1588456c390e34ab7eb1fb5dcbd3ef8f17351f8a026aec10adef99d4b",
+    "sha256": "e05b6d896105f8367d28e4db2c06f6f81f0ac98e634ac98b17434f434f7bbb6b",
     "commands": [
       "node broken.ts",
       "node fixed.ts"
@@ -789,7 +789,7 @@
     "images": [
       "docker compose (python/go/rust/typescript/kotlin/csharp services)"
     ],
-    "sha256": "7b5c50bfdd997abe3c36c0a81db9085c90fc10de8bd6f0847b5eef4724cab4bd",
+    "sha256": "df77b356b16b99668ceeada3e71a0d4d942f57438e320028dcafb2fdafee3403",
     "commands": [
       "docker compose run --rm python --top 5 --concurrency 1 --timeout 2 /data/urls-hang.txt",
       "docker compose run --rm go --top 5 --concurrency 1 --timeout 2 /data/urls-hang.txt",
@@ -802,5 +802,19 @@
     "captured": "2026-10-29T01:09:16.5115521-04:00",
     "versionOutput": null,
     "versionCommand": null
+  },
+  {
+    "file": "go/scenarios/07_cpu_heavy_blocking/dead_code_evidence_output.txt",
+    "commands": [
+      "go build -a -gcflags=-S -o unused_result_evidence unused_result_evidence.go   (assembly for main.main, trimmed to the loop and its boundaries)",
+      "./unused_result_evidence"
+    ],
+    "images": [
+      "golang:1.26.4-bookworm"
+    ],
+    "versionCommand": "go version",
+    "versionOutput": "go version go1.26.4 linux/amd64",
+    "captured": "2026-10-29T01:50:52.9551661-04:00",
+    "sha256": "68be13075e7c34f76b4419e54b9a9c9fe81806d4294dcd34a5f5fa8658d2c173"
   }
 ]

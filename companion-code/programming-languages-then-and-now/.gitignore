@@ -14,6 +14,9 @@ target/
 *.exe
 .hugo_build_test/
 
+# Go: the one scenario that uses `go build` instead of `go run`
+go/scenarios/07_cpu_heavy_blocking/unused_result_evidence
+
 # Rust: cargo build output only (never matches src/bin/, which is source)
 rust/**/target/
 rust/scenarios/*/broken

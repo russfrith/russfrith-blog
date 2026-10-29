@@ -157,7 +157,16 @@ if (-not (Test-Path $provenanceFile)) {
             $problems += "PROVENANCE MISSING: '$f' is embedded in the post but has no entry in results/provenance.json"
             continue
         }
-        $actualHash = (Get-FileHash -Path $fullPath -Algorithm SHA256).Hash.ToLower()
+        # Hash LF-normalized bytes, matching how run-scenarios.ps1 -Update computes
+        # this (and how git itself stores/restores these files) -- a plain
+        # Get-FileHash would mismatch after a git checkout CRLF-normalizes a file
+        # that was originally written with CRLF line endings.
+        $rawForHash = Get-Content -Path $fullPath -Raw
+        $normalizedForHash = $rawForHash -replace "`r`n", "`n"
+        $bytesForHash = [System.Text.Encoding]::UTF8.GetBytes($normalizedForHash)
+        $shaForHash = [System.Security.Cryptography.SHA256]::Create()
+        $actualHash = [System.BitConverter]::ToString($shaForHash.ComputeHash($bytesForHash)).Replace("-", "").ToLower()
+        $shaForHash.Dispose()
         if ($actualHash -ne $manifestByFile[$f].sha256) {
             $problems += "PROVENANCE MISMATCH: '$f' sha256 does not match results/provenance.json -- committed file differs from what was last captured"
         }

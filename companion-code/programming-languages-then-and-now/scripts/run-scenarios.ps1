@@ -334,6 +334,18 @@ $scenarios = @(
         S "go/scenarios/08_untrusted_json" $go "go run broken.go$exit0" $true
         S "go/scenarios/08_untrusted_json" $go "go run fixed.go$exit0" $true
     )}
+    # H3: real compiler/timing evidence for scenario 7's dead-code-elimination
+    # investigation (see go/scenarios/07_cpu_heavy_blocking/unused_result_evidence.go
+    # and NOTES.md), replacing the hand-pasted assembly that used to live in
+    # NOTES.md. -a forces a real recompile each run (go's build cache otherwise
+    # skips re-emitting -gcflags=-S output on a cache hit). Elide keeps just the
+    # function prologue through the empty counting loop (the actual evidence --
+    # no SQRTSD/ADDSD instructions) and the epilogue; the Fprintf/morestack
+    # plumbing in between is omitted.
+    @{ Name="go/07_dead_code_evidence"; Expected="go/scenarios/07_cpu_heavy_blocking/dead_code_evidence_output.txt"; Steps=@(
+        (S "go/scenarios/07_cpu_heavy_blocking" $go 'go build -a -gcflags=-S -o unused_result_evidence unused_result_evidence.go 2>&1 1>/dev/null | sed -n "/^main\.main STEXT/,+45p"' $false "go build -a -gcflags=-S -o unused_result_evidence unused_result_evidence.go   (assembly for main.main, trimmed to the loop and its boundaries)" @{Head=21; Tail=3})
+        (S "go/scenarios/07_cpu_heavy_blocking" $go "./unused_result_evidence")
+    )}
     @{ Name="go/footgun_nil_interface"; Expected="go/scenarios/footgun_nil_interface/output.txt"; Steps=@(
         S "go/scenarios/footgun_nil_interface" $go "go run broken.go$exit0"
         S "go/scenarios/footgun_nil_interface" $go "go run fixed.go$exit0"
@@ -510,8 +522,24 @@ $updateTargets = $scenarios | ForEach-Object { @{ Name = $_.Name; Scenario = $_ 
 # how it was produced, so check-post.ps1 can later verify the committed file
 # still matches what was actually captured.
 $provenanceEntries = @()
+function Get-NormalizedHash($path) {
+    # Git normalizes these text files to LF on commit/checkout (see the CRLF
+    # warnings PowerShell's own git commands print); hash LF-normalized bytes
+    # here too, so the manifest's sha256 matches the file as git will actually
+    # store/restore it, not just as this script happened to write it moments ago.
+    $raw = Get-Content -Path $path -Raw
+    $normalized = $raw -replace "`r`n", "`n"
+    $bytes = [System.Text.Encoding]::UTF8.GetBytes($normalized)
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        return [System.BitConverter]::ToString($sha.ComputeHash($bytes)).Replace("-", "").ToLower()
+    } finally {
+        $sha.Dispose()
+    }
+}
+
 function Add-Provenance($expected, $expectedFile, $commands, $images, $versionCommand, $versionRaw) {
-    $hash = (Get-FileHash -Path $expectedFile -Algorithm SHA256).Hash.ToLower()
+    $hash = Get-NormalizedHash $expectedFile
     $script:provenanceEntries += @{
         file = $expected
         commands = @($commands)

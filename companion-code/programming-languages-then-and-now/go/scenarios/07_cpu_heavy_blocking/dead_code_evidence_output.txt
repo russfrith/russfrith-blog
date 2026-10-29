@@ -1,0 +1,31 @@
+$ go build -a -gcflags=-S -o unused_result_evidence unused_result_evidence.go   (assembly for main.main, trimmed to the loop and its boundaries)
+main.main STEXT size=138 args=0x0 locals=0x50 funcid=0x0 align=0x0
+	0x0000 00000 (/src/unused_result_evidence.go:24)	TEXT	main.main(SB), ABIInternal, $80-0
+	0x0000 00000 (/src/unused_result_evidence.go:24)	CMPQ	SP, 16(R14)
+	0x0004 00004 (/src/unused_result_evidence.go:24)	PCDATA	$0, $-2
+	0x0004 00004 (/src/unused_result_evidence.go:24)	JLS	125
+	0x0006 00006 (/src/unused_result_evidence.go:24)	PCDATA	$0, $-1
+	0x0006 00006 (/src/unused_result_evidence.go:24)	PUSHQ	BP
+	0x0007 00007 (/src/unused_result_evidence.go:24)	MOVQ	SP, BP
+	0x000a 00010 (/src/unused_result_evidence.go:24)	SUBQ	$72, SP
+	0x000e 00014 (/src/unused_result_evidence.go:24)	FUNCDATA	$0, gclocals·J26BEvPExEQhJvjp9E8Whg==(SB)
+	0x000e 00014 (/src/unused_result_evidence.go:24)	FUNCDATA	$1, gclocals·5VlIHulmjZXLybuW+4WJgQ==(SB)
+	0x000e 00014 (/src/unused_result_evidence.go:24)	FUNCDATA	$2, main.main.stkobj(SB)
+	0x000e 00014 (/src/unused_result_evidence.go:26)	PCDATA	$1, $0
+	0x000e 00014 (/src/unused_result_evidence.go:26)	CALL	time.Now(SB)
+	0x0013 00019 (<unknown line number>)	NOP
+	0x0013 00019 (/src/unused_result_evidence.go:27)	XORL	DX, DX
+	0x0015 00021 (/src/unused_result_evidence.go:18)	JMP	32
+	0x0017 00023 (/src/unused_result_evidence.go:18)	INCQ	DX
+	0x001a 00026 (/src/unused_result_evidence.go:18)	NOP
+	0x0020 00032 (/src/unused_result_evidence.go:18)	CMPQ	DX, $2000000000
+	0x0027 00039 (/src/unused_result_evidence.go:18)	JLT	23
+# ... (22 lines omitted)
+	0x007d 00125 (/src/unused_result_evidence.go:24)	PCDATA	$0, $-2
+	0x007d 00125 (/src/unused_result_evidence.go:24)	NOP
+	0x0080 00128 (/src/unused_result_evidence.go:24)	CALL	runtime.morestack_noctxt(SB)
+
+$ ./unused_result_evidence
+elapsed: 255.35819ms
+
+Toolchain: go1.26.4 (golang:1.26.4-bookworm)
