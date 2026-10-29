@@ -1,186 +1,261 @@
 {
-  "linesOfCode": {
-    "csharp": 84,
-    "rust": 93,
-    "kotlin": 78,
-    "go": 130,
-    "typescript": 106,
-    "python": 55
-  },
-  "buildTimes": {
-    "typescript": {
-      "cleanRuns": [
-        4.95,
-        4.9,
-        4.43
-      ],
-      "incrementalRuns": [
-        0.95,
-        0.94,
-        0.99
-      ],
-      "incrementalRange": "0.94-0.99",
-      "cleanRange": "4.43-4.95",
-      "incrementalMedian": 0.95,
-      "cleanMedian": 4.9
-    },
-    "rust": {
-      "cleanRuns": [
-        12.79,
-        11.22,
-        11.36
-      ],
-      "incrementalRuns": [
-        1.13,
-        1.14,
-        1.2
-      ],
-      "incrementalRange": "1.13-1.2",
-      "cleanRange": "11.22-12.79",
-      "incrementalMedian": 1.14,
-      "cleanMedian": 11.36
-    },
-    "go": {
-      "cleanRuns": [
-        6.54,
-        6.02,
-        6.06
-      ],
-      "incrementalRuns": [
-        1.38,
-        1.3,
-        1.32
-      ],
-      "incrementalRange": "1.3-1.38",
-      "cleanRange": "6.02-6.54",
-      "incrementalMedian": 1.32,
-      "cleanMedian": 6.06
-    },
-    "kotlin": {
-      "cleanRuns": [
-        69.37,
-        74.4,
-        73.66
-      ],
-      "incrementalRuns": [
-        1.0,
-        1.0,
-        1.22
-      ],
-      "incrementalRange": "1-1.22",
-      "cleanRange": "69.37-74.4",
-      "incrementalMedian": 1.0,
-      "cleanMedian": 73.66
-    },
-    "python": {
-      "cleanRuns": [
-        1.46,
-        1.4,
-        1.31
-      ],
-      "incrementalRuns": [
-        0.95,
-        0.99,
-        0.97
-      ],
-      "incrementalRange": "0.95-0.99",
-      "cleanRange": "1.31-1.46",
-      "incrementalMedian": 0.97,
-      "cleanMedian": 1.4
-    },
-    "csharp": {
-      "cleanRuns": [
-        4.66,
-        4.0,
-        3.96
-      ],
-      "incrementalRuns": [
-        1.17,
-        1.17,
-        1.21
-      ],
-      "incrementalRange": "1.17-1.21",
-      "cleanRange": "3.96-4.66",
-      "incrementalMedian": 1.17,
-      "cleanMedian": 4.0
-    }
-  },
-  "dependencies": {
-    "csharp": {
-      "note": "BCL only",
-      "transitiveMethod": "dotnet restore; entries in obj/project.assets.json's libraries map",
-      "count": 0,
-      "transitiveCount": 0
-    },
-    "rust": {
-      "note": "ureq, clap",
-      "transitiveMethod": "cargo generate-lockfile; [[package]] entries in Cargo.lock, root excluded (direct + transitive)",
-      "count": 2,
-      "transitiveCount": 56
-    },
-    "kotlin": {
-      "note": "kotlinx-coroutines-core",
-      "transitiveMethod": "gradle dependencies --configuration runtimeClasspath; unique group:artifact pairs, (c) constraint lines excluded",
-      "count": 1,
-      "transitiveCount": 5
-    },
-    "go": {
-      "note": "stdlib only",
-      "count": 0
-    },
-    "typescript": {
-      "note": "0 runtime; 2 dev-only (typescript, @types/node)",
-      "transitiveMethod": "npm install --package-lock-only; entries in package-lock.json's packages map, root excluded (direct + transitive)",
-      "count": 0,
-      "devCount": 2,
-      "transitiveCount": 3
-    },
-    "python": {
-      "note": "stdlib only",
-      "count": 0
-    }
-  },
+  "capturedAt": "2026-10-29T18:28:24.8305411-04:00",
   "imageSizes": {
-    "typescript": {
-      "mb": 332.5,
-      "bytes": 348659776
-    },
-    "rust": {
-      "mb": 122.9,
-      "bytes": 128900077
-    },
-    "go": {
-      "mb": 18.6,
-      "bytes": 19540131
-    },
     "kotlin": {
-      "mb": 459.1,
-      "bytes": 481425852
+      "bytes": 481425857,
+      "mb": 459.1
     },
     "python": {
-      "mb": 169.9,
-      "bytes": 178180216
+      "bytes": 178180216,
+      "mb": 169.9
+    },
+    "go": {
+      "bytes": 19540134,
+      "mb": 18.6
+    },
+    "rust": {
+      "bytes": 128896195,
+      "mb": 122.9
+    },
+    "typescript": {
+      "bytes": 348659780,
+      "mb": 332.5
     },
     "csharp": {
       "variants": {
+        "framework-dependent": {
+          "bytes": 301396179,
+          "mb": 287.4
+        },
         "self-contained": {
-          "mb": 286.2,
-          "bytes": 300089750
+          "bytes": 300089750,
+          "mb": 286.2
         },
         "native-aot": {
-          "mb": 197.8,
-          "bytes": 207427101
-        },
-        "framework-dependent": {
-          "mb": 287.4,
-          "bytes": 301396179
+          "bytes": 207427101,
+          "mb": 197.8
         }
       }
     }
   },
   "toolVersions": {
-    "docker": "Docker version 29.8.0, build 88096ef",
-    "compose": "Docker Compose version v5.5.1"
+    "compose": "Docker Compose version v5.5.1",
+    "docker": "Docker version 29.8.0, build 88096ef"
   },
-  "capturedAt": "2026-10-29T03:01:07.0972998-04:00"
+  "linesOfCode": {
+    "csharp": 84,
+    "go": 130,
+    "kotlin": 78,
+    "python": 55,
+    "rust": 93,
+    "typescript": 106
+  },
+  "buildTimes": {
+    "kotlin": {
+      "noChangeRebuildRuns": [
+        1.04,
+        1.03,
+        1.08
+      ],
+      "cleanMedian": 92.2,
+      "noChangeRebuildRange": "1.03-1.08",
+      "warmCacheRebuildCommands": [
+        "cd /work && export PATH=/work/.gradle-dist/gradle-9.5.0/bin:$PATH && echo '// warm-cache-rebuild-marker-1' >> src/main/kotlin/Wordfreq.kt && gradle shadowJar --no-daemon",
+        "cd /work && export PATH=/work/.gradle-dist/gradle-9.5.0/bin:$PATH && echo '// warm-cache-rebuild-marker-2' >> src/main/kotlin/Wordfreq.kt && gradle shadowJar --no-daemon",
+        "cd /work && export PATH=/work/.gradle-dist/gradle-9.5.0/bin:$PATH && echo '// warm-cache-rebuild-marker-3' >> src/main/kotlin/Wordfreq.kt && gradle shadowJar --no-daemon"
+      ],
+      "warmCacheRebuildMedian": 11.39,
+      "noChangeRebuildMedian": 1.04,
+      "cleanRange": "84.02-95.69",
+      "warmCacheRebuildRange": "11.2-11.63",
+      "warmCacheRebuildRuns": [
+        11.39,
+        11.2,
+        11.63
+      ],
+      "cleanRuns": [
+        92.2,
+        95.69,
+        84.02
+      ]
+    },
+    "python": {
+      "noChangeRebuildRuns": [
+        1.09,
+        1.12,
+        1.13
+      ],
+      "cleanMedian": 1.29,
+      "noChangeRebuildRange": "1.09-1.13",
+      "warmCacheRebuildCommands": [
+        "cd /work && echo '# warm-cache-rebuild-marker-1' >> wordfreq.py && python wordfreq.py --help",
+        "cd /work && echo '# warm-cache-rebuild-marker-2' >> wordfreq.py && python wordfreq.py --help",
+        "cd /work && echo '# warm-cache-rebuild-marker-3' >> wordfreq.py && python wordfreq.py --help"
+      ],
+      "warmCacheRebuildMedian": 0.79,
+      "noChangeRebuildMedian": 1.12,
+      "cleanRange": "1.23-1.47",
+      "warmCacheRebuildRange": "0.78-0.8",
+      "warmCacheRebuildRuns": [
+        0.8,
+        0.79,
+        0.78
+      ],
+      "warmCacheRebuildNote": "Python has no compile step; this number is a process start (interpreter + argparse), not a rebuild.",
+      "cleanRuns": [
+        1.23,
+        1.47,
+        1.29
+      ]
+    },
+    "go": {
+      "noChangeRebuildRuns": [
+        1.22,
+        1.25,
+        1.46
+      ],
+      "cleanMedian": 6.81,
+      "noChangeRebuildRange": "1.22-1.46",
+      "warmCacheRebuildCommands": [
+        "cd /work && echo '// warm-cache-rebuild-marker-1' >> wordfreq.go && CGO_ENABLED=0 go build -o bin/wordfreq ./wordfreq.go",
+        "cd /work && echo '// warm-cache-rebuild-marker-2' >> wordfreq.go && CGO_ENABLED=0 go build -o bin/wordfreq ./wordfreq.go",
+        "cd /work && echo '// warm-cache-rebuild-marker-3' >> wordfreq.go && CGO_ENABLED=0 go build -o bin/wordfreq ./wordfreq.go"
+      ],
+      "warmCacheRebuildMedian": 0.7,
+      "noChangeRebuildMedian": 1.25,
+      "cleanRange": "6.73-7.37",
+      "warmCacheRebuildRange": "0.69-0.72",
+      "warmCacheRebuildRuns": [
+        0.7,
+        0.72,
+        0.69
+      ],
+      "cleanRuns": [
+        7.37,
+        6.73,
+        6.81
+      ]
+    },
+    "rust": {
+      "noChangeRebuildRuns": [
+        1.06,
+        1.11,
+        1.11
+      ],
+      "cleanMedian": 15.32,
+      "noChangeRebuildRange": "1.06-1.11",
+      "warmCacheRebuildCommands": [
+        "cd /work && echo '// warm-cache-rebuild-marker-1' >> src/main.rs && cargo build --release",
+        "cd /work && echo '// warm-cache-rebuild-marker-2' >> src/main.rs && cargo build --release",
+        "cd /work && echo '// warm-cache-rebuild-marker-3' >> src/main.rs && cargo build --release"
+      ],
+      "warmCacheRebuildMedian": 0.93,
+      "noChangeRebuildMedian": 1.11,
+      "cleanRange": "15.04-16.51",
+      "warmCacheRebuildRange": "0.92-0.93",
+      "warmCacheRebuildRuns": [
+        0.92,
+        0.93,
+        0.93
+      ],
+      "cleanRuns": [
+        15.32,
+        16.51,
+        15.04
+      ]
+    },
+    "typescript": {
+      "noChangeRebuildRuns": [
+        1.02,
+        1.03,
+        1.09
+      ],
+      "cleanMedian": 5.45,
+      "noChangeRebuildRange": "1.02-1.09",
+      "warmCacheRebuildCommands": [
+        "cd /work && echo '// warm-cache-rebuild-marker-1' >> src/wordfreq.ts && npm run build",
+        "cd /work && echo '// warm-cache-rebuild-marker-2' >> src/wordfreq.ts && npm run build",
+        "cd /work && echo '// warm-cache-rebuild-marker-3' >> src/wordfreq.ts && npm run build"
+      ],
+      "warmCacheRebuildMedian": 1.09,
+      "noChangeRebuildMedian": 1.03,
+      "cleanRange": "5.25-5.97",
+      "warmCacheRebuildRange": "1.08-1.1",
+      "warmCacheRebuildRuns": [
+        1.1,
+        1.09,
+        1.08
+      ],
+      "cleanRuns": [
+        5.45,
+        5.97,
+        5.25
+      ]
+    },
+    "csharp": {
+      "noChangeRebuildRuns": [
+        1.21,
+        1.17,
+        1.21
+      ],
+      "cleanMedian": 4.12,
+      "noChangeRebuildRange": "1.17-1.21",
+      "warmCacheRebuildCommands": [
+        "cd /work && echo '// warm-cache-rebuild-marker-1' >> Program.cs && dotnet publish -c Release -o /app/out",
+        "cd /work && echo '// warm-cache-rebuild-marker-2' >> Program.cs && dotnet publish -c Release -o /app/out",
+        "cd /work && echo '// warm-cache-rebuild-marker-3' >> Program.cs && dotnet publish -c Release -o /app/out"
+      ],
+      "warmCacheRebuildMedian": 2.36,
+      "noChangeRebuildMedian": 1.21,
+      "cleanRange": "3.93-4.77",
+      "warmCacheRebuildRange": "2.34-2.39",
+      "warmCacheRebuildRuns": [
+        2.34,
+        2.36,
+        2.39
+      ],
+      "cleanRuns": [
+        4.77,
+        3.93,
+        4.12
+      ]
+    }
+  },
+  "dependencies": {
+    "csharp": {
+      "transitiveMethod": "dotnet restore; entries in obj/project.assets.json's libraries map",
+      "transitiveCount": 0,
+      "note": "BCL only",
+      "count": 0
+    },
+    "go": {
+      "note": "stdlib only",
+      "count": 0
+    },
+    "kotlin": {
+      "transitiveMethod": "gradle dependencies --configuration runtimeClasspath; unique group:artifact pairs, (c) constraint lines excluded",
+      "transitiveCount": 5,
+      "note": "kotlinx-coroutines-core",
+      "count": 1
+    },
+    "python": {
+      "note": "stdlib only",
+      "count": 0
+    },
+    "rust": {
+      "transitiveMethod": "cargo generate-lockfile; [[package]] entries in Cargo.lock, root excluded (direct + transitive)",
+      "compiledCrateCount": 50,
+      "transitiveCount": 57,
+      "count": 2,
+      "compiledCrateMethod": "clean cargo build --release; unique 'Compiling <name> v...' lines in the build log, root excluded",
+      "note": "ureq, clap"
+    },
+    "typescript": {
+      "transitiveMethod": "npm install --package-lock-only; entries in package-lock.json's packages map, root excluded (direct + transitive)",
+      "transitiveCount": 3,
+      "devCount": 2,
+      "note": "0 runtime; 2 dev-only (typescript, @types/node)",
+      "count": 0
+    }
+  }
 }

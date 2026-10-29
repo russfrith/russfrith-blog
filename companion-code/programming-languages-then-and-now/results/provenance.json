@@ -805,6 +805,22 @@
   },
   {
     "images": [
+      "python:3.14.8-slim"
+    ],
+    "sha256": "0ee70a90606ba5ce2dd6c7679f67ee0667ad2414332cee24f983da9cd9028a76",
+    "commands": [
+      "python broken.py",
+      "python fixed.py"
+    ],
+    "file": "python/scenarios/01_absent_null/output.txt",
+    "captured": "2026-10-29T03:10:59.1124987-04:00",
+    "versionOutput": "Python 3.14.8",
+    "versionCommand": "python --version"
+  },
+  {
+    "sha256": "1d6bb9b99624ac4a8d6360ba464d5c54531e38e55621b8e8d7594ebd2e8634d0",
+    "captured": "2026-10-29T18:28:24.8700556-04:00",
+    "images": [
       "programming-languages-then-and-now-python:latest",
       "programming-languages-then-and-now-go:latest",
       "programming-languages-then-and-now-rust:latest",
@@ -818,22 +834,15 @@
       "docker image inspect <image> --format '{{.Size}}'",
       "docker build -f csharp/Dockerfile.aot|.selfcontained|(none) ./csharp"
     ],
-    "captured": "2026-10-29T03:01:07.1285454-04:00",
-    "sha256": "a963d52606ceb5a1ea8a19c31a352ac54176d1c74380532e4633a9d23f61fbe8",
     "file": "results/productivity.json"
   },
   {
-    "images": [
-      "python:3.14.8-slim"
-    ],
-    "sha256": "0ee70a90606ba5ce2dd6c7679f67ee0667ad2414332cee24f983da9cd9028a76",
+    "captured": "2026-10-29T18:38:12.2885571-04:00",
+    "file": "results/productivity.md",
+    "images": [],
+    "sha256": "1903b2c030dd490521199068598d9ce2153e1c269b51ec11ce9e86105a9e5953",
     "commands": [
-      "python broken.py",
-      "python fixed.py"
-    ],
-    "file": "python/scenarios/01_absent_null/output.txt",
-    "captured": "2026-10-29T03:10:59.1124987-04:00",
-    "versionOutput": "Python 3.14.8",
-    "versionCommand": "python --version"
+      "generated from results/productivity.json by scripts/measure-productivity.ps1 -- never hand-edited"
+    ]
   }
 ]

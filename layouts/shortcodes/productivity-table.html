@@ -48,6 +48,8 @@ Goldmark like any other table, matching every other table in this post).
   {{- $display = printf "%v dev-only (`typescript`, `@types/node`); %v runtime deps" $d.devCount $d.count }}
 {{- else if eq $d.count 0.0 }}
   {{- $display = printf "0 (%s)" $d.note }}
+{{- else if eq $lang "rust" }}
+  {{- $display = printf "%v (%s) -- %v total via `%s`; %v actually compiled on Linux via `%s`" $d.count (index $depNote $lang) $d.transitiveCount $d.transitiveMethod $d.compiledCrateCount $d.compiledCrateMethod }}
 {{- else }}
   {{- $display = printf "%v (%s) -- %v total via `%s`" $d.count (index $depNote $lang) $d.transitiveCount $d.transitiveMethod }}
 {{- end }}
@@ -59,13 +61,13 @@ Goldmark like any other table, matching every other table in this post).
 {{- $rows := slice -}}
 {{- range $lang := $langs -}}
   {{- $bt := index $data.buildTimes $lang -}}
-  {{- $rows = $rows | append (dict "lang" $lang "cleanMedian" $bt.cleanMedian "cleanRange" $bt.cleanRange "incMedian" $bt.incrementalMedian "incRange" $bt.incrementalRange) -}}
+  {{- $rows = $rows | append (dict "lang" $lang "cleanMedian" $bt.cleanMedian "cleanRange" $bt.cleanRange "noOpMedian" $bt.noChangeRebuildMedian "noOpRange" $bt.noChangeRebuildRange "warmMedian" $bt.warmCacheRebuildMedian "warmRange" $bt.warmCacheRebuildRange) -}}
 {{- end -}}
 {{- $sorted := sort $rows "cleanMedian" "asc" }}
-| Language | Clean build (`--no-cache`) | Incremental rebuild (layer cache warm) |
-|---|---|---|
+| Language | Clean build (`--no-cache`) | No-op rebuild (Docker layer cache check) | Rebuild after a one-line change (warm toolchain cache) |
+|---|---|---|---|
 {{- range $r := $sorted }}
-| {{ index $displayName $r.lang }} | {{ $r.cleanMedian }}s ({{ $r.cleanRange }}s) | {{ $r.incMedian }}s ({{ $r.incRange }}s) |
+| {{ index $displayName $r.lang }} | {{ $r.cleanMedian }}s ({{ $r.cleanRange }}s) | {{ $r.noOpMedian }}s ({{ $r.noOpRange }}s) | {{ $r.warmMedian }}s ({{ $r.warmRange }}s){{ if eq $r.lang "python" }} (process start, not a rebuild -- Python has no compile step){{ end }} |
 {{- end }}
 {{- end -}}
 
@@ -107,5 +109,13 @@ Goldmark like any other table, matching every other table in this post).
 {{- $imgSorted := sort $imgRows "v" "asc" -}}
 {{- $smallestImg := index $imgSorted 0 -}}
 {{- $largestImg := index $imgSorted (sub (len $imgSorted) 1) -}}
-Derived from `results/productivity.json`: fastest clean build, {{ index $displayName $fastestBuild.lang }} ({{ $fastestBuild.v }}s); slowest clean build, {{ index $displayName $slowestBuild.lang }} ({{ $slowestBuild.v }}s); smallest image, {{ $smallestImg.label }} ({{ $smallestImg.v }} MB); largest image, {{ $largestImg.label }} ({{ $largestImg.v }} MB).
+{{- $warmRows := slice -}}
+{{- range $lang := $langs -}}
+  {{- $bt := index $data.buildTimes $lang -}}
+  {{- $warmRows = $warmRows | append (dict "lang" $lang "v" $bt.warmCacheRebuildMedian) -}}
+{{- end -}}
+{{- $warmSorted := sort $warmRows "v" "asc" -}}
+{{- $fastestWarm := index $warmSorted 0 -}}
+{{- $slowestWarm := index $warmSorted (sub (len $warmSorted) 1) -}}
+Derived from `results/productivity.json`: fastest clean build, {{ index $displayName $fastestBuild.lang }} ({{ $fastestBuild.v }}s); slowest clean build, {{ index $displayName $slowestBuild.lang }} ({{ $slowestBuild.v }}s); fastest rebuild after a one-line change (warm toolchain cache), {{ index $displayName $fastestWarm.lang }} ({{ $fastestWarm.v }}s); slowest, {{ index $displayName $slowestWarm.lang }} ({{ $slowestWarm.v }}s) -- note Python's entry in that comparison is a process start, not a rebuild; smallest image, {{ $smallestImg.label }} ({{ $smallestImg.v }} MB); largest image, {{ $largestImg.label }} ({{ $largestImg.v }} MB).
 {{- end -}}

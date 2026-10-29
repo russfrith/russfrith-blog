@@ -8,9 +8,11 @@
 # appends a provenance entry to results/provenance.json (same mechanism as
 # run-scenarios.ps1 -Update).
 #
-# Does NOT edit the post or results/productivity.md -- a human (or a follow-up
-# pass) reads productivity.json and updates the prose to match; see
-# check-post.ps1, which fails if the post's numbers and the JSON disagree.
+# Also GENERATES results/productivity.md directly from this data (J3, Phase
+# 1j) -- it is never hand-edited. Does NOT edit the post itself; a human (or a
+# follow-up pass) reads productivity.json and updates the post's prose to
+# match; see check-post.ps1, which fails if the post's numbers and the JSON
+# disagree.
 #
 # Usage (from companion-code/programming-languages-then-and-now):
 #   docker compose build --no-cache   # optional warm-up, not required
@@ -116,6 +118,20 @@ if (Test-Path "rust/Cargo.lock") {
 }
 Write-Host "  rust: $rustLockCount packages in Cargo.lock (direct + transitive, root excluded)"
 
+# J2: Cargo.lock counts everything in the resolved dependency graph, but not every
+# entry necessarily gets compiled on this platform (e.g. target-specific deps for
+# other OSes). Count what cargo ACTUALLY compiles: unique "Compiling <name> v..."
+# lines from a real clean `cargo build --release` log, excluding the root crate
+# itself ("wordfreq").
+Remove-Item "rust/target" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item "rust/Cargo.lock" -Force -ErrorAction SilentlyContinue
+$rustBuildLog = docker run --rm -v "${PWD}/rust:/src" -w /src $rs bash -c "cargo build --release" 2>&1 | Out-String
+$compileMatches = [regex]::Matches($rustBuildLog, '(?m)^\s*Compiling\s+(\S+)\s+v')
+$rustCompiledCrateCount = ($compileMatches | ForEach-Object { $_.Groups[1].Value } | Where-Object { $_ -ne "wordfreq" } | Sort-Object -Unique | Measure-Object).Count
+Remove-Item "rust/target" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item "rust/Cargo.lock" -Force -ErrorAction SilentlyContinue
+Write-Host "  rust: $rustCompiledCrateCount crates actually compiled (unique 'Compiling' lines from a clean cargo build --release, root excluded)"
+
 # TypeScript: npm install --package-lock-only, then every entry in package-lock.json's
 # "packages" map except the root ("" key, the project itself).
 Remove-Item "typescript/package-lock.json" -Force -ErrorAction SilentlyContinue
@@ -158,14 +174,14 @@ Write-Host "  csharp: $csTransitiveCount entries in obj/project.assets.json's li
 $deps = @{
     python     = @{ count = $pyDeps; note = "stdlib only" }
     go         = @{ count = $goDeps; note = "stdlib only" }
-    rust       = @{ count = $rustDeps; note = "ureq, clap"; transitiveCount = $rustLockCount; transitiveMethod = "cargo generate-lockfile; [[package]] entries in Cargo.lock, root excluded (direct + transitive)" }
+    rust       = @{ count = $rustDeps; note = "ureq, clap"; transitiveCount = $rustLockCount; transitiveMethod = "cargo generate-lockfile; [[package]] entries in Cargo.lock, root excluded (direct + transitive)"; compiledCrateCount = $rustCompiledCrateCount; compiledCrateMethod = "clean cargo build --release; unique 'Compiling <name> v...' lines in the build log, root excluded" }
     typescript = @{ count = $tsRuntimeDeps; devCount = $tsDevDeps; note = "0 runtime; $tsDevDeps dev-only (typescript, @types/node)"; transitiveCount = $tsLockCount; transitiveMethod = "npm install --package-lock-only; entries in package-lock.json's packages map, root excluded (direct + transitive)" }
     kotlin     = @{ count = $kotlinDeps; note = "kotlinx-coroutines-core"; transitiveCount = $kotlinTransitiveCount; transitiveMethod = "gradle dependencies --configuration runtimeClasspath; unique group:artifact pairs, (c) constraint lines excluded" }
     csharp     = @{ count = $csDeps; note = "BCL only"; transitiveCount = $csTransitiveCount; transitiveMethod = "dotnet restore; entries in obj/project.assets.json's libraries map" }
 }
 $deps.GetEnumerator() | ForEach-Object { Write-Host "  $($_.Key): $($_.Value.count) ($($_.Value.note))" }
 
-Write-Host "`n=== Build times (3 runs each: clean, then incremental) ===" -ForegroundColor Cyan
+Write-Host "`n=== Build times: clean, no-op rebuild (Docker layer cache check) ===" -ForegroundColor Cyan
 $languages = @("python", "go", "rust", "typescript", "kotlin", "csharp")
 $buildTimes = @{}
 foreach ($lang in $languages) {
@@ -176,21 +192,131 @@ foreach ($lang in $languages) {
         Write-Host "  clean run $i`: ${t}s"
         $clean += $t
     }
-    $incremental = @()
+    # "no-op rebuild": re-running docker compose build with NOTHING changed on disk --
+    # this only checks whether Docker's layer cache is hit, not whether the toolchain
+    # itself did a fast incremental recompile. See warmCacheRebuild below for that (J1).
+    $noOp = @()
     for ($i = 1; $i -le 3; $i++) {
         $t = Measure-Seconds { docker compose build $lang 2>&1 }
-        Write-Host "  incremental run $i`: ${t}s"
-        $incremental += $t
+        Write-Host "  no-op rebuild run $i`: ${t}s"
+        $noOp += $t
     }
     $buildTimes[$lang] = @{
-        cleanRuns        = $clean
-        cleanMedian      = Median $clean
-        cleanRange       = "$([math]::Min($clean[0],[math]::Min($clean[1],$clean[2])))-$([math]::Max($clean[0],[math]::Max($clean[1],$clean[2])))"
-        incrementalRuns  = $incremental
-        incrementalMedian = Median $incremental
-        incrementalRange = "$([math]::Min($incremental[0],[math]::Min($incremental[1],$incremental[2])))-$([math]::Max($incremental[0],[math]::Max($incremental[1],$incremental[2])))"
+        cleanRuns              = $clean
+        cleanMedian            = Median $clean
+        cleanRange             = "$([math]::Min($clean[0],[math]::Min($clean[1],$clean[2])))-$([math]::Max($clean[0],[math]::Max($clean[1],$clean[2])))"
+        noChangeRebuildRuns    = $noOp
+        noChangeRebuildMedian  = Median $noOp
+        noChangeRebuildRange   = "$([math]::Min($noOp[0],[math]::Min($noOp[1],$noOp[2])))-$([math]::Max($noOp[0],[math]::Max($noOp[1],$noOp[2])))"
     }
 }
+
+# --- J1: real incremental rebuild, measured at the toolchain level ------------
+# The Docker-layer "no-op rebuild" above proves nothing about the compiler/runtime's
+# own incremental behavior -- it only proves Docker skipped re-running the RUN step
+# because nothing changed. This measures what a developer actually feels: edit one
+# line, rebuild, how long. Each language gets its own container with named volumes
+# for its toolchain's real caches (so dependency downloads/compiled artifacts persist
+# across the warm-up and the 3 timed reruns), warms those caches with one untimed
+# clean build, then times 3 rebuilds, each preceded by a distinct one-line comment
+# appended to a TEMP COPY of the source inside the container -- never the working tree.
+Write-Host "`n=== Build times: rebuild after a one-line change (warm toolchain cache) [J1] ===" -ForegroundColor Cyan
+
+function Measure-WarmCacheRebuild($lang, $image, $hostDir, $cacheMounts, $setupCmd, $rebuildCmdTemplate) {
+    $srcVol = "ptn-$lang-src"
+    docker volume rm -f $srcVol 2>&1 | Out-Null
+    foreach ($cv in $cacheMounts.Keys) { docker volume rm -f $cv 2>&1 | Out-Null }
+    docker volume create $srcVol | Out-Null
+    foreach ($cv in $cacheMounts.Keys) { docker volume create $cv | Out-Null }
+
+    $volArgs = @("-v", "${srcVol}:/work", "-v", "${PWD}/${hostDir}:/srcHost:ro")
+    foreach ($cv in $cacheMounts.Keys) { $volArgs += @("-v", "${cv}:$($cacheMounts[$cv])") }
+
+    Write-Host "  warming caches (untimed clean build)..." -ForegroundColor DarkGray
+    docker run --rm @volArgs $image bash -c $setupCmd 2>&1 | Out-Null
+
+    $runs = @()
+    $commands = @()
+    for ($i = 1; $i -le 3; $i++) {
+        $cmd = $rebuildCmdTemplate -replace '\{N\}', $i
+        $commands += $cmd
+        $t = Measure-Seconds { docker run --rm @volArgs $image bash -c $cmd 2>&1 }
+        Write-Host "  warm-cache rebuild run $i`: ${t}s"
+        $runs += $t
+    }
+
+    docker volume rm -f $srcVol 2>&1 | Out-Null
+    foreach ($cv in $cacheMounts.Keys) { docker volume rm -f $cv 2>&1 | Out-Null }
+
+    return @{ runs = $runs; commands = $commands }
+}
+
+Write-Host "-- rust --" -ForegroundColor DarkCyan
+$r = Measure-WarmCacheRebuild "rust" $rs "rust" `
+    @{ "ptn-rust-cargo-registry" = "/usr/local/cargo/registry" } `
+    "cp -r /srcHost/. /work/ && cd /work && cargo build --release" `
+    "cd /work && echo '// warm-cache-rebuild-marker-{N}' >> src/main.rs && cargo build --release"
+$buildTimes["rust"].warmCacheRebuildRuns = $r.runs
+$buildTimes["rust"].warmCacheRebuildMedian = Median $r.runs
+$buildTimes["rust"].warmCacheRebuildRange = "$([math]::Min($r.runs[0],[math]::Min($r.runs[1],$r.runs[2])))-$([math]::Max($r.runs[0],[math]::Max($r.runs[1],$r.runs[2])))"
+$buildTimes["rust"].warmCacheRebuildCommands = $r.commands
+
+Write-Host "-- go --" -ForegroundColor DarkCyan
+$r = Measure-WarmCacheRebuild "go" "golang:1.26.4-bookworm" "go" `
+    @{ "ptn-go-build-cache" = "/root/.cache/go-build" } `
+    "cp -r /srcHost/. /work/ && cd /work && mkdir -p bin && CGO_ENABLED=0 go build -o bin/wordfreq ./wordfreq.go" `
+    "cd /work && echo '// warm-cache-rebuild-marker-{N}' >> wordfreq.go && CGO_ENABLED=0 go build -o bin/wordfreq ./wordfreq.go"
+$buildTimes["go"].warmCacheRebuildRuns = $r.runs
+$buildTimes["go"].warmCacheRebuildMedian = Median $r.runs
+$buildTimes["go"].warmCacheRebuildRange = "$([math]::Min($r.runs[0],[math]::Min($r.runs[1],$r.runs[2])))-$([math]::Max($r.runs[0],[math]::Max($r.runs[1],$r.runs[2])))"
+$buildTimes["go"].warmCacheRebuildCommands = $r.commands
+
+Write-Host "-- typescript --" -ForegroundColor DarkCyan
+$r = Measure-WarmCacheRebuild "typescript" $node "typescript" `
+    @{ "ptn-ts-npm-cache" = "/root/.npm" } `
+    "cp -r /srcHost/. /work/ && cd /work && npm install && npm run build" `
+    "cd /work && echo '// warm-cache-rebuild-marker-{N}' >> src/wordfreq.ts && npm run build"
+$buildTimes["typescript"].warmCacheRebuildRuns = $r.runs
+$buildTimes["typescript"].warmCacheRebuildMedian = Median $r.runs
+$buildTimes["typescript"].warmCacheRebuildRange = "$([math]::Min($r.runs[0],[math]::Min($r.runs[1],$r.runs[2])))-$([math]::Max($r.runs[0],[math]::Max($r.runs[1],$r.runs[2])))"
+$buildTimes["typescript"].warmCacheRebuildCommands = $r.commands
+
+Write-Host "-- kotlin --" -ForegroundColor DarkCyan
+$kotlinSetup = "apt-get update -qq && apt-get install -y -qq curl unzip > /dev/null 2>&1 && cp -r /srcHost/. /work/ && cd /work && if [ ! -x /work/.gradle-dist/gradle-9.5.0/bin/gradle ]; then curl -fsSL https://services.gradle.org/distributions/gradle-9.5.0-bin.zip -o /tmp/gradle.zip && mkdir -p /work/.gradle-dist && unzip -q /tmp/gradle.zip -d /work/.gradle-dist; fi && export PATH=/work/.gradle-dist/gradle-9.5.0/bin:`$PATH && gradle shadowJar --no-daemon"
+$kotlinRebuild = "cd /work && export PATH=/work/.gradle-dist/gradle-9.5.0/bin:`$PATH && echo '// warm-cache-rebuild-marker-{N}' >> src/main/kotlin/Wordfreq.kt && gradle shadowJar --no-daemon"
+$r = Measure-WarmCacheRebuild "kotlin" "eclipse-temurin:25-jdk" "kotlin" `
+    @{ "ptn-kotlin-gradle-home" = "/root/.gradle" } `
+    $kotlinSetup `
+    $kotlinRebuild
+$buildTimes["kotlin"].warmCacheRebuildRuns = $r.runs
+$buildTimes["kotlin"].warmCacheRebuildMedian = Median $r.runs
+$buildTimes["kotlin"].warmCacheRebuildRange = "$([math]::Min($r.runs[0],[math]::Min($r.runs[1],$r.runs[2])))-$([math]::Max($r.runs[0],[math]::Max($r.runs[1],$r.runs[2])))"
+$buildTimes["kotlin"].warmCacheRebuildCommands = $r.commands
+
+Write-Host "-- csharp --" -ForegroundColor DarkCyan
+$r = Measure-WarmCacheRebuild "csharp" $cs "csharp" `
+    @{ "ptn-csharp-nuget-packages" = "/root/.nuget/packages" } `
+    "cp -r /srcHost/. /work/ && cd /work && dotnet publish -c Release -o /app/out" `
+    "cd /work && echo '// warm-cache-rebuild-marker-{N}' >> Program.cs && dotnet publish -c Release -o /app/out"
+$buildTimes["csharp"].warmCacheRebuildRuns = $r.runs
+$buildTimes["csharp"].warmCacheRebuildMedian = Median $r.runs
+$buildTimes["csharp"].warmCacheRebuildRange = "$([math]::Min($r.runs[0],[math]::Min($r.runs[1],$r.runs[2])))-$([math]::Max($r.runs[0],[math]::Max($r.runs[1],$r.runs[2])))"
+$buildTimes["csharp"].warmCacheRebuildCommands = $r.commands
+
+# Python has no compile step at all -- there is nothing to "rebuild." The comment
+# is still appended each round (for procedural symmetry with the other five
+# languages), but what's actually timed is only interpreter + argparse process
+# start (`python wordfreq.py --help`), not a build of any kind.
+Write-Host "-- python (no compile step -- process start only) --" -ForegroundColor DarkCyan
+$r = Measure-WarmCacheRebuild "python" "python:3.14.8-slim" "python" `
+    @{} `
+    "cp -r /srcHost/. /work/" `
+    "cd /work && echo '# warm-cache-rebuild-marker-{N}' >> wordfreq.py && python wordfreq.py --help"
+$buildTimes["python"].warmCacheRebuildRuns = $r.runs
+$buildTimes["python"].warmCacheRebuildMedian = Median $r.runs
+$buildTimes["python"].warmCacheRebuildRange = "$([math]::Min($r.runs[0],[math]::Min($r.runs[1],$r.runs[2])))-$([math]::Max($r.runs[0],[math]::Max($r.runs[1],$r.runs[2])))"
+$buildTimes["python"].warmCacheRebuildCommands = $r.commands
+$buildTimes["python"].warmCacheRebuildNote = "Python has no compile step; this number is a process start (interpreter + argparse), not a rebuild."
 
 Write-Host "`n=== Image sizes ===" -ForegroundColor Cyan
 $imageSizes = @{}
@@ -238,25 +364,131 @@ $outFile = "results/productivity.json"
 ($productivity | ConvertTo-Json -Depth 8) | Set-Content -Path $outFile
 Write-Host "`nWrote $outFile" -ForegroundColor Green
 
-# Provenance entry, same mechanism as run-scenarios.ps1 -Update.
+# --- J3: results/productivity.md is now GENERATED from this same data, not
+# hand-maintained -- a hand-maintained copy is exactly the kind of number that
+# silently drifts from the real measurement. The only prose here that isn't a
+# number pulled straight from $productivity is the fixed methodology text.
+$displayName = @{ python = "Python"; go = "Go"; rust = "Rust"; typescript = "TypeScript"; kotlin = "Kotlin"; csharp = "C#" }
+$depNote = @{ rust = "ureq, clap"; kotlin = "kotlinx-coroutines-core" }
+$byClean = $languages | Sort-Object { $buildTimes[$_].cleanMedian }
+$capturedDate = ([DateTime]$productivity.capturedAt).ToString("yyyy-MM-dd")
+
+$md = @()
+$md += "# Productivity observations (scenarios 9-11)"
+$md += ""
+$md += "Measured for all six core languages, back to back in one session, on one development machine (Windows 11 Pro, Docker Desktop/WSL2, host otherwise idle), $capturedDate, by ``scripts/measure-productivity.ps1`` -- this file is GENERATED from ``results/productivity.json``, never hand-edited; see that file for raw per-run numbers, tool versions, and the exact capture timestamp. Median and range reported, labeled observations, not benchmarks. Reproduce with:"
+$md += ""
+$md += '```'
+$md += "./scripts/measure-productivity.ps1"
+$md += '```'
+$md += ""
+$md += "## 9. CLI size and dependency count"
+$md += ""
+$md += "Lines of code: after trimming whitespace, a line counts if it's non-empty and doesn't start with the language's line-comment marker (``//`` or ``#``) -- a simple, consistent rule, not a semantic parse (block comments and trailing inline comments aren't special-cased); this reads lower than a raw ``wc -l`` on the same file."
+$md += ""
+$md += "| Language | Lines of code (wordfreq only) | Direct third-party dependencies |"
+$md += "|---|---|---|"
+foreach ($lang in $byClean) {
+    $d = $deps[$lang]
+    if ($lang -eq "typescript") {
+        $cell = "$($d.devCount) dev-only (``typescript``, ``@types/node``); $($d.count) runtime deps -- $($d.transitiveCount) total via ``$($d.transitiveMethod)``"
+    } elseif ($d.count -eq 0 -and -not $d.transitiveMethod) {
+        $cell = "0 ($($d.note))"
+    } elseif ($d.count -eq 0) {
+        $cell = "0 ($($d.note)) -- $($d.transitiveCount) total via ``$($d.transitiveMethod)``"
+    } else {
+        $extra = if ($lang -eq "rust") { " ($($d.compiledCrateCount) actually compiled on Linux via ``$($d.compiledCrateMethod)``)" } else { "" }
+        $cell = "$($d.count) ($($depNote[$lang])) -- $($d.transitiveCount) total via ``$($d.transitiveMethod)``$extra"
+    }
+    $md += "| $($displayName[$lang]) | $($loc[$lang]) | $cell |"
+}
+$md += ""
+$md += "Go, Python, and C# all reach zero direct third-party dependencies for the CLI itself by relying entirely on their standard library / base class library."
+$md += ""
+$md += "## 10. Clean build, no-op rebuild, and rebuild after a one-line change (median of 3 runs; range in parentheses)"
+$md += ""
+$md += "Three columns, three different things:"
+$md += "- **Clean build**: ``docker compose build --no-cache``. Every layer rebuilt from scratch."
+$md += "- **No-op rebuild (Docker layer cache check)**: ``docker compose build`` again with NOTHING changed. This only proves Docker skipped re-running the build steps because their inputs didn't change -- it says nothing about the compiler/runtime's own incremental behavior."
+$md += "- **Rebuild after a one-line change (warm toolchain cache)**: a real edit -- one comment line appended to the source -- rebuilt with the language's own build command, inside a container with the toolchain's real caches (package registry, build cache, NuGet packages, etc.) already warm from an untimed clean build. This is what a developer actually feels after a small edit. Python has no compile step, so its number here is only an interpreter + argparse process start, not a rebuild."
+$md += ""
+$md += "| Language | Clean build (``--no-cache``) | No-op rebuild (Docker layer cache check) | Rebuild after a one-line change (warm toolchain cache) |"
+$md += "|---|---|---|---|"
+foreach ($lang in $byClean) {
+    $bt = $buildTimes[$lang]
+    $md += "| $($displayName[$lang]) | $($bt.cleanMedian)s ($($bt.cleanRange)s) | $($bt.noChangeRebuildMedian)s ($($bt.noChangeRebuildRange)s) | $($bt.warmCacheRebuildMedian)s ($($bt.warmCacheRebuildRange)s) |"
+}
+$md += ""
+$md += "Kotlin's clean build still includes downloading Gradle 9.5.0 inside the build stage every time ``--no-cache`` is used; a production setup would cache that distribution in a named volume. Rust's clean build resolves $($deps.rust.transitiveCount) packages (direct + transitive) and actually compiles $($deps.rust.compiledCrateCount) crates on Linux."
+$md += ""
+$md += "## 11. Final image size (idiomatic multi-stage build)"
+$md += ""
+$byImageSize = (@("python","go","rust","typescript","kotlin") | ForEach-Object { @{ label = $displayName[$_]; mb = $imageSizes[$_].mb } }) + (
+    $csharpVariants.Keys | ForEach-Object {
+        $label = switch ($_) { "native-aot" { "C# (Native AOT)" } "self-contained" { "C# (self-contained)" } "framework-dependent" { "C# (framework-dependent, the default used elsewhere in this post)" } }
+        @{ label = $label; mb = $csharpImageSizes[$_].mb }
+    }
+)
+$byImageSize = $byImageSize | Sort-Object { $_.mb }
+$imageBase = @{
+    "Go" = "``gcr.io/distroless/static-debian12`` (static binary, no libc)"
+    "Rust" = "``debian:bookworm-slim`` + ``ca-certificates`` (dynamically linked, glibc)"
+    "Python" = "``python:3.14.8-slim`` (full interpreter + stdlib)"
+    "C# (Native AOT)" = "``mcr.microsoft.com/dotnet/runtime-deps:10.0`` + a native binary, no managed runtime shipped"
+    "C# (self-contained)" = "``mcr.microsoft.com/dotnet/runtime-deps:10.0`` + a bundled private copy of the .NET runtime"
+    "C# (framework-dependent, the default used elsewhere in this post)" = "``mcr.microsoft.com/dotnet/runtime:10.0`` (shared .NET runtime image)"
+    "TypeScript" = "``node:26-bookworm-slim`` (full Node runtime, in both build and final stages)"
+    "Kotlin" = "``eclipse-temurin:25-jre`` (JRE) + the shadow jar"
+}
+$md += "| Language | Final image size | Base |"
+$md += "|---|---|---|"
+foreach ($row in $byImageSize) {
+    $md += "| $($row.label) | $($row.mb) MB | $($imageBase[$row.label]) |"
+}
+$md += ""
+$md += "### C# image-size variants"
+$md += ""
+$md += "All three built from the same ``Program.cs``/``wordfreq.csproj``, varying only the publish mode:"
+$md += ""
+$md += "- **Framework-dependent** (``csharp/Dockerfile``, used for the CLI service everywhere else in this post): ``dotnet publish -c Release``, runs on ``mcr.microsoft.com/dotnet/runtime:10.0``. $($csharpImageSizes["framework-dependent"].mb) MB."
+$md += "- **Self-contained** (``csharp/Dockerfile.selfcontained``): ``dotnet publish -c Release -r linux-x64 --self-contained true``, bundles a private copy of the runtime, runs on the smaller ``runtime-deps:10.0`` base. $($csharpImageSizes["self-contained"].mb) MB."
+$md += "- **Native AOT** (``csharp/Dockerfile.aot``): ``dotnet publish -c Release -r linux-x64 -p:PublishAot=true``, also on ``runtime-deps:10.0``. $($csharpImageSizes["native-aot"].mb) MB -- the smallest of the three, and the only one shipping a fully native binary with no JIT or managed runtime at all."
+$md += ""
+$md += "Native AOT built successfully in this container with ONE extra build-stage dependency beyond the SDK image: ``clang`` and ``zlib1g-dev``. No separate native toolchain installation outside the container was needed. The resulting binary was verified to run and produce byte-identical ``wordfreq`` output to the other two variants."
+$md += ""
+
+$productivityMdFile = "results/productivity.md"
+($md -join "`n") | Set-Content -Path $productivityMdFile -NoNewline
+Write-Host "Wrote $productivityMdFile (generated, not hand-edited)" -ForegroundColor Green
+
+# Provenance entries, same mechanism as run-scenarios.ps1 -Update.
 $hash = (Get-FileHash -Path $outFile -Algorithm SHA256).Hash.ToLower()
+$mdHash = (Get-FileHash -Path $productivityMdFile -Algorithm SHA256).Hash.ToLower()
 $provenanceFile = "results/provenance.json"
 $existing = @()
 if (Test-Path $provenanceFile) {
     $existing = @(Get-Content -Raw $provenanceFile | ConvertFrom-Json)
 }
-$existing = $existing | Where-Object { $_.file -ne $outFile }
+$existing = $existing | Where-Object { $_.file -ne $outFile -and $_.file -ne $productivityMdFile }
 $existing += @{
     file     = $outFile
     commands = @(
         "docker compose build --no-cache <service> (x3 per language)"
-        "docker compose build <service> (x3 per language, incremental)"
+        "docker compose build <service> (x3 per language, no-op)"
+        "docker run --rm -v <toolchain caches>:... -v <src>:/work <image> bash -c '<one-line comment>; <build command>' (x3 per language, warm toolchain cache)"
         "docker image inspect <image> --format '{{.Size}}'"
         "docker build -f csharp/Dockerfile.aot|.selfcontained|(none) ./csharp"
     )
     images       = @($languages | ForEach-Object { "programming-languages-then-and-now-$_`:latest" })
     captured     = (Get-Date).ToString("o")
     sha256       = $hash
+}
+$existing += @{
+    file     = $productivityMdFile
+    commands = @("generated from results/productivity.json by scripts/measure-productivity.ps1 -- never hand-edited")
+    images       = @()
+    captured     = (Get-Date).ToString("o")
+    sha256       = $mdHash
 }
 ($existing | ConvertTo-Json -Depth 8) | Set-Content -Path $provenanceFile
 Write-Host "Updated $provenanceFile" -ForegroundColor Green

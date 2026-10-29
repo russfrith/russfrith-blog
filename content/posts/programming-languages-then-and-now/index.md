@@ -371,11 +371,13 @@ Lines of code counts a line if it's non-empty and doesn't start with the languag
 
 {{% productivity-table section="9" %}}
 
-#### 10. Clean build vs. incremental rebuild time
+#### 10. Clean build, no-op rebuild, and rebuild after a real change
+
+The middle column only proves Docker's layer cache skipped re-running a build step because nothing changed on disk -- it says nothing about the compiler or runtime's own incremental behavior. The right column is the number that matters for "I changed one line, how long until I can test it": each language's own build command, run inside a container with that toolchain's real caches (package registry, build cache, NuGet packages, etc.) already warm, after a one-line comment is appended to the source. Python has no compile step at all, so its entry there is only an interpreter + argparse process start, not a rebuild of anything.
 
 {{% productivity-table section="10" %}}
 
-Incremental rebuild times converge to roughly the same ~0.95-1.3s across all six once the Docker layer cache is warm and nothing in the source changed; the spread is in the clean build. Kotlin's clean build downloads Gradle 9.5.0 inside the build stage every time `--no-cache` is used. Rust's clean build compiles 56 transitive crates from source every time (via `cargo generate-lockfile`; see the table above for how each language's count was measured).
+Kotlin's clean build still includes downloading Gradle 9.5.0 inside the build stage every time `--no-cache` is used; a production setup would cache that distribution in a named volume. See the table above for exactly how Rust's dependency counts were measured.
 
 #### 11. Final container image size
 
@@ -449,7 +451,7 @@ Targets: networked services, CLI tooling, infrastructure software. Tooling: a si
 
 ### Rust
 
-Targets: systems programming, performance-critical services, anywhere C/C++ would traditionally be reached for but memory safety matters. Tooling: Cargo, widely regarded as one of the best package-manager-plus-build-tool combinations of any language, bundled from day one. Signature strength: the borrow checker eliminates whole categories of memory-safety bugs at compile time (no use-after-free, no data races in safe code, demonstrated directly in scenario 2). Signature footgun: the borrow checker rejecting correct code (above). Costs, stated plainly: the second-slowest clean build of the six core languages measured here -- 11.36s median, behind only Kotlin's 73.66s (`results/productivity.md`) -- and real friction when the borrow checker can't see through an abstraction you know is safe.
+Targets: systems programming, performance-critical services, anywhere C/C++ would traditionally be reached for but memory safety matters. Tooling: Cargo, widely regarded as one of the best package-manager-plus-build-tool combinations of any language, bundled from day one. Signature strength: the borrow checker eliminates whole categories of memory-safety bugs at compile time (no use-after-free, no data races in safe code, demonstrated directly in scenario 2). Signature footgun: the borrow checker rejecting correct code (above). Costs, stated plainly: the second-slowest clean build of the six core languages measured here, behind only Kotlin (see the productivity table above for the real numbers) -- and real friction when the borrow checker can't see through an abstraction you know is safe.
 
 <!-- AUTHOR-TODO: what was familiar -->
 <!-- AUTHOR-TODO: what surprised me -->
@@ -523,7 +525,7 @@ A factual summary, drawn only from the recorded results above and in the compani
 | 6. Hung request | All six core CLIs cancel correctly at the configured timeout; no broken/fixed pair exists for this scenario (stated plainly, not implied) |
 | 7. CPU-heavy blocking | Node and Python asyncio block completely (0 heartbeat ticks) until offloaded to a thread; Go/Rust(multi-thread runtime)/Kotlin(Dispatchers.Default)/C# all kept ticking without the explicit fix in this run, which is a fact about this run's spare thread capacity, not proof the fix is unnecessary; the original ~8x Go-vs-Node gap was investigated and found to be Go's unused-result dead-code elimination, not a real difference |
 | 8. Untrusted JSON | Go and C# (without `required`) split the same way: silent on absence, error on wrong type; Rust (serde) and Kotlin (kotlinx.serialization) are strict on both by default, with an explicit default-value opt-in mirroring Go; TS's assertion lies through both; Python crashes on the first bad payload and never reaches the second |
-| 9-11. Productivity | See the derived summary under "Productivity" above (computed from `results/productivity.json`, not hand-typed here) -- Go's small image does not mean a fast build: it's slowest to rebuild incrementally of the six; Kotlin is slowest to build clean and largest; C#'s Native AOT variant was its smallest of three image variants tried |
+| 9-11. Productivity | See the derived summary under "Productivity" above (computed from `results/productivity.json`, not hand-typed here) -- Go's small image does not mean a fast rebuild after a real change, see the derived summary for which language actually is fastest/slowest there; Kotlin is slowest to build clean and largest; C#'s Native AOT variant was its smallest of three image variants tried |
 
 ## What I'd learn next
 
