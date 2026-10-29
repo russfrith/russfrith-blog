@@ -160,11 +160,11 @@ Getting an actual Rust data race requires opting into `unsafe`:
 
 **Precise claim, not a looser one:** safe Rust prevents *data races* (unsynchronized concurrent access to shared mutable memory) at compile time. It does not prevent all *race conditions* (e.g., two threads racing to acquire a lock first, with an order-dependent result, still compiles and runs) or deadlocks (two threads each waiting on a lock the other holds also compiles fine and can hang forever) -- those remain logic errors the type system doesn't catch.
 
-Python and Rust's plain tight-loop increments (200,000 iterations, no induced delay) did **not** reproduce a lost update reliably in this environment -- a mismatch with the initial prediction, recorded in PREDICTIONS.md. Inserting an explicit yield between the read and the write (simulating the gap a slower real-world read-modify-write would have) made both races reliable:
+Python's and Rust's plain tight-loop increments (200,000 iterations, no induced delay) did **not** reproduce a lost update on an initial attempt -- a mismatch with the prediction, recorded in PREDICTIONS.md. Inserting an explicit yield between the read and the write (simulating the gap a slower real-world read-modify-write would have) fixed that: both lost an update in every one of 5 runs once the yield was added. Python's final version also reduced the loop to 200 iterations per thread to keep the capture practical (its own output shows `expected 400`, not 400,000); Rust kept the full 200,000:
 
 {{< snippet file="python/scenarios/02_data_race/output.txt" lang="text" >}}
 
-Kotlin's, TypeScript's (worker_threads + `SharedArrayBuffer`), and C#'s versions all raced reliably with no induced delay:
+C, Kotlin, and Go (below) lost an update in every one of 5 runs with no induced delay needed. TypeScript lost one in 4 of 5 runs, and C# in 3 of 5 -- still a clear, repeated demonstration of the race, just not as consistent as the others. A 5-run sample is enough to show a race exists and roughly how often it showed up on this machine on this day; it is not a precise measurement of the true failure rate, and these exact counts aren't guaranteed to repeat elsewhere:
 
 {{< snippet file="kotlin/scenarios/02_data_race/output.txt" lang="text" >}}
 
@@ -300,7 +300,11 @@ Go's counterexample needed no fix at all: a heartbeat goroutine keeps ticking on
 
 {{< snippet file="go/scenarios/07_cpu_heavy_blocking/output.txt" lang="text" >}}
 
-**Investigation, not just a result:** an early run of this scenario reported Go finishing the same workload roughly 8x faster than Node, which turned out to be invalid. Inspecting `go build -gcflags=-S` on a reconstruction of that version confirms the exact mechanism: the compiler inlined the loop into `main`, proved the accumulated sum was never read, and deleted the floating-point work entirely, leaving only an empty counting loop -- not a measurement bug, and not unique to this run. Printing the result (as every language here now does, so no compiler can prove it unused) made Go and Node land within 2% of each other. The assembly evidence and the corrected numbers are in `go/scenarios/07_cpu_heavy_blocking/NOTES.md`.
+**Investigation, not just a result:** an early run of this scenario reported Go finishing the same workload roughly 8x faster than Node, which turned out to be invalid. Inspecting `go build -gcflags=-S` on a reconstruction of that version confirms the exact mechanism: the compiler inlined the loop into `main`, proved the accumulated sum was never read, and deleted the floating-point work entirely, leaving only an empty counting loop -- not a measurement bug, and not unique to this run:
+
+{{< snippet file="go/scenarios/07_cpu_heavy_blocking/dead_code_evidence_output.txt" lang="text" >}}
+
+Printing the result (as every language here now does, so no compiler can prove it unused) made Go and Node land within about 3% of each other in this run. Full notes in `go/scenarios/07_cpu_heavy_blocking/NOTES.md`.
 
 Rust (tokio) and Kotlin (coroutines) both show the same two-part result once actually run, which only partly matched the prediction: a single-threaded runtime/dispatcher stalls completely (0 ticks, matching Node/Python), but simply running the SAME unfixed code on the default multi-thread runtime / `Dispatchers.Default` did **not** stall either -- this machine's thread pool had a spare thread for the heartbeat even without `spawn_blocking`/`withContext` applied. That is not evidence the mistake is harmless in general; both ecosystems' own documentation recommends the explicit fix specifically because a saturated pool would show the stall this single demo didn't:
 
@@ -308,7 +312,7 @@ Rust (tokio) and Kotlin (coroutines) both show the same two-part result once act
 
 {{< snippet file="kotlin/scenarios/07_cpu_heavy_blocking/output.txt" lang="text" >}}
 
-C# needed no fix either, for a related but distinct reason: there is no single-threaded event loop to block in the first place -- `async`/`await` runs on the thread pool, which has multiple worker threads by default, so a heartbeat `Task` keeps ticking regardless of whether the CPU-bound call is wrapped in `Task.Run` or called directly. The first run used `dotnet run`'s default Debug configuration and took roughly 1000ms, versus Go/Node's ~400ms -- a gap that, like the Go case above, turned out to be a build-configuration artifact rather than a real language difference. Re-running with `dotnet run -c Release` dropped it to ~400-407ms, matching Go and Node closely:
+C# needed no fix either, for a related but distinct reason: there is no single-threaded event loop to block in the first place -- `async`/`await` runs on the thread pool, which has multiple worker threads by default, so a heartbeat `Task` keeps ticking regardless of whether the CPU-bound call is wrapped in `Task.Run` or called directly. The first run used `dotnet run`'s default Debug configuration and took roughly 1000ms, versus Go/Node's ~400ms -- a gap that, like the Go case above, turned out to be a build-configuration artifact rather than a real language difference. Re-running with `dotnet run -c Release` dropped it to ~400-410ms, matching Go and Node closely:
 
 {{< snippet file="csharp/scenarios/07_cpu_heavy_blocking/output.txt" lang="text" >}}
 
@@ -531,7 +535,7 @@ A factual summary, drawn only from the recorded results above and in the compani
 | Scenario | Notable finding |
 |---|---|
 | 1. Absent/null | Go zero-fills silently; Rust/Python panic/raise loudly; Kotlin's `Map.get()` is already nullable, `!!` is an opt-in crash; C#'s nullable-warning is a build warning not an error, Dictionary indexer throws but TryGetValue doesn't; TypeScript's type lies |
-| 2. Data race | Go's `-race` catches it directly; Rust requires `unsafe` to even write it (two safe-Rust attempts confirmed as compile-time rejections, not runtime races) -- precise claim: safe Rust prevents data races, not all race conditions or deadlocks; plain tight loops in Python/Rust needed an induced delay to race reliably (mismatch vs. prediction); Kotlin/TS/C# raced on the first try |
+| 2. Data race | Go's `-race` catches it directly; Rust requires `unsafe` to even write it (two safe-Rust attempts confirmed as compile-time rejections, not runtime races) -- precise claim: safe Rust prevents data races, not all race conditions or deadlocks; plain tight loops in Python/Rust needed an induced delay before they'd lose an update at all (mismatch vs. prediction), after which both lost one in 5 of 5 runs; C, Kotlin, and Go also lost one in 5 of 5 runs with no induced delay; TypeScript did in 4 of 5, C# in 3 of 5 |
 | 3. Integer overflow | C: UB; Go/Kotlin/C# (default): silent defined wrap; Rust: compile-time error for the const case (mismatch vs. prediction), else debug-panic/release-wrap; C#'s `checked`/project setting throws `OverflowException`; Python: no overflow; TS: silent precision loss, not wraparound |
 | 4. Ignored errors | Go/Rust let it through (warning only in Rust); Python/Kotlin require an active swallow; TS's unhandled rejection crashes the process asynchronously (mismatch vs. prediction); C#'s unobserved fire-and-forget Task exception is silently absorbed, no crash |
 | 5. Resource cleanup | C: detected leak via ASan; Rust's `Rc` cycle leaks but is memory-safe (deterministic Drop, not leak-freedom); every GC'd language (Go, Python, Kotlin, TypeScript, C#) needs explicit cleanup for deterministic timing |
