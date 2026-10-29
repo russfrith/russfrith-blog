@@ -128,5 +128,50 @@ Claims = @(
         SourcePattern = 'ticks seen: (\d+)'
         Tolerance = 0
     }
+    @{
+        Name = "rust-second-slowest-clean"
+        Kind = "rank"
+        PostPattern = "second-slowest clean build of the six core languages measured here"
+        Metric = "cleanMedian"
+        Langs = @("python","go","rust","typescript","kotlin","csharp")
+        Position = 4
+        ExpectedLang = "rust"
+    }
+    @{
+        Name = "predictions-go-ms"
+        Kind = "simple"
+        PostFile = "PREDICTIONS.md"
+        PostPattern = 'Go \((\d+)ms\) and Node'
+        SourceFile = "go/scenarios/07_cpu_heavy_blocking/output.txt"
+        SourcePattern = 'finished after ([\d.]+)ms'
+        Tolerance = 1
+    }
+    @{
+        Name = "predictions-node-ms"
+        Kind = "simple"
+        PostFile = "PREDICTIONS.md"
+        PostPattern = 'Node \((\d+)ms\) landed'
+        SourceFile = "typescript/scenarios/07_cpu_heavy_blocking/output.txt"
+        SourcePattern = 'finished after ([\d.]+)ms'
+        Tolerance = 1
+    }
+    @{
+        Name = "predictions-python-seconds"
+        Kind = "simple"
+        PostFile = "PREDICTIONS.md"
+        PostPattern = 'Python took ([\d.]+)s'
+        SourceFile = "python/scenarios/07_cpu_heavy_blocking/output.txt"
+        SourcePattern = 'finished after ([\d.]+)s'
+        Tolerance = 0.1
+    }
+    @{
+        Name = "kotlin-slowest-clean"
+        Kind = "rank"
+        PostPattern = "Kotlin is slowest to build clean and largest"
+        Metric = "cleanMedian"
+        Langs = @("python","go","rust","typescript","kotlin","csharp")
+        Position = 5
+        ExpectedLang = "kotlin"
+    }
 )
 }

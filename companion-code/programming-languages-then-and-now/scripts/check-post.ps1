@@ -212,15 +212,19 @@ if (-not (Test-Path $productivityFile)) {
     foreach ($lang in $prod.buildTimes.PSObject.Properties) {
         $bt = $lang.Value
         [void]$expectedNumbers.Add((Format-Num $bt.cleanMedian))
-        [void]$expectedNumbers.Add((Format-Num $bt.incrementalMedian))
+        [void]$expectedNumbers.Add((Format-Num $bt.noChangeRebuildMedian))
+        [void]$expectedNumbers.Add((Format-Num $bt.warmCacheRebuildMedian))
         foreach ($part in ($bt.cleanRange -split '-')) { [void]$expectedNumbers.Add((Format-Num $part)) }
-        foreach ($part in ($bt.incrementalRange -split '-')) { [void]$expectedNumbers.Add((Format-Num $part)) }
+        foreach ($part in ($bt.noChangeRebuildRange -split '-')) { [void]$expectedNumbers.Add((Format-Num $part)) }
+        foreach ($part in ($bt.warmCacheRebuildRange -split '-')) { [void]$expectedNumbers.Add((Format-Num $part)) }
     }
     foreach ($lang in $prod.linesOfCode.PSObject.Properties) {
         [void]$expectedNumbers.Add((Format-Num $lang.Value))
     }
     foreach ($lang in $prod.dependencies.PSObject.Properties) {
         [void]$expectedNumbers.Add((Format-Num $lang.Value.count))
+        if ($lang.Value.transitiveCount) { [void]$expectedNumbers.Add((Format-Num $lang.Value.transitiveCount)) }
+        if ($lang.Value.compiledCrateCount) { [void]$expectedNumbers.Add((Format-Num $lang.Value.compiledCrateCount)) }
     }
     foreach ($lang in $prod.imageSizes.PSObject.Properties) {
         if ($lang.Value.mb) { [void]$expectedNumbers.Add((Format-Num $lang.Value.mb)) }
@@ -256,7 +260,11 @@ if (-not (Test-Path $claimsFile)) {
     function ClaimNum($s) { return [double]($s -replace '[,_]', '') }
 
     foreach ($claim in $claims) {
-        $postMatch = [regex]::Match($postTextForClaims, $claim.PostPattern)
+        # Default source text is the rendered post HTML; a claim can instead point
+        # at a plain file (e.g. PREDICTIONS.md) via PostFile, for hand-typed numbers
+        # that live outside the Hugo-rendered post (J3, Phase 1j).
+        $claimPostText = if ($claim.PostFile) { Get-Content -Raw (Join-Path $companionDir $claim.PostFile) } else { $postTextForClaims }
+        $postMatch = [regex]::Match($claimPostText, $claim.PostPattern)
         if (-not $postMatch.Success) {
             $problems += "CLAIM '$($claim.Name)': post pattern not found -- '$($claim.PostPattern)'"
             continue
@@ -313,6 +321,17 @@ if (-not (Test-Path $claimsFile)) {
                     if ($actual -ne 0) {
                         $problems += "CLAIM MISMATCH '$($claim.Name)': post says 0 heartbeat ticks, $f shows $actual"
                     }
+                }
+            }
+            "rank" {
+                # J3: a prose ranking claim with NO number stated -- still has to match
+                # productivity.json's real order on the named metric (ascending), so it
+                # can't drift silently into a false claim. Position is 0-based ascending.
+                $prod = Get-Content -Raw (Join-Path $companionDir "results/productivity.json") | ConvertFrom-Json
+                $ranked = $claim.Langs | ForEach-Object { [PSCustomObject]@{ lang = $_; v = ($prod.buildTimes.$_).$($claim.Metric) } } | Sort-Object v
+                $actualOrder = $ranked.lang
+                if ($actualOrder[$claim.Position] -ne $claim.ExpectedLang) {
+                    $problems += "CLAIM MISMATCH '$($claim.Name)': expected position $($claim.Position) to be '$($claim.ExpectedLang)', actual order on $($claim.Metric) is $($actualOrder -join ' < ')"
                 }
             }
             default {
