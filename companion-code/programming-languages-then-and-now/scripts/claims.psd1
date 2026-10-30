@@ -165,6 +165,11 @@ Claims = @(
         Tolerance = 0.1
     }
     @{
+        Name = "kotlin-daemon-verdict"
+        Kind = "daemon-verdict"
+        PostPattern = 'daemon kept warm rebuilds in [\d.]+s raw \(timed in-container, no overhead subtracted\) vs [\d.]+s net with <code>--no-daemon</code> .{1,10}(a real difference|within noise)'
+    }
+    @{
         Name = "kotlin-slowest-clean"
         Kind = "rank"
         PostPattern = "Kotlin is slowest to build clean and largest"

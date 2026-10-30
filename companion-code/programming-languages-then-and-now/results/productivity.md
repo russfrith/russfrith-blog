@@ -28,7 +28,7 @@ Three columns, three different things:
 - **No-op rebuild (Docker layer cache check)**: `docker compose build` again with NOTHING changed. This only proves Docker skipped re-running the build steps because their inputs didn't change -- it says nothing about the compiler/runtime's own incremental behavior.
 - **Rebuild after a one-line change (warm toolchain cache)**: a real edit -- one comment line appended to the source -- rebuilt with the language's own build command, inside a container with the toolchain's real caches (package registry, build cache, NuGet packages, etc.) already warm from an untimed clean build. This is what a developer actually feels after a small edit. Python has no compile step, so its number here is only an interpreter + argparse process start, not a rebuild.
 
-The rebuild-after-a-change column is reported NET of each image's own fixed container-startup overhead (measured separately as `docker run --rm <image> true`, 3 runs, median subtracted; raw figure in parentheses) -- that overhead is otherwise large enough relative to a sub-second rebuild to be most of the number. Container overhead by image (median of 3 `docker run --rm <image> true` runs): Python 0.46s; Go 0.48s; Rust 0.47s; TypeScript 0.46s; Kotlin 0.49s; C# 0.46s.
+The rebuild-after-a-change column is reported NET of each image's own fixed container-startup overhead (measured separately as `docker run --rm <image> true`, 3 runs, median subtracted; raw figure in parentheses) -- that overhead is otherwise large enough relative to a sub-second rebuild to be most of the number. These net figures are approximate: the overhead probe is only `docker run <image> true` and doesn't capture every cost the real rebuild command incurs (bash startup inside the container, the volume mounts themselves), so it's a floor on the true overhead, not an exact figure. Container overhead by image (median of 3 `docker run --rm <image> true` runs): Python 0.46s; Go 0.48s; Rust 0.47s; TypeScript 0.46s; Kotlin 0.49s; C# 0.46s.
 
 | Language | Clean build (`--no-cache`) | No-op rebuild (Docker layer cache check) | Rebuild after a one-line change, net of overhead (raw) |
 |---|---|---|---|
@@ -41,7 +41,7 @@ The rebuild-after-a-change column is reported NET of each image's own fixed cont
 
 Kotlin's clean build still includes downloading Gradle 9.5.0 inside the build stage every time `--no-cache` is used; a production setup would cache that distribution in a named volume. Rust's clean build resolves 57 packages (direct + transitive) and actually compiles 50 crates on Linux.
 
-**Kotlin with the Gradle daemon kept warm** across all 3 rebuilds in one container (no `--no-daemon`, timed in-container so Docker startup overhead isn't even part of the raw number): 1.09s median net of overhead (1.01-1.59s; raw 1.58s, 1.5-2.08s) -- compare against 11.32s net (`--no-daemon`, used throughout the table above).
+**Kotlin with the Gradle daemon kept warm** across all 3 rebuilds in one container (no `--no-daemon`): 1.58s median, raw (timed in-container via nanosecond markers around just the `gradle` call, so no container-startup overhead was ever part of this number -- there is nothing to subtract) (1.5-2.08s) -- compare against 11.32s net with `--no-daemon` (used throughout the table above): a real difference (noise floor here is 0.98 s, twice the largest measured container overhead).
 
 ## 11. Final image size (idiomatic multi-stage build)
 

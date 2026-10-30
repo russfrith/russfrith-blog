@@ -70,7 +70,7 @@ Goldmark like any other table, matching every other table in this post).
 | {{ index $displayName $r.lang }} | {{ $r.cleanMedian }}s ({{ $r.cleanRange }}s) | {{ $r.noOpMedian }}s ({{ $r.noOpRange }}s) | {{ $r.warmNetMedian }}s ({{ $r.warmNetRange }}s) (raw {{ $r.warmRawMedian }}s, {{ $r.warmRawRange }}s){{ if eq $r.lang "python" }} (process start, not a rebuild -- Python has no compile step){{ end }} |
 {{- end }}
 {{- $kbt := $data.buildTimes.kotlin }}
-| Kotlin (Gradle daemon kept warm) | n/a | n/a | {{ $kbt.daemonWarmNetMedian }}s ({{ $kbt.daemonWarmNetRange }}s) (raw {{ $kbt.daemonWarmMedian }}s, {{ $kbt.daemonWarmRange }}s) -- vs. {{ $kbt.warmCacheRebuildNetMedian }}s net with `--no-daemon` above |
+| Kotlin (Gradle daemon kept warm) | n/a | n/a | {{ $kbt.daemonWarmMedian }}s ({{ $kbt.daemonWarmRange }}s), raw (timed in-container, no overhead subtracted) -- vs. {{ $kbt.warmCacheRebuildNetMedian }}s net with `--no-daemon` above |
 {{- end -}}
 
 {{- if eq $section "11" }}
@@ -143,5 +143,12 @@ Goldmark like any other table, matching every other table in this post).
   {{- $slowestWarmText = printf "%s (%vs)" (index $displayName $slowestWarm.lang) $slowestWarm.v -}}
 {{- end -}}
 {{- $kbt := $data.buildTimes.kotlin -}}
-Derived from `results/productivity.json`: fastest clean build, {{ index $displayName $fastestBuild.lang }} ({{ $fastestBuild.v }}s); slowest clean build, {{ index $displayName $slowestBuild.lang }} ({{ $slowestBuild.v }}s); fastest rebuild after a one-line change (net of container overhead), {{ $fastestWarmText }}; slowest, {{ $slowestWarmText }} -- note Python's entry in that comparison is a process start, not a rebuild; Kotlin with the Gradle daemon kept warm rebuilds in {{ $kbt.daemonWarmNetMedian }}s net vs {{ $kbt.warmCacheRebuildNetMedian }}s net with `--no-daemon`; smallest image, {{ $smallestImg.label }} ({{ $smallestImg.v }} MB); largest image, {{ $largestImg.label }} ({{ $largestImg.v }} MB).
+{{- /* L3: "a real difference" only if daemon-warm (raw, in-container) and
+     no-daemon (net of overhead) medians differ by more than the same noise
+     floor used above -- never hand-typed. */ -}}
+{{- $daemonGap := sub $kbt.warmCacheRebuildNetMedian $kbt.daemonWarmMedian -}}
+{{- if lt $daemonGap 0.0 }}{{- $daemonGap = mul $daemonGap -1 }}{{- end -}}
+{{- $daemonVerdict := "within noise" -}}
+{{- if gt $daemonGap $noiseFloor }}{{- $daemonVerdict = "a real difference" }}{{- end -}}
+Derived from `results/productivity.json`: fastest clean build, {{ index $displayName $fastestBuild.lang }} ({{ $fastestBuild.v }}s); slowest clean build, {{ index $displayName $slowestBuild.lang }} ({{ $slowestBuild.v }}s); fastest rebuild after a one-line change (net of container overhead), {{ $fastestWarmText }}; slowest, {{ $slowestWarmText }} -- note Python's entry in that comparison is a process start, not a rebuild; Kotlin with the Gradle daemon kept warm rebuilds in {{ $kbt.daemonWarmMedian }}s raw (timed in-container, no overhead subtracted) vs {{ $kbt.warmCacheRebuildNetMedian }}s net with `--no-daemon` -- {{ $daemonVerdict }}; smallest image, {{ $smallestImg.label }} ({{ $smallestImg.v }} MB); largest image, {{ $largestImg.label }} ({{ $largestImg.v }} MB).
 {{- end -}}

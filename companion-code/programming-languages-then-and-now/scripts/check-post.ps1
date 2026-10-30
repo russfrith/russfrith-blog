@@ -346,6 +346,23 @@ if (-not (Test-Path $claimsFile)) {
                     $problems += "CLAIM MISMATCH '$($claim.Name)': expected position $($claim.Position) to be '$($claim.ExpectedLang)', actual order on $($claim.Metric) is $($actualOrder -join ' < ')"
                 }
             }
+            "daemon-verdict" {
+                # L3: the post states "a real difference" or "within noise" for the
+                # Kotlin daemon-vs-no-daemon comparison -- that verdict is derived by
+                # the shortcode itself, not hand-typed, but this still has to agree
+                # with an independent recomputation from productivity.json, in case
+                # the shortcode's own logic has a bug.
+                $claimedVerdict = $postMatch.Groups[1].Value
+                $prod = Get-Content -Raw (Join-Path $companionDir "results/productivity.json") | ConvertFrom-Json
+                $kbt = $prod.buildTimes.kotlin
+                $maxOverhead = ($prod.containerOverhead.PSObject.Properties.Value.median | Measure-Object -Maximum).Maximum
+                $noiseFloor = $maxOverhead * 2
+                $gap = [math]::Abs($kbt.daemonWarmMedian - $kbt.warmCacheRebuildNetMedian)
+                $actualVerdict = if ($gap -gt $noiseFloor) { "a real difference" } else { "within noise" }
+                if ($claimedVerdict -ne $actualVerdict) {
+                    $problems += "CLAIM MISMATCH '$($claim.Name)': post says '$claimedVerdict', recomputed verdict is '$actualVerdict' (gap $gap vs noise floor $noiseFloor)"
+                }
+            }
             default {
                 $problems += "CLAIM '$($claim.Name)': unknown Kind '$($claim.Kind)'"
             }

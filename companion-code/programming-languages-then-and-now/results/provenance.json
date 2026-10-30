@@ -818,17 +818,9 @@
     "versionCommand": "python --version"
   },
   {
+    "captured": "2026-10-30T18:19:53.6199899-04:00",
+    "sha256": "d1dc39b48a460f921d0cd8ea8bae1f0353ae716980dd419016c5c08c1e7bc46d",
     "file": "results/productivity.json",
-    "images": [
-      "programming-languages-then-and-now-python:latest",
-      "programming-languages-then-and-now-go:latest",
-      "programming-languages-then-and-now-rust:latest",
-      "programming-languages-then-and-now-typescript:latest",
-      "programming-languages-then-and-now-kotlin:latest",
-      "programming-languages-then-and-now-csharp:latest"
-    ],
-    "sha256": "c2c2c86c31c4458169b4f0f142b04663bcb5a92a711cdd09e72b2485da83368f",
-    "captured": "2026-10-29T20:09:25.9062569-04:00",
     "commands": [
       "docker compose build --no-cache <service> (x3 per language)",
       "docker compose build <service> (x3 per language, no-op)",
@@ -837,15 +829,23 @@
       "docker run --rm -v <gradle-home>:... -v <src>:/work eclipse-temurin:25-jdk bash -c '<gradle shadowJar warmup + 3 timed daemon rebuilds, in-container nanosecond timing>'",
       "docker image inspect <image> --format '{{.Size}}'",
       "docker build -f csharp/Dockerfile.aot|.selfcontained|(none) ./csharp"
+    ],
+    "images": [
+      "programming-languages-then-and-now-python:latest",
+      "programming-languages-then-and-now-go:latest",
+      "programming-languages-then-and-now-rust:latest",
+      "programming-languages-then-and-now-typescript:latest",
+      "programming-languages-then-and-now-kotlin:latest",
+      "programming-languages-then-and-now-csharp:latest"
     ]
   },
   {
+    "captured": "2026-10-30T18:19:53.6213855-04:00",
+    "sha256": "f0422b7a53beda4255bd97171b184fe872873b3a69b2766661c923992a2583a9",
     "file": "results/productivity.md",
-    "images": [],
-    "sha256": "ce39b0f2da5c9907ebdb24e8afeaa68def9bb244e11524f0b67be8ea7a56b420",
-    "captured": "2026-10-29T20:09:25.9076407-04:00",
     "commands": [
       "generated from results/productivity.json by scripts/measure-productivity.ps1 -- never hand-edited"
-    ]
+    ],
+    "images": []
   }
 ]

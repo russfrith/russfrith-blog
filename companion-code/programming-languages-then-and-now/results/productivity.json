@@ -148,11 +148,11 @@
         "cd /work && export PATH=/work/.gradle-dist/gradle-9.5.0/bin:$PATH && echo '// warm-cache-rebuild-marker-3' >> src/main/kotlin/Wordfreq.kt && gradle shadowJar --no-daemon"
       ],
       "daemonWarmNetRuns": [
-        1.59,
-        1.09,
-        1.01
+        2.08,
+        1.58,
+        1.5
       ],
-      "daemonWarmNetMedian": 1.09,
+      "daemonWarmNetMedian": 1.58,
       "noChangeRebuildMedian": 1.06,
       "daemonWarmRuns": [
         2.08,
@@ -161,7 +161,7 @@
       ],
       "warmCacheRebuildRange": "11.62-11.99",
       "warmCacheRebuildNetRange": "11.13-11.5",
-      "daemonWarmNote": "Measured with the Gradle daemon kept warm across all 3 rebuilds in one container (no --no-daemon), timed in-container via nanosecond epoch markers, not by wrapping docker run -- compare against warmCacheRebuild* above, which uses --no-daemon throughout.",
+      "daemonWarmNote": "Measured with the Gradle daemon kept warm across all 3 rebuilds in one container (no --no-daemon), timed in-container via nanosecond epoch markers around just the gradle call -- Docker container-startup overhead was never part of this number, so it is reported as raw with no overhead subtracted. Compare against warmCacheRebuild* above, which uses --no-daemon throughout and IS a wrapped-docker-run measurement with overhead subtracted.",
       "daemonWarmRange": "1.5-2.08",
       "noChangeRebuildRange": "1.04-1.1",
       "cleanRange": "87.57-92.56",
@@ -172,7 +172,7 @@
         11.62,
         11.99
       ],
-      "daemonWarmNetRange": "1.01-1.59"
+      "daemonWarmNetRange": "1.5-2.08"
     },
     "python": {
       "warmCacheRebuildCommands": [
