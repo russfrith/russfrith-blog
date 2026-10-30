@@ -61,14 +61,16 @@ Goldmark like any other table, matching every other table in this post).
 {{- $rows := slice -}}
 {{- range $lang := $langs -}}
   {{- $bt := index $data.buildTimes $lang -}}
-  {{- $rows = $rows | append (dict "lang" $lang "cleanMedian" $bt.cleanMedian "cleanRange" $bt.cleanRange "noOpMedian" $bt.noChangeRebuildMedian "noOpRange" $bt.noChangeRebuildRange "warmMedian" $bt.warmCacheRebuildMedian "warmRange" $bt.warmCacheRebuildRange) -}}
+  {{- $rows = $rows | append (dict "lang" $lang "cleanMedian" $bt.cleanMedian "cleanRange" $bt.cleanRange "noOpMedian" $bt.noChangeRebuildMedian "noOpRange" $bt.noChangeRebuildRange "warmNetMedian" $bt.warmCacheRebuildNetMedian "warmNetRange" $bt.warmCacheRebuildNetRange "warmRawMedian" $bt.warmCacheRebuildMedian "warmRawRange" $bt.warmCacheRebuildRange) -}}
 {{- end -}}
 {{- $sorted := sort $rows "cleanMedian" "asc" }}
-| Language | Clean build (`--no-cache`) | No-op rebuild (Docker layer cache check) | Rebuild after a one-line change (warm toolchain cache) |
+| Language | Clean build (`--no-cache`) | No-op rebuild (Docker layer cache check) | Rebuild after a one-line change, net of container overhead (raw) |
 |---|---|---|---|
 {{- range $r := $sorted }}
-| {{ index $displayName $r.lang }} | {{ $r.cleanMedian }}s ({{ $r.cleanRange }}s) | {{ $r.noOpMedian }}s ({{ $r.noOpRange }}s) | {{ $r.warmMedian }}s ({{ $r.warmRange }}s){{ if eq $r.lang "python" }} (process start, not a rebuild -- Python has no compile step){{ end }} |
+| {{ index $displayName $r.lang }} | {{ $r.cleanMedian }}s ({{ $r.cleanRange }}s) | {{ $r.noOpMedian }}s ({{ $r.noOpRange }}s) | {{ $r.warmNetMedian }}s ({{ $r.warmNetRange }}s) (raw {{ $r.warmRawMedian }}s, {{ $r.warmRawRange }}s){{ if eq $r.lang "python" }} (process start, not a rebuild -- Python has no compile step){{ end }} |
 {{- end }}
+{{- $kbt := $data.buildTimes.kotlin }}
+| Kotlin (Gradle daemon kept warm) | n/a | n/a | {{ $kbt.daemonWarmNetMedian }}s ({{ $kbt.daemonWarmNetRange }}s) (raw {{ $kbt.daemonWarmMedian }}s, {{ $kbt.daemonWarmRange }}s) -- vs. {{ $kbt.warmCacheRebuildNetMedian }}s net with `--no-daemon` above |
 {{- end -}}
 
 {{- if eq $section "11" }}
@@ -112,10 +114,34 @@ Goldmark like any other table, matching every other table in this post).
 {{- $warmRows := slice -}}
 {{- range $lang := $langs -}}
   {{- $bt := index $data.buildTimes $lang -}}
-  {{- $warmRows = $warmRows | append (dict "lang" $lang "v" $bt.warmCacheRebuildMedian) -}}
+  {{- $warmRows = $warmRows | append (dict "lang" $lang "v" $bt.warmCacheRebuildNetMedian) -}}
 {{- end -}}
 {{- $warmSorted := sort $warmRows "v" "asc" -}}
 {{- $fastestWarm := index $warmSorted 0 -}}
+{{- $secondWarm := index $warmSorted 1 -}}
 {{- $slowestWarm := index $warmSorted (sub (len $warmSorted) 1) -}}
-Derived from `results/productivity.json`: fastest clean build, {{ index $displayName $fastestBuild.lang }} ({{ $fastestBuild.v }}s); slowest clean build, {{ index $displayName $slowestBuild.lang }} ({{ $slowestBuild.v }}s); fastest rebuild after a one-line change (warm toolchain cache), {{ index $displayName $fastestWarm.lang }} ({{ $fastestWarm.v }}s); slowest, {{ index $displayName $slowestWarm.lang }} ({{ $slowestWarm.v }}s) -- note Python's entry in that comparison is a process start, not a rebuild; smallest image, {{ $smallestImg.label }} ({{ $smallestImg.v }} MB); largest image, {{ $largestImg.label }} ({{ $largestImg.v }} MB).
+{{- $secondSlowestWarm := index $warmSorted (sub (len $warmSorted) 2) -}}
+{{- /* K1: a ranking that rests on a gap smaller than 2x the measured container
+     overhead isn't a real signal -- say "within noise" instead of naming a
+     single winner the measurement can't actually distinguish. */ -}}
+{{- $maxOverhead := 0.0 -}}
+{{- range $lang := $langs -}}
+  {{- $o := (index $data.containerOverhead $lang).median -}}
+  {{- if gt $o $maxOverhead }}{{- $maxOverhead = $o }}{{- end -}}
+{{- end -}}
+{{- $noiseFloor := mul $maxOverhead 2 -}}
+{{- $fastestWarmText := "" -}}
+{{- if lt (sub $secondWarm.v $fastestWarm.v) $noiseFloor -}}
+  {{- $fastestWarmText = printf "within noise of each other (container overhead alone is up to %vs) -- %s (%vs) nominally fastest" $maxOverhead (index $displayName $fastestWarm.lang) $fastestWarm.v -}}
+{{- else -}}
+  {{- $fastestWarmText = printf "%s (%vs)" (index $displayName $fastestWarm.lang) $fastestWarm.v -}}
+{{- end -}}
+{{- $slowestWarmText := "" -}}
+{{- if lt (sub $slowestWarm.v $secondSlowestWarm.v) $noiseFloor -}}
+  {{- $slowestWarmText = printf "within noise of each other -- %s (%vs) nominally slowest" (index $displayName $slowestWarm.lang) $slowestWarm.v -}}
+{{- else -}}
+  {{- $slowestWarmText = printf "%s (%vs)" (index $displayName $slowestWarm.lang) $slowestWarm.v -}}
+{{- end -}}
+{{- $kbt := $data.buildTimes.kotlin -}}
+Derived from `results/productivity.json`: fastest clean build, {{ index $displayName $fastestBuild.lang }} ({{ $fastestBuild.v }}s); slowest clean build, {{ index $displayName $slowestBuild.lang }} ({{ $slowestBuild.v }}s); fastest rebuild after a one-line change (net of container overhead), {{ $fastestWarmText }}; slowest, {{ $slowestWarmText }} -- note Python's entry in that comparison is a process start, not a rebuild; Kotlin with the Gradle daemon kept warm rebuilds in {{ $kbt.daemonWarmNetMedian }}s net vs {{ $kbt.warmCacheRebuildNetMedian }}s net with `--no-daemon`; smallest image, {{ $smallestImg.label }} ({{ $smallestImg.v }} MB); largest image, {{ $largestImg.label }} ({{ $largestImg.v }} MB).
 {{- end -}}

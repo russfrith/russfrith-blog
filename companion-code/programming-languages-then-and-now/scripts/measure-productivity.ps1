@@ -318,6 +318,106 @@ $buildTimes["python"].warmCacheRebuildRange = "$([math]::Min($r.runs[0],[math]::
 $buildTimes["python"].warmCacheRebuildCommands = $r.commands
 $buildTimes["python"].warmCacheRebuildNote = "Python has no compile step; this number is a process start (interpreter + argparse), not a rebuild."
 
+# --- K1: rebuild measurement honesty ---------------------------------------
+# Every warm-cache-rebuild run above is timed as a whole `docker run --rm
+# <image> bash -c '<cmd>'` invocation, which bundles the real build time with
+# Docker's own fixed per-container startup overhead. Measure that overhead
+# directly (`docker run --rm <image> true`, 3x per image) and report both the
+# raw number above and this overhead subtracted out, so "0.7s" isn't quietly
+# half container startup.
+Write-Host "`n=== Container overhead (K1) ===" -ForegroundColor Cyan
+function Measure-ContainerOverhead($image) {
+    $runs = @()
+    for ($i = 1; $i -le 3; $i++) {
+        $t = Measure-Seconds { docker run --rm $image true 2>&1 }
+        $runs += $t
+    }
+    return @{ runs = $runs; median = (Median $runs) }
+}
+$overheadImages = @{
+    rust = $rs
+    go = "golang:1.26.4-bookworm"
+    typescript = $node
+    kotlin = "eclipse-temurin:25-jdk"
+    csharp = $cs
+    python = "python:3.14.8-slim"
+}
+$containerOverhead = @{}
+foreach ($lang in $languages) {
+    $o = Measure-ContainerOverhead $overheadImages[$lang]
+    $containerOverhead[$lang] = $o
+    Write-Host "  $lang`: median $($o.median)s (runs: $($o.runs -join ', '))"
+}
+
+# Net = raw warm-cache-rebuild runs with this language's own container overhead
+# subtracted (floored at 0). The table shows net first, raw in parentheses.
+foreach ($lang in $languages) {
+    $overheadMedian = $containerOverhead[$lang].median
+    # [math]::Max(0, ...) -- NOT 0.0 -- resolves to the Max(int,int) overload here and
+    # silently truncates the double argument to int before comparing (so Max(0, 0.36)
+    # returns 0, not 0.36). Always pass 0.0 when either side is a double.
+    $netRuns = $buildTimes[$lang].warmCacheRebuildRuns | ForEach-Object { [math]::Round([math]::Max(0.0, $_ - $overheadMedian), 2) }
+    $buildTimes[$lang].warmCacheRebuildNetRuns = $netRuns
+    $buildTimes[$lang].warmCacheRebuildNetMedian = Median $netRuns
+    $buildTimes[$lang].warmCacheRebuildNetRange = "$([math]::Min($netRuns[0],[math]::Min($netRuns[1],$netRuns[2])))-$([math]::Max($netRuns[0],[math]::Max($netRuns[1],$netRuns[2])))"
+}
+
+# --- K1: Kotlin with the Gradle daemon kept warm ----------------------------
+# One untimed `gradle shadowJar` call starts the daemon (no --no-daemon); the
+# daemon process then stays alive as long as this ONE container does, so the
+# 3 timed rebuilds that follow, in the SAME bash script / SAME container, are
+# measured with the daemon already warm. Each of the 3 is timed INSIDE the
+# container (nanosecond epoch markers) rather than by wrapping the whole
+# `docker run`, since all 3 happen inside one invocation here.
+Write-Host "`n=== Kotlin: Gradle daemon kept warm (K1) ===" -ForegroundColor Cyan
+$kotlinDaemonSrcVol = "ptn-kotlin-daemon-src"
+$kotlinDaemonGradleVol = "ptn-kotlin-daemon-gradle-home"
+docker volume rm -f $kotlinDaemonSrcVol $kotlinDaemonGradleVol 2>&1 | Out-Null
+docker volume create $kotlinDaemonSrcVol | Out-Null
+docker volume create $kotlinDaemonGradleVol | Out-Null
+$kotlinDaemonVolArgs = @("-v", "${kotlinDaemonSrcVol}:/work", "-v", "${PWD}/kotlin:/srcHost:ro", "-v", "${kotlinDaemonGradleVol}:/root/.gradle")
+$kotlinDaemonScript = @'
+apt-get update -qq && apt-get install -y -qq curl unzip > /dev/null 2>&1
+cp -r /srcHost/. /work/
+cd /work
+if [ ! -x /work/.gradle-dist/gradle-9.5.0/bin/gradle ]; then
+  curl -fsSL https://services.gradle.org/distributions/gradle-9.5.0-bin.zip -o /tmp/gradle.zip
+  mkdir -p /work/.gradle-dist
+  unzip -q /tmp/gradle.zip -d /work/.gradle-dist
+fi
+export PATH=/work/.gradle-dist/gradle-9.5.0/bin:$PATH
+gradle shadowJar
+for i in 1 2 3; do
+  echo "// warm-cache-rebuild-daemon-marker-$i" >> src/main/kotlin/Wordfreq.kt
+  start=$(date +%s%N)
+  gradle shadowJar
+  end=$(date +%s%N)
+  echo "DAEMON_RUN_${i}_NS:$((end-start))"
+done
+'@
+$daemonOut = docker run --rm @kotlinDaemonVolArgs "eclipse-temurin:25-jdk" bash -c $kotlinDaemonScript 2>&1 | Out-String
+docker volume rm -f $kotlinDaemonSrcVol $kotlinDaemonGradleVol 2>&1 | Out-Null
+
+$daemonRuns = @()
+foreach ($m in [regex]::Matches($daemonOut, 'DAEMON_RUN_(\d+)_NS:(\d+)')) {
+    $seconds = [math]::Round([double]$m.Groups[2].Value / 1e9, 2)
+    $daemonRuns += $seconds
+    Write-Host "  daemon-warm rebuild run $($m.Groups[1].Value)`: ${seconds}s"
+}
+if ($daemonRuns.Count -ne 3) {
+    Write-Host "  WARNING: expected 3 daemon-warm runs, parsed $($daemonRuns.Count) -- see raw output below" -ForegroundColor Yellow
+    Write-Host $daemonOut
+}
+$buildTimes["kotlin"].daemonWarmRuns = $daemonRuns
+$buildTimes["kotlin"].daemonWarmMedian = Median $daemonRuns
+$buildTimes["kotlin"].daemonWarmRange = "$([math]::Min($daemonRuns[0],[math]::Min($daemonRuns[1],$daemonRuns[2])))-$([math]::Max($daemonRuns[0],[math]::Max($daemonRuns[1],$daemonRuns[2])))"
+$kotlinOverheadMedian = $containerOverhead["kotlin"].median
+$daemonNetRuns = $daemonRuns | ForEach-Object { [math]::Round([math]::Max(0.0, $_ - $kotlinOverheadMedian), 2) }
+$buildTimes["kotlin"].daemonWarmNetRuns = $daemonNetRuns
+$buildTimes["kotlin"].daemonWarmNetMedian = Median $daemonNetRuns
+$buildTimes["kotlin"].daemonWarmNetRange = "$([math]::Min($daemonNetRuns[0],[math]::Min($daemonNetRuns[1],$daemonNetRuns[2])))-$([math]::Max($daemonNetRuns[0],[math]::Max($daemonNetRuns[1],$daemonNetRuns[2])))"
+$buildTimes["kotlin"].daemonWarmNote = "Measured with the Gradle daemon kept warm across all 3 rebuilds in one container (no --no-daemon), timed in-container via nanosecond epoch markers, not by wrapping docker run -- compare against warmCacheRebuild* above, which uses --no-daemon throughout."
+
 Write-Host "`n=== Image sizes ===" -ForegroundColor Cyan
 $imageSizes = @{}
 foreach ($lang in $languages) {
@@ -358,6 +458,7 @@ $productivity = @{
     dependencies = $deps
     buildTimes   = $buildTimes
     imageSizes   = $imageSizes
+    containerOverhead = $containerOverhead
 }
 
 $outFile = "results/productivity.json"
@@ -412,14 +513,18 @@ $md += "- **Clean build**: ``docker compose build --no-cache``. Every layer rebu
 $md += "- **No-op rebuild (Docker layer cache check)**: ``docker compose build`` again with NOTHING changed. This only proves Docker skipped re-running the build steps because their inputs didn't change -- it says nothing about the compiler/runtime's own incremental behavior."
 $md += "- **Rebuild after a one-line change (warm toolchain cache)**: a real edit -- one comment line appended to the source -- rebuilt with the language's own build command, inside a container with the toolchain's real caches (package registry, build cache, NuGet packages, etc.) already warm from an untimed clean build. This is what a developer actually feels after a small edit. Python has no compile step, so its number here is only an interpreter + argparse process start, not a rebuild."
 $md += ""
-$md += "| Language | Clean build (``--no-cache``) | No-op rebuild (Docker layer cache check) | Rebuild after a one-line change (warm toolchain cache) |"
+$md += "The rebuild-after-a-change column is reported NET of each image's own fixed container-startup overhead (measured separately as ``docker run --rm <image> true``, 3 runs, median subtracted; raw figure in parentheses) -- that overhead is otherwise large enough relative to a sub-second rebuild to be most of the number. Container overhead by image (median of 3 ``docker run --rm <image> true`` runs): $((($languages | ForEach-Object { "$($displayName[$_]) $($containerOverhead[$_].median)s" }) -join '; '))."
+$md += ""
+$md += "| Language | Clean build (``--no-cache``) | No-op rebuild (Docker layer cache check) | Rebuild after a one-line change, net of overhead (raw) |"
 $md += "|---|---|---|---|"
 foreach ($lang in $byClean) {
     $bt = $buildTimes[$lang]
-    $md += "| $($displayName[$lang]) | $($bt.cleanMedian)s ($($bt.cleanRange)s) | $($bt.noChangeRebuildMedian)s ($($bt.noChangeRebuildRange)s) | $($bt.warmCacheRebuildMedian)s ($($bt.warmCacheRebuildRange)s) |"
+    $md += "| $($displayName[$lang]) | $($bt.cleanMedian)s ($($bt.cleanRange)s) | $($bt.noChangeRebuildMedian)s ($($bt.noChangeRebuildRange)s) | $($bt.warmCacheRebuildNetMedian)s ($($bt.warmCacheRebuildNetRange)s) (raw $($bt.warmCacheRebuildMedian)s, $($bt.warmCacheRebuildRange)s) |"
 }
 $md += ""
 $md += "Kotlin's clean build still includes downloading Gradle 9.5.0 inside the build stage every time ``--no-cache`` is used; a production setup would cache that distribution in a named volume. Rust's clean build resolves $($deps.rust.transitiveCount) packages (direct + transitive) and actually compiles $($deps.rust.compiledCrateCount) crates on Linux."
+$md += ""
+$md += "**Kotlin with the Gradle daemon kept warm** across all 3 rebuilds in one container (no ``--no-daemon``, timed in-container so Docker startup overhead isn't even part of the raw number): $($buildTimes.kotlin.daemonWarmNetMedian)s median net of overhead ($($buildTimes.kotlin.daemonWarmNetRange)s; raw $($buildTimes.kotlin.daemonWarmMedian)s, $($buildTimes.kotlin.daemonWarmRange)s) -- compare against $($buildTimes.kotlin.warmCacheRebuildNetMedian)s net (``--no-daemon``, used throughout the table above)."
 $md += ""
 $md += "## 11. Final image size (idiomatic multi-stage build)"
 $md += ""

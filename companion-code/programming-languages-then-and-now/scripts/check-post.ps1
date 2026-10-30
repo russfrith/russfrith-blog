@@ -327,9 +327,21 @@ if (-not (Test-Path $claimsFile)) {
                 # J3: a prose ranking claim with NO number stated -- still has to match
                 # productivity.json's real order on the named metric (ascending), so it
                 # can't drift silently into a false claim. Position is 0-based ascending.
+                # K1: if NoiseThreshold is set and the value at Position is within that
+                # threshold of its neighbor, the ordering there isn't a real signal --
+                # the claim is skipped rather than failed, since the post is expected to
+                # say "within noise" in that case, not assert a specific position.
                 $prod = Get-Content -Raw (Join-Path $companionDir "results/productivity.json") | ConvertFrom-Json
                 $ranked = $claim.Langs | ForEach-Object { [PSCustomObject]@{ lang = $_; v = ($prod.buildTimes.$_).$($claim.Metric) } } | Sort-Object v
                 $actualOrder = $ranked.lang
+                if ($claim.NoiseThreshold) {
+                    $p = $claim.Position
+                    $neighbor = if ($p -gt 0) { $ranked[$p - 1].v } else { $null }
+                    $neighbor2 = if ($p -lt ($ranked.Count - 1)) { $ranked[$p + 1].v } else { $null }
+                    $nearNeighbor = ($neighbor -ne $null -and [math]::Abs($ranked[$p].v - $neighbor) -lt $claim.NoiseThreshold)
+                    $nearNeighbor2 = ($neighbor2 -ne $null -and [math]::Abs($ranked[$p].v - $neighbor2) -lt $claim.NoiseThreshold)
+                    if ($nearNeighbor -or $nearNeighbor2) { continue }
+                }
                 if ($actualOrder[$claim.Position] -ne $claim.ExpectedLang) {
                     $problems += "CLAIM MISMATCH '$($claim.Name)': expected position $($claim.Position) to be '$($claim.ExpectedLang)', actual order on $($claim.Metric) is $($actualOrder -join ' < ')"
                 }

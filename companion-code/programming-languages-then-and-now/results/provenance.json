@@ -818,8 +818,7 @@
     "versionCommand": "python --version"
   },
   {
-    "sha256": "1d6bb9b99624ac4a8d6360ba464d5c54531e38e55621b8e8d7594ebd2e8634d0",
-    "captured": "2026-10-29T18:28:24.8700556-04:00",
+    "file": "results/productivity.json",
     "images": [
       "programming-languages-then-and-now-python:latest",
       "programming-languages-then-and-now-go:latest",
@@ -828,19 +827,23 @@
       "programming-languages-then-and-now-kotlin:latest",
       "programming-languages-then-and-now-csharp:latest"
     ],
+    "sha256": "c2c2c86c31c4458169b4f0f142b04663bcb5a92a711cdd09e72b2485da83368f",
+    "captured": "2026-10-29T20:09:25.9062569-04:00",
     "commands": [
       "docker compose build --no-cache <service> (x3 per language)",
-      "docker compose build <service> (x3 per language, incremental)",
+      "docker compose build <service> (x3 per language, no-op)",
+      "docker run --rm -v <toolchain caches>:... -v <src>:/work <image> bash -c '<one-line comment>; <build command>' (x3 per language, warm toolchain cache)",
+      "docker run --rm <image> true (x3 per image, container overhead)",
+      "docker run --rm -v <gradle-home>:... -v <src>:/work eclipse-temurin:25-jdk bash -c '<gradle shadowJar warmup + 3 timed daemon rebuilds, in-container nanosecond timing>'",
       "docker image inspect <image> --format '{{.Size}}'",
       "docker build -f csharp/Dockerfile.aot|.selfcontained|(none) ./csharp"
-    ],
-    "file": "results/productivity.json"
+    ]
   },
   {
-    "captured": "2026-10-29T18:38:12.2885571-04:00",
     "file": "results/productivity.md",
     "images": [],
-    "sha256": "1903b2c030dd490521199068598d9ce2153e1c269b51ec11ce9e86105a9e5953",
+    "sha256": "ce39b0f2da5c9907ebdb24e8afeaa68def9bb244e11524f0b67be8ea7a56b420",
+    "captured": "2026-10-29T20:09:25.9076407-04:00",
     "commands": [
       "generated from results/productivity.json by scripts/measure-productivity.ps1 -- never hand-edited"
     ]
