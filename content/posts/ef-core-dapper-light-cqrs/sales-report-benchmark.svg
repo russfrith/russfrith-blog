@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 440" width="820" height="440" role="img" aria-labelledby="chart-title chart-desc" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif">
+  <title id="chart-title">Scenario 3 (sales report): mean time by query strategy</title>
+  <desc id="chart-desc">Horizontal bar chart. EF compiled query plus projection: 756 ms. EF AsNoTracking plus Select, GroupBy translated to SQL: 759 ms. EF AsNoTracking grouped in application memory: 894 ms. Dapper single aggregate query: 974 ms. EF tracked entities grouped in application memory: 2,100 ms. Lower is better. Benchmarked in Docker against PostgreSQL 17, both containers capped at 2 CPUs and 2 GB RAM.</desc>
+
+  <rect x="0" y="0" width="820" height="440" rx="8" fill="#fcfcfb" />
+
+  <text x="24" y="34" font-size="20" font-weight="700" fill="#0b0b0b">Scenario 3: sales report, mean time by query strategy</text>
+  <text x="24" y="56" font-size="13" fill="#52514e">PostgreSQL 17 in Docker, 2 CPUs / 2 GB RAM per container. Lower is better.</text>
+
+  <!-- baseline -->
+  <line x1="300" y1="74" x2="300" y2="346" stroke="#c3c2b7" stroke-width="2" />
+
+  <!-- Bar 1: EF compiled query + projection (SQL) - 756 ms -->
+  <text x="290" y="102" text-anchor="end" font-size="13" fill="#52514e">EF compiled query + projection (SQL)</text>
+  <rect x="300" y="80" width="148" height="36" rx="4" fill="#2a78d6" />
+  <text x="456" y="102" font-size="13" font-weight="700" fill="#0b0b0b">756 ms</text>
+
+  <!-- Bar 2: EF AsNoTracking + Select (SQL) - 759 ms -->
+  <text x="290" y="158" text-anchor="end" font-size="13" fill="#52514e">EF AsNoTracking + Select (SQL)</text>
+  <rect x="300" y="136" width="148" height="36" rx="4" fill="#2a78d6" />
+  <text x="456" y="158" font-size="13" font-weight="700" fill="#0b0b0b">759 ms</text>
+
+  <!-- Bar 3: EF AsNoTracking, grouped in memory - 894 ms -->
+  <text x="290" y="214" text-anchor="end" font-size="13" fill="#52514e">EF AsNoTracking, grouped in memory</text>
+  <rect x="300" y="192" width="175" height="36" rx="4" fill="#898781" />
+  <text x="483" y="214" font-size="13" font-weight="700" fill="#0b0b0b">894 ms</text>
+
+  <!-- Bar 4: Dapper - 974 ms -->
+  <text x="290" y="270" text-anchor="end" font-size="13" fill="#52514e">Dapper (single aggregate query)</text>
+  <rect x="300" y="248" width="190" height="36" rx="4" fill="#2a78d6" />
+  <text x="498" y="270" font-size="13" font-weight="700" fill="#0b0b0b">974 ms</text>
+
+  <!-- Bar 5: EF tracked, grouped in memory - 2,100 ms -->
+  <text x="290" y="326" text-anchor="end" font-size="13" fill="#52514e">EF tracked, grouped in memory</text>
+  <rect x="300" y="304" width="410" height="36" rx="4" fill="#898781" />
+  <text x="718" y="326" font-size="13" font-weight="700" fill="#0b0b0b">2,100 ms</text>
+
+  <!-- legend -->
+  <rect x="300" y="372" width="14" height="14" rx="3" fill="#2a78d6" />
+  <text x="322" y="383" font-size="13" fill="#52514e">GroupBy translated to SQL, or Dapper's hand-written SQL</text>
+
+  <rect x="300" y="394" width="14" height="14" rx="3" fill="#898781" />
+  <text x="322" y="405" font-size="13" fill="#52514e">Grouped in application memory (included for contrast, not a fair comparison)</text>
+</svg>

@@ -12,7 +12,7 @@ tags: ["dotnet", "csharp", "efcore", "dapper", "postgresql"]
 categories: ["database"]
 ---
 
-I use EF Core almost exclusively. For the write side of almost any app, I want an aggregate that protects its own invariants, a repository that hides the database, and a unit of work that commits a transaction. EF Core gives me all of that without much ceremony. So when I say "here's when I reached for Dapper," I want to be clear up front: this isn't a recommendation to replace EF Core, or even to use Dapper regularly. It's a description of the one place I've found where EF Core's own tools stopped being enough, and the rules I set for myself before I let a second data access library into the codebase.
+I use EF Core almost exclusively for database access in my .NET projects. For the write side of almost any app, I want an aggregate that protects its own invariants, a repository that hides the database, and a unit of work that commits a transaction. EF Core gives me all of that without much ceremony. So when I say "here's when I reached for Dapper," I want to be clear up front: this isn't a recommendation to replace EF Core, or even to use Dapper regularly. It's a description of the one place I've found where EF Core's own tools stopped being enough, and the rules I set for myself before I let a second data access library into the codebase.
 
 The trigger is almost always a read endpoint. A list screen with filters and paging, a report that aggregates across a hundred thousand rows, a customer history export, something domain-driven design never really promised to be fast at. The order aggregate that protects "a submitted order can't be modified" has no opinion about "show me the last 90 days of orders, by customer name, with a running total." Those are different problems, and forcing one tool to solve both is where the trouble starts.
 
@@ -364,6 +364,8 @@ Revenue by product category and month, aggregated across the last 12 months of o
 | EF `AsNoTracking` + `Select` (`GroupBy` → SQL) | **759 ms** | 128 KB |
 | EF compiled query + projection (`GroupBy` → SQL) | **756 ms** | 92 KB |
 | Dapper | 974 ms | 29 KB |
+
+![Horizontal bar chart of scenario 3 mean times: EF compiled query and projection 756ms, EF AsNoTracking with Select 759ms, EF AsNoTracking grouped in memory 894ms, Dapper 974ms, EF tracked grouped in memory 2,100ms. The two SQL-translated EF variants are the fastest.](sales-report-benchmark.svg)
 
 This is the scenario to feature, not bury: **both SQL-translated EF variants beat Dapper here**, and by a comfortable margin. The gap isn't about the tool, it's about the plan. EF's generated SQL for the `GroupBy` wraps the joins in a subquery, then aggregates on the outside:
 
