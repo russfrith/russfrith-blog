@@ -3,6 +3,10 @@ title: "When EF Core Isn't Enough: Adding Dapper Without Breaking Your Domain Mo
 description: "A light CQRS pattern for mixing EF Core and Dapper in the same app, with real benchmarks across tracked entities, AsNoTracking, projections, compiled queries, and Dapper"
 date: 2026-11-02T17:00:00-04:00
 draft: true
+cover:
+  image: pexels-drewrae-883362.jpg
+  alt: "A man wearing a black and teal tuxedo"
+  caption: "Photo by [Drew Rae](https://www.pexels.com/@drewrae/) on [Pexels](https://www.pexels.com/photo/man-wearing-black-and-teal-tuxedo-883362/)"
 ShowToc: true
 tags: ["dotnet", "csharp", "efcore", "dapper", "postgresql"]
 categories: ["database"]
