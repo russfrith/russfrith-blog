@@ -1,0 +1,20 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+COPY src/Domain/OrderLightCqrs.Domain.csproj Domain/
+COPY src/Application/OrderLightCqrs.Application.csproj Application/
+COPY src/Infrastructure/OrderLightCqrs.Infrastructure.csproj Infrastructure/
+COPY src/Api/OrderLightCqrs.Api.csproj Api/
+RUN dotnet restore Api/OrderLightCqrs.Api.csproj
+
+COPY src/Domain/ Domain/
+COPY src/Application/ Application/
+COPY src/Infrastructure/ Infrastructure/
+COPY src/Api/ Api/
+RUN dotnet publish Api/OrderLightCqrs.Api.csproj -c Release -o /app --no-restore
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+WORKDIR /app
+COPY --from=build /app .
+EXPOSE 8080
+ENTRYPOINT ["dotnet", "OrderLightCqrs.Api.dll"]

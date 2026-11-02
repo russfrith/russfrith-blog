@@ -1,0 +1,15 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0
+WORKDIR /src
+
+COPY src/Domain/OrderLightCqrs.Domain.csproj Domain/
+COPY src/Application/OrderLightCqrs.Application.csproj Application/
+COPY src/Infrastructure/OrderLightCqrs.Infrastructure.csproj Infrastructure/
+COPY src/Benchmarks/OrderLightCqrs.Benchmarks.csproj Benchmarks/
+RUN dotnet restore Benchmarks/OrderLightCqrs.Benchmarks.csproj
+
+COPY src/Domain/ Domain/
+COPY src/Application/ Application/
+COPY src/Infrastructure/ Infrastructure/
+COPY src/Benchmarks/ Benchmarks/
+
+ENTRYPOINT ["dotnet", "run", "--project", "Benchmarks/OrderLightCqrs.Benchmarks.csproj", "-c", "Release", "--"]

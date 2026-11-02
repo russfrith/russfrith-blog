@@ -1,0 +1,19 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+COPY src/Domain/OrderLightCqrs.Domain.csproj Domain/
+COPY src/Application/OrderLightCqrs.Application.csproj Application/
+COPY src/Infrastructure/OrderLightCqrs.Infrastructure.csproj Infrastructure/
+COPY src/MigrateAndSeed/OrderLightCqrs.MigrateAndSeed.csproj MigrateAndSeed/
+RUN dotnet restore MigrateAndSeed/OrderLightCqrs.MigrateAndSeed.csproj
+
+COPY src/Domain/ Domain/
+COPY src/Application/ Application/
+COPY src/Infrastructure/ Infrastructure/
+COPY src/MigrateAndSeed/ MigrateAndSeed/
+RUN dotnet publish MigrateAndSeed/OrderLightCqrs.MigrateAndSeed.csproj -c Release -o /app --no-restore
+
+FROM mcr.microsoft.com/dotnet/runtime:10.0 AS runtime
+WORKDIR /app
+COPY --from=build /app .
+ENTRYPOINT ["dotnet", "OrderLightCqrs.MigrateAndSeed.dll"]

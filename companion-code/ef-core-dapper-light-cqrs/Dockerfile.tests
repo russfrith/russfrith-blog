@@ -1,0 +1,17 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0
+WORKDIR /src
+
+COPY src/Domain/OrderLightCqrs.Domain.csproj Domain/
+COPY src/Application/OrderLightCqrs.Application.csproj Application/
+COPY src/Infrastructure/OrderLightCqrs.Infrastructure.csproj Infrastructure/
+COPY src/Api/OrderLightCqrs.Api.csproj Api/
+COPY src/Tests/OrderLightCqrs.Tests.csproj Tests/
+RUN dotnet restore Tests/OrderLightCqrs.Tests.csproj
+
+COPY src/Domain/ Domain/
+COPY src/Application/ Application/
+COPY src/Infrastructure/ Infrastructure/
+COPY src/Api/ Api/
+COPY src/Tests/ Tests/
+
+ENTRYPOINT ["dotnet", "test", "Tests/OrderLightCqrs.Tests.csproj", "--logger", "console;verbosity=normal"]

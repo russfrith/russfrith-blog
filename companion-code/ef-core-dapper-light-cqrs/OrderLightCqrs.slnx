@@ -1,0 +1,24 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Api/">
+    <Project Path="src/Api/OrderLightCqrs.Api.csproj" />
+  </Folder>
+  <Folder Name="/src/Application/">
+    <Project Path="src/Application/OrderLightCqrs.Application.csproj" />
+  </Folder>
+  <Folder Name="/src/Benchmarks/">
+    <Project Path="src/Benchmarks/OrderLightCqrs.Benchmarks.csproj" />
+  </Folder>
+  <Folder Name="/src/Domain/">
+    <Project Path="src/Domain/OrderLightCqrs.Domain.csproj" />
+  </Folder>
+  <Folder Name="/src/Infrastructure/">
+    <Project Path="src/Infrastructure/OrderLightCqrs.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/MigrateAndSeed/">
+    <Project Path="src/MigrateAndSeed/OrderLightCqrs.MigrateAndSeed.csproj" />
+  </Folder>
+  <Folder Name="/src/Tests/">
+    <Project Path="src/Tests/OrderLightCqrs.Tests.csproj" />
+  </Folder>
+</Solution>

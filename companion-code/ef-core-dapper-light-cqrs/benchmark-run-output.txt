@@ -1,0 +1,2121 @@
+ Image ef-core-dapper-light-cqrs-migrate-and-seed Building 
+ Image ef-core-dapper-light-cqrs-benchmarks Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 1.30kB done
+#1 DONE 0.0s
+
+#2 [migrate-and-seed internal] load build definition from Dockerfile.migrate-and-seed
+#2 transferring dockerfile: 862B done
+#2 DONE 0.0s
+
+#3 [benchmarks internal] load build definition from Dockerfile.benchmarks
+#3 transferring dockerfile: 677B done
+#3 DONE 0.0s
+
+#4 [benchmarks internal] load metadata for mcr.microsoft.com/dotnet/sdk:10.0
+#4 DONE 0.1s
+
+#5 [benchmarks internal] load .dockerignore
+#5 transferring context:
+#5 transferring context: 108B done
+#5 DONE 0.0s
+
+#6 [benchmarks internal] load build context
+#6 transferring context: 6.62kB done
+#6 DONE 0.0s
+
+#7 [benchmarks  1/11] FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:0d99ebf1ccad15037b5c98c9fe8979d6b8dbac23812feae2277a0b277b5c5ffa
+#7 resolve mcr.microsoft.com/dotnet/sdk:10.0@sha256:0d99ebf1ccad15037b5c98c9fe8979d6b8dbac23812feae2277a0b277b5c5ffa 0.0s done
+#7 DONE 0.1s
+
+#8 [benchmarks  3/11] COPY src/Domain/OrderLightCqrs.Domain.csproj Domain/
+#8 CACHED
+
+#9 [benchmarks  8/11] COPY src/Domain/ Domain/
+#9 CACHED
+
+#10 [benchmarks 10/11] COPY src/Infrastructure/ Infrastructure/
+#10 CACHED
+
+#11 [benchmarks  4/11] COPY src/Application/OrderLightCqrs.Application.csproj Application/
+#11 CACHED
+
+#12 [benchmarks  5/11] COPY src/Infrastructure/OrderLightCqrs.Infrastructure.csproj Infrastructure/
+#12 CACHED
+
+#13 [benchmarks  6/11] COPY src/Benchmarks/OrderLightCqrs.Benchmarks.csproj Benchmarks/
+#13 CACHED
+
+#14 [benchmarks  2/11] WORKDIR /src
+#14 CACHED
+
+#15 [benchmarks  9/11] COPY src/Application/ Application/
+#15 CACHED
+
+#16 [benchmarks  7/11] RUN dotnet restore Benchmarks/OrderLightCqrs.Benchmarks.csproj
+#16 CACHED
+
+#17 [benchmarks 11/11] COPY src/Benchmarks/ Benchmarks/
+#17 CACHED
+
+#18 [benchmarks] exporting to image
+#18 exporting layers done
+#18 exporting manifest sha256:8ba039612e47552cf0dcc87eead10bd8a8f2a6a3b10e250c33ff2466cf121716 done
+#18 exporting config sha256:3b0bf68ba1cb71d9f0af5539f48f09f24097d744a7c7e6bf5e32fcd53c21886d done
+#18 exporting attestation manifest sha256:d0389061dcac1fe686cda64dc7854a7ec1d38edc648d3781036b6949991b3464 0.0s done
+#18 exporting manifest list sha256:60efd6658cac44eea27db96e6bac6ffe5f9049e0f5f48fadd37eeb88adda5881
+#18 exporting manifest list sha256:60efd6658cac44eea27db96e6bac6ffe5f9049e0f5f48fadd37eeb88adda5881 0.0s done
+#18 naming to docker.io/library/ef-core-dapper-light-cqrs-benchmarks:latest done
+#18 unpacking to docker.io/library/ef-core-dapper-light-cqrs-benchmarks:latest 0.0s done
+#18 DONE 0.2s
+
+#19 [migrate-and-seed internal] load metadata for mcr.microsoft.com/dotnet/runtime:10.0
+#19 DONE 0.7s
+
+#5 [migrate-and-seed internal] load .dockerignore
+#5 transferring context: 108B done
+#5 DONE 0.0s
+
+#7 [migrate-and-seed  1/11] FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:0d99ebf1ccad15037b5c98c9fe8979d6b8dbac23812feae2277a0b277b5c5ffa
+#7 resolve mcr.microsoft.com/dotnet/sdk:10.0@sha256:0d99ebf1ccad15037b5c98c9fe8979d6b8dbac23812feae2277a0b277b5c5ffa 0.0s done
+#7 DONE 0.1s
+
+#20 [migrate-and-seed internal] load build context
+#20 transferring context: 3.10kB 0.0s done
+#20 DONE 0.0s
+
+#21 [benchmarks] resolving provenance for metadata file
+#21 DONE 0.0s
+
+#22 [migrate-and-seed runtime 1/3] FROM mcr.microsoft.com/dotnet/runtime:10.0@sha256:a3f9f81954b9c810af2ed18849716c8dc74a4707bd0907fdbd69be81554c0f30
+#22 resolve mcr.microsoft.com/dotnet/runtime:10.0@sha256:a3f9f81954b9c810af2ed18849716c8dc74a4707bd0907fdbd69be81554c0f30 0.1s done
+#22 DONE 0.1s
+
+#23 [migrate-and-seed build  5/12] COPY src/Infrastructure/OrderLightCqrs.Infrastructure.csproj Infrastructure/
+#23 CACHED
+
+#24 [migrate-and-seed build 12/12] RUN dotnet publish MigrateAndSeed/OrderLightCqrs.MigrateAndSeed.csproj -c Release -o /app --no-restore
+#24 CACHED
+
+#25 [migrate-and-seed build  8/12] COPY src/Domain/ Domain/
+#25 CACHED
+
+#26 [migrate-and-seed build  9/12] COPY src/Application/ Application/
+#26 CACHED
+
+#27 [migrate-and-seed runtime 2/3] WORKDIR /app
+#27 CACHED
+
+#28 [migrate-and-seed build  4/12] COPY src/Application/OrderLightCqrs.Application.csproj Application/
+#28 CACHED
+
+#29 [migrate-and-seed build  7/12] RUN dotnet restore MigrateAndSeed/OrderLightCqrs.MigrateAndSeed.csproj
+#29 CACHED
+
+#30 [migrate-and-seed build  6/12] COPY src/MigrateAndSeed/OrderLightCqrs.MigrateAndSeed.csproj MigrateAndSeed/
+#30 CACHED
+
+#31 [migrate-and-seed build 11/12] COPY src/MigrateAndSeed/ MigrateAndSeed/
+#31 CACHED
+
+#14 [migrate-and-seed  2/11] WORKDIR /src
+#14 CACHED
+
+#32 [migrate-and-seed build  3/12] COPY src/Domain/OrderLightCqrs.Domain.csproj Domain/
+#32 CACHED
+
+#33 [migrate-and-seed build 10/12] COPY src/Infrastructure/ Infrastructure/
+#33 CACHED
+
+#34 [migrate-and-seed runtime 3/3] COPY --from=build /app .
+#34 CACHED
+
+#35 [migrate-and-seed] exporting to image
+#35 exporting layers done
+#35 exporting manifest sha256:5c370d0ba1b7f95e2e42ca0be8cc2a33a7d1fb2e20c833cdc911fd2bd60536ea done
+#35 exporting config sha256:18144dfe8d27de408e3dc845a0956205baeb17020d8355322209ea75a475a00e done
+#35 exporting attestation manifest sha256:7d2a23fe8edb4058fa814cb9ab7f776a597c069ea1697554ce8a99a695a8a789 0.0s done
+#35 exporting manifest list sha256:1e48885009d22bad36f834ab380acea4464b7ca68167cf9c66be9ec390e20b9f
+#35 exporting manifest list sha256:1e48885009d22bad36f834ab380acea4464b7ca68167cf9c66be9ec390e20b9f 0.0s done
+#35 naming to docker.io/library/ef-core-dapper-light-cqrs-migrate-and-seed:latest done
+#35 unpacking to docker.io/library/ef-core-dapper-light-cqrs-migrate-and-seed:latest 0.0s done
+#35 DONE 0.2s
+
+#36 [migrate-and-seed] resolving provenance for metadata file
+#36 DONE 0.0s
+ Image ef-core-dapper-light-cqrs-migrate-and-seed Built 
+ Image ef-core-dapper-light-cqrs-benchmarks Built 
+ Container ef-core-dapper-light-cqrs-postgres-1 Running 
+ Container ef-core-dapper-light-cqrs-benchmarks-1 Recreate 
+ Container ef-core-dapper-light-cqrs-benchmarks-1 Recreated 
+Attaching to benchmarks-1
+ Container ef-core-dapper-light-cqrs-postgres-1 Waiting 
+ Container ef-core-dapper-light-cqrs-postgres-1 Healthy 
+ Container ef-core-dapper-light-cqrs-migrate-and-seed-1 Starting 
+ Container ef-core-dapper-light-cqrs-migrate-and-seed-1 Started 
+ Container ef-core-dapper-light-cqrs-migrate-and-seed-1 Waiting 
+ Container ef-core-dapper-light-cqrs-migrate-and-seed-1 Exited 
+ Container ef-core-dapper-light-cqrs-benchmarks-1 Starting 
+ Container ef-core-dapper-light-cqrs-benchmarks-1 Started 
+benchmarks-1  | // Validating benchmarks:
+benchmarks-1  | // ***** BenchmarkRunner: Start   *****
+benchmarks-1  | // ***** Found 20 benchmark(s) in total *****
+benchmarks-1  | // ***** Building 1 exe(s) in Parallel: Start   *****
+benchmarks-1  | Unable to find .sln or .csproj file. Will use current directory /src to search for project file. If you don't use .sln file on purpose it should not be a problem.
+benchmarks-1  | // start dotnet  restore --nodeReuse:false /p:UseSharedCompilation=false /p:Deterministic=true /p:Optimize=true /p:ArtifactsPath="/src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/" /p:OutDir="/src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/bin/Release/net10.0/" /p:OutputPath="/src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/bin/Release/net10.0/" /p:PublishDir="/src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/publish/" in /src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1
+benchmarks-1  | // command took 2.94 sec and exited with 0
+benchmarks-1  | // start dotnet  build -c Release --no-restore --nodeReuse:false /p:UseSharedCompilation=false /p:Deterministic=true /p:Optimize=true /p:ArtifactsPath="/src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/" /p:OutDir="/src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/bin/Release/net10.0/" /p:OutputPath="/src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/bin/Release/net10.0/" /p:PublishDir="/src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/publish/" --output "/src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/bin/Release/net10.0/" in /src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1
+benchmarks-1  | // command took 9.54 sec and exited with 0
+benchmarks-1  | // ***** Done, took 00:00:12 (12.57 sec)   *****
+benchmarks-1  | // Found 5 benchmarks:
+benchmarks-1  | //   CustomerHistoryBenchmarks.'EF tracked entities (Include + second query)': Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | //   CustomerHistoryBenchmarks.'EF AsNoTracking entities (Include + second query)': Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | //   CustomerHistoryBenchmarks.'EF AsNoTracking + Select projection (single query)': Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | //   CustomerHistoryBenchmarks.'EF compiled query + projection (single query)': Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | //   CustomerHistoryBenchmarks.'Dapper (single query)': Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | 
+benchmarks-1  | // **************************
+benchmarks-1  | // Benchmark: CustomerHistoryBenchmarks.'EF tracked entities (Include + second query)': Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | // *** Execute ***
+benchmarks-1  | // Launch: 1 / 1
+benchmarks-1  | // Execute: dotnet OrderLightCqrs.Benchmarks-Job-FEWCWF-1.dll --anonymousPipes 158 159 --benchmarkName OrderLightCqrs.Benchmarks.CustomerHistoryBenchmarks.EfTracked --job "InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1" --benchmarkId 0 in /src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/bin/Release/net10.0
+benchmarks-1  | // Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+benchmarks-1  | // BeforeAnythingElse
+benchmarks-1  | 
+benchmarks-1  | // Benchmark Process Environment Information:
+benchmarks-1  | // BenchmarkDotNet v0.15.8
+benchmarks-1  | // Runtime=.NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3
+benchmarks-1  | // GC=Concurrent Workstation
+benchmarks-1  | // HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL,AvxVnni,SERIALIZE VectorSize=256
+benchmarks-1  | // Job: Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | 
+benchmarks-1  | OverheadJitting  1: 1 op, 191542.00 ns, 191.5420 us/op
+benchmarks-1  | WorkloadJitting  1: 1 op, 1376689728.00 ns, 1.3767 s/op
+benchmarks-1  | 
+benchmarks-1  | OverheadWarmup   1: 1 op, 998.00 ns, 998.0000 ns/op
+benchmarks-1  | OverheadWarmup   2: 1 op, 968.00 ns, 968.0000 ns/op
+benchmarks-1  | OverheadWarmup   3: 1 op, 1179.00 ns, 1.1790 us/op
+benchmarks-1  | OverheadWarmup   4: 1 op, 1005.00 ns, 1.0050 us/op
+benchmarks-1  | OverheadWarmup   5: 1 op, 965.00 ns, 965.0000 ns/op
+benchmarks-1  | OverheadWarmup   6: 1 op, 699.00 ns, 699.0000 ns/op
+benchmarks-1  | OverheadWarmup   7: 1 op, 1506.00 ns, 1.5060 us/op
+benchmarks-1  | OverheadWarmup   8: 1 op, 1026.00 ns, 1.0260 us/op
+benchmarks-1  | 
+benchmarks-1  | OverheadActual   1: 1 op, 1151.00 ns, 1.1510 us/op
+benchmarks-1  | OverheadActual   2: 1 op, 1360.00 ns, 1.3600 us/op
+benchmarks-1  | OverheadActual   3: 1 op, 1037.00 ns, 1.0370 us/op
+benchmarks-1  | OverheadActual   4: 1 op, 1051.00 ns, 1.0510 us/op
+benchmarks-1  | OverheadActual   5: 1 op, 927.00 ns, 927.0000 ns/op
+benchmarks-1  | OverheadActual   6: 1 op, 1224.00 ns, 1.2240 us/op
+benchmarks-1  | OverheadActual   7: 1 op, 922.00 ns, 922.0000 ns/op
+benchmarks-1  | OverheadActual   8: 1 op, 1059.00 ns, 1.0590 us/op
+benchmarks-1  | OverheadActual   9: 1 op, 1030.00 ns, 1.0300 us/op
+benchmarks-1  | OverheadActual  10: 1 op, 1224.00 ns, 1.2240 us/op
+benchmarks-1  | OverheadActual  11: 1 op, 1488.00 ns, 1.4880 us/op
+benchmarks-1  | OverheadActual  12: 1 op, 865.00 ns, 865.0000 ns/op
+benchmarks-1  | OverheadActual  13: 1 op, 802.00 ns, 802.0000 ns/op
+benchmarks-1  | OverheadActual  14: 1 op, 1035.00 ns, 1.0350 us/op
+benchmarks-1  | OverheadActual  15: 1 op, 805.00 ns, 805.0000 ns/op
+benchmarks-1  | OverheadActual  16: 1 op, 560.00 ns, 560.0000 ns/op
+benchmarks-1  | OverheadActual  17: 1 op, 1003.00 ns, 1.0030 us/op
+benchmarks-1  | OverheadActual  18: 1 op, 882.00 ns, 882.0000 ns/op
+benchmarks-1  | OverheadActual  19: 1 op, 918.00 ns, 918.0000 ns/op
+benchmarks-1  | OverheadActual  20: 1 op, 1166.00 ns, 1.1660 us/op
+benchmarks-1  | 
+benchmarks-1  | WorkloadWarmup   1: 1 op, 412623209.00 ns, 412.6232 ms/op
+benchmarks-1  | 
+benchmarks-1  | // BeforeActualRun
+benchmarks-1  | WorkloadActual   1: 1 op, 230236230.00 ns, 230.2362 ms/op
+benchmarks-1  | WorkloadActual   2: 1 op, 203369505.00 ns, 203.3695 ms/op
+benchmarks-1  | WorkloadActual   3: 1 op, 186306937.00 ns, 186.3069 ms/op
+benchmarks-1  | 
+benchmarks-1  | // AfterActualRun
+benchmarks-1  | WorkloadResult   1: 1 op, 230235197.50 ns, 230.2352 ms/op
+benchmarks-1  | WorkloadResult   2: 1 op, 203368472.50 ns, 203.3685 ms/op
+benchmarks-1  | WorkloadResult   3: 1 op, 186305904.50 ns, 186.3059 ms/op
+benchmarks-1  | // GC:  6 3 0 72123920 1
+benchmarks-1  | // Threading:  454 0 1
+benchmarks-1  | 
+benchmarks-1  | // AfterAll
+benchmarks-1  | // Benchmark Process 320 has exited with code 0.
+benchmarks-1  | 
+benchmarks-1  | Mean = 206.637 ms, StdErr = 12.786 ms (6.19%), N = 3, StdDev = 22.146 ms
+benchmarks-1  | Min = 186.306 ms, Q1 = 194.837 ms, Median = 203.368 ms, Q3 = 216.802 ms, Max = 230.235 ms
+benchmarks-1  | IQR = 21.965 ms, LowerFence = 161.890 ms, UpperFence = 249.749 ms
+benchmarks-1  | ConfidenceInterval = [-197.393 ms; 610.666 ms] (CI 99.9%), Margin = 404.030 ms (195.53% of Mean)
+benchmarks-1  | Skewness = 0.14, Kurtosis = 0.67, MValue = 2
+benchmarks-1  | 
+benchmarks-1  | // ** Remained 19 (95.0 %) benchmark(s) to run. Estimated finish 2026-11-02 22:36 (0h 0m from now) **
+benchmarks-1  | // **************************
+benchmarks-1  | // Benchmark: CustomerHistoryBenchmarks.'EF AsNoTracking entities (Include + second query)': Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | // *** Execute ***
+benchmarks-1  | // Launch: 1 / 1
+benchmarks-1  | // Execute: dotnet OrderLightCqrs.Benchmarks-Job-FEWCWF-1.dll --anonymousPipes 158 159 --benchmarkName OrderLightCqrs.Benchmarks.CustomerHistoryBenchmarks.EfAsNoTracking --job "InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1" --benchmarkId 1 in /src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/bin/Release/net10.0
+benchmarks-1  | // Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+benchmarks-1  | // BeforeAnythingElse
+benchmarks-1  | 
+benchmarks-1  | // Benchmark Process Environment Information:
+benchmarks-1  | // BenchmarkDotNet v0.15.8
+benchmarks-1  | // Runtime=.NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3
+benchmarks-1  | // GC=Concurrent Workstation
+benchmarks-1  | // HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL,AvxVnni,SERIALIZE VectorSize=256
+benchmarks-1  | // Job: Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | 
+benchmarks-1  | OverheadJitting  1: 1 op, 172278.00 ns, 172.2780 us/op
+benchmarks-1  | WorkloadJitting  1: 1 op, 913089231.00 ns, 913.0892 ms/op
+benchmarks-1  | 
+benchmarks-1  | OverheadWarmup   1: 1 op, 614.00 ns, 614.0000 ns/op
+benchmarks-1  | OverheadWarmup   2: 1 op, 308.00 ns, 308.0000 ns/op
+benchmarks-1  | OverheadWarmup   3: 1 op, 760.00 ns, 760.0000 ns/op
+benchmarks-1  | OverheadWarmup   4: 1 op, 509.00 ns, 509.0000 ns/op
+benchmarks-1  | OverheadWarmup   5: 1 op, 391.00 ns, 391.0000 ns/op
+benchmarks-1  | OverheadWarmup   6: 1 op, 556.00 ns, 556.0000 ns/op
+benchmarks-1  | OverheadWarmup   7: 1 op, 383.00 ns, 383.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | OverheadActual   1: 1 op, 236.00 ns, 236.0000 ns/op
+benchmarks-1  | OverheadActual   2: 1 op, 385.00 ns, 385.0000 ns/op
+benchmarks-1  | OverheadActual   3: 1 op, 344.00 ns, 344.0000 ns/op
+benchmarks-1  | OverheadActual   4: 1 op, 284.00 ns, 284.0000 ns/op
+benchmarks-1  | OverheadActual   5: 1 op, 602.00 ns, 602.0000 ns/op
+benchmarks-1  | OverheadActual   6: 1 op, 288.00 ns, 288.0000 ns/op
+benchmarks-1  | OverheadActual   7: 1 op, 381.00 ns, 381.0000 ns/op
+benchmarks-1  | OverheadActual   8: 1 op, 636.00 ns, 636.0000 ns/op
+benchmarks-1  | OverheadActual   9: 1 op, 404.00 ns, 404.0000 ns/op
+benchmarks-1  | OverheadActual  10: 1 op, 553.00 ns, 553.0000 ns/op
+benchmarks-1  | OverheadActual  11: 1 op, 507.00 ns, 507.0000 ns/op
+benchmarks-1  | OverheadActual  12: 1 op, 422.00 ns, 422.0000 ns/op
+benchmarks-1  | OverheadActual  13: 1 op, 325.00 ns, 325.0000 ns/op
+benchmarks-1  | OverheadActual  14: 1 op, 987.00 ns, 987.0000 ns/op
+benchmarks-1  | OverheadActual  15: 1 op, 655.00 ns, 655.0000 ns/op
+benchmarks-1  | OverheadActual  16: 1 op, 374.00 ns, 374.0000 ns/op
+benchmarks-1  | OverheadActual  17: 1 op, 542.00 ns, 542.0000 ns/op
+benchmarks-1  | OverheadActual  18: 1 op, 452.00 ns, 452.0000 ns/op
+benchmarks-1  | OverheadActual  19: 1 op, 461.00 ns, 461.0000 ns/op
+benchmarks-1  | OverheadActual  20: 1 op, 631.00 ns, 631.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | WorkloadWarmup   1: 1 op, 242572314.00 ns, 242.5723 ms/op
+benchmarks-1  | 
+benchmarks-1  | // BeforeActualRun
+benchmarks-1  | WorkloadActual   1: 1 op, 224040931.00 ns, 224.0409 ms/op
+benchmarks-1  | WorkloadActual   2: 1 op, 180900509.00 ns, 180.9005 ms/op
+benchmarks-1  | WorkloadActual   3: 1 op, 176213549.00 ns, 176.2135 ms/op
+benchmarks-1  | 
+benchmarks-1  | // AfterActualRun
+benchmarks-1  | WorkloadResult   1: 1 op, 224040494.00 ns, 224.0405 ms/op
+benchmarks-1  | WorkloadResult   2: 1 op, 180900072.00 ns, 180.9001 ms/op
+benchmarks-1  | WorkloadResult   3: 1 op, 176213112.00 ns, 176.2131 ms/op
+benchmarks-1  | // GC:  3 1 0 35988256 1
+benchmarks-1  | // Threading:  93 0 1
+benchmarks-1  | 
+benchmarks-1  | // AfterAll
+benchmarks-1  | // Benchmark Process 335 has exited with code 0.
+benchmarks-1  | 
+benchmarks-1  | Mean = 193.718 ms, StdErr = 15.222 ms (7.86%), N = 3, StdDev = 26.365 ms
+benchmarks-1  | Min = 176.213 ms, Q1 = 178.557 ms, Median = 180.900 ms, Q3 = 202.470 ms, Max = 224.040 ms
+benchmarks-1  | IQR = 23.914 ms, LowerFence = 142.686 ms, UpperFence = 238.341 ms
+benchmarks-1  | ConfidenceInterval = [-287.269 ms; 674.705 ms] (CI 99.9%), Margin = 480.987 ms (248.29% of Mean)
+benchmarks-1  | Skewness = 0.37, Kurtosis = 0.67, MValue = 2
+benchmarks-1  | 
+benchmarks-1  | // ** Remained 18 (90.0 %) benchmark(s) to run. Estimated finish 2026-11-02 22:36 (0h 0m from now) **
+benchmarks-1  | // **************************
+benchmarks-1  | // Benchmark: CustomerHistoryBenchmarks.'EF AsNoTracking + Select projection (single query)': Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | // *** Execute ***
+benchmarks-1  | // Launch: 1 / 1
+benchmarks-1  | // Execute: dotnet OrderLightCqrs.Benchmarks-Job-FEWCWF-1.dll --anonymousPipes 158 159 --benchmarkName OrderLightCqrs.Benchmarks.CustomerHistoryBenchmarks.EfProjection --job "InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1" --benchmarkId 2 in /src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/bin/Release/net10.0
+benchmarks-1  | // Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+benchmarks-1  | // BeforeAnythingElse
+benchmarks-1  | 
+benchmarks-1  | // Benchmark Process Environment Information:
+benchmarks-1  | // BenchmarkDotNet v0.15.8
+benchmarks-1  | // Runtime=.NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3
+benchmarks-1  | // GC=Concurrent Workstation
+benchmarks-1  | // HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL,AvxVnni,SERIALIZE VectorSize=256
+benchmarks-1  | // Job: Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | 
+benchmarks-1  | OverheadJitting  1: 1 op, 176664.00 ns, 176.6640 us/op
+benchmarks-1  | WorkloadJitting  1: 1 op, 826422321.00 ns, 826.4223 ms/op
+benchmarks-1  | 
+benchmarks-1  | OverheadWarmup   1: 1 op, 515.00 ns, 515.0000 ns/op
+benchmarks-1  | OverheadWarmup   2: 1 op, 569.00 ns, 569.0000 ns/op
+benchmarks-1  | OverheadWarmup   3: 1 op, 536.00 ns, 536.0000 ns/op
+benchmarks-1  | OverheadWarmup   4: 1 op, 253.00 ns, 253.0000 ns/op
+benchmarks-1  | OverheadWarmup   5: 1 op, 533.00 ns, 533.0000 ns/op
+benchmarks-1  | OverheadWarmup   6: 1 op, 576.00 ns, 576.0000 ns/op
+benchmarks-1  | OverheadWarmup   7: 1 op, 574.00 ns, 574.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | OverheadActual   1: 1 op, 584.00 ns, 584.0000 ns/op
+benchmarks-1  | OverheadActual   2: 1 op, 636.00 ns, 636.0000 ns/op
+benchmarks-1  | OverheadActual   3: 1 op, 581.00 ns, 581.0000 ns/op
+benchmarks-1  | OverheadActual   4: 1 op, 717.00 ns, 717.0000 ns/op
+benchmarks-1  | OverheadActual   5: 1 op, 687.00 ns, 687.0000 ns/op
+benchmarks-1  | OverheadActual   6: 1 op, 476.00 ns, 476.0000 ns/op
+benchmarks-1  | OverheadActual   7: 1 op, 510.00 ns, 510.0000 ns/op
+benchmarks-1  | OverheadActual   8: 1 op, 403.00 ns, 403.0000 ns/op
+benchmarks-1  | OverheadActual   9: 1 op, 334.00 ns, 334.0000 ns/op
+benchmarks-1  | OverheadActual  10: 1 op, 352.00 ns, 352.0000 ns/op
+benchmarks-1  | OverheadActual  11: 1 op, 338.00 ns, 338.0000 ns/op
+benchmarks-1  | OverheadActual  12: 1 op, 406.00 ns, 406.0000 ns/op
+benchmarks-1  | OverheadActual  13: 1 op, 376.00 ns, 376.0000 ns/op
+benchmarks-1  | OverheadActual  14: 1 op, 351.00 ns, 351.0000 ns/op
+benchmarks-1  | OverheadActual  15: 1 op, 446.00 ns, 446.0000 ns/op
+benchmarks-1  | OverheadActual  16: 1 op, 439.00 ns, 439.0000 ns/op
+benchmarks-1  | OverheadActual  17: 1 op, 302.00 ns, 302.0000 ns/op
+benchmarks-1  | OverheadActual  18: 1 op, 484.00 ns, 484.0000 ns/op
+benchmarks-1  | OverheadActual  19: 1 op, 372.00 ns, 372.0000 ns/op
+benchmarks-1  | OverheadActual  20: 1 op, 365.00 ns, 365.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | WorkloadWarmup   1: 1 op, 138563936.00 ns, 138.5639 ms/op
+benchmarks-1  | 
+benchmarks-1  | // BeforeActualRun
+benchmarks-1  | WorkloadActual   1: 1 op, 98636839.00 ns, 98.6368 ms/op
+benchmarks-1  | WorkloadActual   2: 1 op, 97305147.00 ns, 97.3051 ms/op
+benchmarks-1  | WorkloadActual   3: 1 op, 142800220.00 ns, 142.8002 ms/op
+benchmarks-1  | 
+benchmarks-1  | // AfterActualRun
+benchmarks-1  | WorkloadResult   1: 1 op, 98636416.50 ns, 98.6364 ms/op
+benchmarks-1  | WorkloadResult   2: 1 op, 97304724.50 ns, 97.3047 ms/op
+benchmarks-1  | WorkloadResult   3: 1 op, 142799797.50 ns, 142.7998 ms/op
+benchmarks-1  | // GC:  1 0 0 20433064 1
+benchmarks-1  | // Threading:  146 0 1
+benchmarks-1  | 
+benchmarks-1  | // AfterAll
+benchmarks-1  | // Benchmark Process 349 has exited with code 0.
+benchmarks-1  | 
+benchmarks-1  | Mean = 112.914 ms, StdErr = 14.948 ms (13.24%), N = 3, StdDev = 25.891 ms
+benchmarks-1  | Min = 97.305 ms, Q1 = 97.971 ms, Median = 98.636 ms, Q3 = 120.718 ms, Max = 142.800 ms
+benchmarks-1  | IQR = 22.748 ms, LowerFence = 63.849 ms, UpperFence = 154.839 ms
+benchmarks-1  | ConfidenceInterval = [-359.430 ms; 585.257 ms] (CI 99.9%), Margin = 472.343 ms (418.32% of Mean)
+benchmarks-1  | Skewness = 0.38, Kurtosis = 0.67, MValue = 2
+benchmarks-1  | 
+benchmarks-1  | // ** Remained 17 (85.0 %) benchmark(s) to run. Estimated finish 2026-11-02 22:36 (0h 0m from now) **
+benchmarks-1  | // **************************
+benchmarks-1  | // Benchmark: CustomerHistoryBenchmarks.'EF compiled query + projection (single query)': Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | // *** Execute ***
+benchmarks-1  | // Launch: 1 / 1
+benchmarks-1  | // Execute: dotnet OrderLightCqrs.Benchmarks-Job-FEWCWF-1.dll --anonymousPipes 158 159 --benchmarkName OrderLightCqrs.Benchmarks.CustomerHistoryBenchmarks.EfCompiledProjection --job "InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1" --benchmarkId 3 in /src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/bin/Release/net10.0
+benchmarks-1  | // Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+benchmarks-1  | // BeforeAnythingElse
+benchmarks-1  | 
+benchmarks-1  | // Benchmark Process Environment Information:
+benchmarks-1  | // BenchmarkDotNet v0.15.8
+benchmarks-1  | // Runtime=.NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3
+benchmarks-1  | // GC=Concurrent Workstation
+benchmarks-1  | // HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL,AvxVnni,SERIALIZE VectorSize=256
+benchmarks-1  | // Job: Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | 
+benchmarks-1  | OverheadJitting  1: 1 op, 177435.00 ns, 177.4350 us/op
+benchmarks-1  | WorkloadJitting  1: 1 op, 744882269.00 ns, 744.8823 ms/op
+benchmarks-1  | 
+benchmarks-1  | OverheadWarmup   1: 1 op, 334.00 ns, 334.0000 ns/op
+benchmarks-1  | OverheadWarmup   2: 1 op, 378.00 ns, 378.0000 ns/op
+benchmarks-1  | OverheadWarmup   3: 1 op, 618.00 ns, 618.0000 ns/op
+benchmarks-1  | OverheadWarmup   4: 1 op, 487.00 ns, 487.0000 ns/op
+benchmarks-1  | OverheadWarmup   5: 1 op, 333.00 ns, 333.0000 ns/op
+benchmarks-1  | OverheadWarmup   6: 1 op, 297.00 ns, 297.0000 ns/op
+benchmarks-1  | OverheadWarmup   7: 1 op, 475.00 ns, 475.0000 ns/op
+benchmarks-1  | OverheadWarmup   8: 1 op, 421.00 ns, 421.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | OverheadActual   1: 1 op, 439.00 ns, 439.0000 ns/op
+benchmarks-1  | OverheadActual   2: 1 op, 626.00 ns, 626.0000 ns/op
+benchmarks-1  | OverheadActual   3: 1 op, 607.00 ns, 607.0000 ns/op
+benchmarks-1  | OverheadActual   4: 1 op, 623.00 ns, 623.0000 ns/op
+benchmarks-1  | OverheadActual   5: 1 op, 429.00 ns, 429.0000 ns/op
+benchmarks-1  | OverheadActual   6: 1 op, 463.00 ns, 463.0000 ns/op
+benchmarks-1  | OverheadActual   7: 1 op, 288.00 ns, 288.0000 ns/op
+benchmarks-1  | OverheadActual   8: 1 op, 456.00 ns, 456.0000 ns/op
+benchmarks-1  | OverheadActual   9: 1 op, 358.00 ns, 358.0000 ns/op
+benchmarks-1  | OverheadActual  10: 1 op, 254.00 ns, 254.0000 ns/op
+benchmarks-1  | OverheadActual  11: 1 op, 293.00 ns, 293.0000 ns/op
+benchmarks-1  | OverheadActual  12: 1 op, 573.00 ns, 573.0000 ns/op
+benchmarks-1  | OverheadActual  13: 1 op, 314.00 ns, 314.0000 ns/op
+benchmarks-1  | OverheadActual  14: 1 op, 246.00 ns, 246.0000 ns/op
+benchmarks-1  | OverheadActual  15: 1 op, 248.00 ns, 248.0000 ns/op
+benchmarks-1  | OverheadActual  16: 1 op, 554.00 ns, 554.0000 ns/op
+benchmarks-1  | OverheadActual  17: 1 op, 391.00 ns, 391.0000 ns/op
+benchmarks-1  | OverheadActual  18: 1 op, 403.00 ns, 403.0000 ns/op
+benchmarks-1  | OverheadActual  19: 1 op, 624.00 ns, 624.0000 ns/op
+benchmarks-1  | OverheadActual  20: 1 op, 488.00 ns, 488.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | WorkloadWarmup   1: 1 op, 103917975.00 ns, 103.9180 ms/op
+benchmarks-1  | 
+benchmarks-1  | // BeforeActualRun
+benchmarks-1  | WorkloadActual   1: 1 op, 128644397.00 ns, 128.6444 ms/op
+benchmarks-1  | WorkloadActual   2: 1 op, 101581952.00 ns, 101.5820 ms/op
+benchmarks-1  | WorkloadActual   3: 1 op, 122524199.00 ns, 122.5242 ms/op
+benchmarks-1  | 
+benchmarks-1  | // AfterActualRun
+benchmarks-1  | WorkloadResult   1: 1 op, 128643963.00 ns, 128.6440 ms/op
+benchmarks-1  | WorkloadResult   2: 1 op, 101581518.00 ns, 101.5815 ms/op
+benchmarks-1  | WorkloadResult   3: 1 op, 122523765.00 ns, 122.5238 ms/op
+benchmarks-1  | // GC:  1 0 0 20137264 1
+benchmarks-1  | // Threading:  87 0 1
+benchmarks-1  | 
+benchmarks-1  | // AfterAll
+benchmarks-1  | // Benchmark Process 364 has exited with code 0.
+benchmarks-1  | 
+benchmarks-1  | Mean = 117.583 ms, StdErr = 8.194 ms (6.97%), N = 3, StdDev = 14.192 ms
+benchmarks-1  | Min = 101.582 ms, Q1 = 112.053 ms, Median = 122.524 ms, Q3 = 125.584 ms, Max = 128.644 ms
+benchmarks-1  | IQR = 13.531 ms, LowerFence = 91.756 ms, UpperFence = 145.881 ms
+benchmarks-1  | ConfidenceInterval = [-141.325 ms; 376.491 ms] (CI 99.9%), Margin = 258.908 ms (220.19% of Mean)
+benchmarks-1  | Skewness = -0.31, Kurtosis = 0.67, MValue = 2
+benchmarks-1  | 
+benchmarks-1  | // ** Remained 16 (80.0 %) benchmark(s) to run. Estimated finish 2026-11-02 22:36 (0h 0m from now) **
+benchmarks-1  | // **************************
+benchmarks-1  | // Benchmark: CustomerHistoryBenchmarks.'Dapper (single query)': Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | // *** Execute ***
+benchmarks-1  | // Launch: 1 / 1
+benchmarks-1  | // Execute: dotnet OrderLightCqrs.Benchmarks-Job-FEWCWF-1.dll --anonymousPipes 158 159 --benchmarkName OrderLightCqrs.Benchmarks.CustomerHistoryBenchmarks.Dapper --job "InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1" --benchmarkId 4 in /src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/bin/Release/net10.0
+benchmarks-1  | // Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+benchmarks-1  | // BeforeAnythingElse
+benchmarks-1  | 
+benchmarks-1  | // Benchmark Process Environment Information:
+benchmarks-1  | // BenchmarkDotNet v0.15.8
+benchmarks-1  | // Runtime=.NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3
+benchmarks-1  | // GC=Concurrent Workstation
+benchmarks-1  | // HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL,AvxVnni,SERIALIZE VectorSize=256
+benchmarks-1  | // Job: Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | 
+benchmarks-1  | OverheadJitting  1: 1 op, 199991.00 ns, 199.9910 us/op
+benchmarks-1  | WorkloadJitting  1: 1 op, 135896474.00 ns, 135.8965 ms/op
+benchmarks-1  | 
+benchmarks-1  | OverheadWarmup   1: 1 op, 544.00 ns, 544.0000 ns/op
+benchmarks-1  | OverheadWarmup   2: 1 op, 356.00 ns, 356.0000 ns/op
+benchmarks-1  | OverheadWarmup   3: 1 op, 280.00 ns, 280.0000 ns/op
+benchmarks-1  | OverheadWarmup   4: 1 op, 313.00 ns, 313.0000 ns/op
+benchmarks-1  | OverheadWarmup   5: 1 op, 372.00 ns, 372.0000 ns/op
+benchmarks-1  | OverheadWarmup   6: 1 op, 272.00 ns, 272.0000 ns/op
+benchmarks-1  | OverheadWarmup   7: 1 op, 320.00 ns, 320.0000 ns/op
+benchmarks-1  | OverheadWarmup   8: 1 op, 266.00 ns, 266.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | OverheadActual   1: 1 op, 255.00 ns, 255.0000 ns/op
+benchmarks-1  | OverheadActual   2: 1 op, 318.00 ns, 318.0000 ns/op
+benchmarks-1  | OverheadActual   3: 1 op, 227.00 ns, 227.0000 ns/op
+benchmarks-1  | OverheadActual   4: 1 op, 260.00 ns, 260.0000 ns/op
+benchmarks-1  | OverheadActual   5: 1 op, 291.00 ns, 291.0000 ns/op
+benchmarks-1  | OverheadActual   6: 1 op, 332.00 ns, 332.0000 ns/op
+benchmarks-1  | OverheadActual   7: 1 op, 256.00 ns, 256.0000 ns/op
+benchmarks-1  | OverheadActual   8: 1 op, 256.00 ns, 256.0000 ns/op
+benchmarks-1  | OverheadActual   9: 1 op, 465.00 ns, 465.0000 ns/op
+benchmarks-1  | OverheadActual  10: 1 op, 335.00 ns, 335.0000 ns/op
+benchmarks-1  | OverheadActual  11: 1 op, 245.00 ns, 245.0000 ns/op
+benchmarks-1  | OverheadActual  12: 1 op, 284.00 ns, 284.0000 ns/op
+benchmarks-1  | OverheadActual  13: 1 op, 266.00 ns, 266.0000 ns/op
+benchmarks-1  | OverheadActual  14: 1 op, 311.00 ns, 311.0000 ns/op
+benchmarks-1  | OverheadActual  15: 1 op, 267.00 ns, 267.0000 ns/op
+benchmarks-1  | OverheadActual  16: 1 op, 231.00 ns, 231.0000 ns/op
+benchmarks-1  | OverheadActual  17: 1 op, 352.00 ns, 352.0000 ns/op
+benchmarks-1  | OverheadActual  18: 1 op, 292.00 ns, 292.0000 ns/op
+benchmarks-1  | OverheadActual  19: 1 op, 265.00 ns, 265.0000 ns/op
+benchmarks-1  | OverheadActual  20: 1 op, 267.00 ns, 267.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | WorkloadWarmup   1: 1 op, 78869936.00 ns, 78.8699 ms/op
+benchmarks-1  | 
+benchmarks-1  | // BeforeActualRun
+benchmarks-1  | WorkloadActual   1: 1 op, 79034342.00 ns, 79.0343 ms/op
+benchmarks-1  | WorkloadActual   2: 1 op, 79437536.00 ns, 79.4375 ms/op
+benchmarks-1  | WorkloadActual   3: 1 op, 91646778.00 ns, 91.6468 ms/op
+benchmarks-1  | 
+benchmarks-1  | // AfterActualRun
+benchmarks-1  | WorkloadResult   1: 1 op, 79034075.00 ns, 79.0341 ms/op
+benchmarks-1  | WorkloadResult   2: 1 op, 79437269.00 ns, 79.4373 ms/op
+benchmarks-1  | WorkloadResult   3: 1 op, 91646511.00 ns, 91.6465 ms/op
+benchmarks-1  | // GC:  1 0 0 15823640 1
+benchmarks-1  | // Threading:  464 0 1
+benchmarks-1  | 
+benchmarks-1  | // AfterAll
+benchmarks-1  | // Benchmark Process 377 has exited with code 0.
+benchmarks-1  | 
+benchmarks-1  | Mean = 83.373 ms, StdErr = 4.139 ms (4.96%), N = 3, StdDev = 7.168 ms
+benchmarks-1  | Min = 79.034 ms, Q1 = 79.236 ms, Median = 79.437 ms, Q3 = 85.542 ms, Max = 91.647 ms
+benchmarks-1  | IQR = 6.306 ms, LowerFence = 69.776 ms, UpperFence = 95.001 ms
+benchmarks-1  | ConfidenceInterval = [-47.403 ms; 214.148 ms] (CI 99.9%), Margin = 130.775 ms (156.86% of Mean)
+benchmarks-1  | Skewness = 0.38, Kurtosis = 0.67, MValue = 2
+benchmarks-1  | 
+benchmarks-1  | // ** Remained 15 (75.0 %) benchmark(s) to run. Estimated finish 2026-11-02 22:36 (0h 0m from now) **
+benchmarks-1  | // ***** BenchmarkRunner: Finish  *****
+benchmarks-1  | 
+benchmarks-1  | // * Export *
+benchmarks-1  |   BenchmarkDotNet.Artifacts/results/OrderLightCqrs.Benchmarks.CustomerHistoryBenchmarks-report.csv
+benchmarks-1  |   BenchmarkDotNet.Artifacts/results/OrderLightCqrs.Benchmarks.CustomerHistoryBenchmarks-report-github.md
+benchmarks-1  |   BenchmarkDotNet.Artifacts/results/OrderLightCqrs.Benchmarks.CustomerHistoryBenchmarks-report.html
+benchmarks-1  | 
+benchmarks-1  | // * Detailed results *
+benchmarks-1  | CustomerHistoryBenchmarks.'EF tracked entities (Include + second query)': Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | Runtime = .NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+benchmarks-1  | Mean = 206.637 ms, StdErr = 12.786 ms (6.19%), N = 3, StdDev = 22.146 ms
+benchmarks-1  | Min = 186.306 ms, Q1 = 194.837 ms, Median = 203.368 ms, Q3 = 216.802 ms, Max = 230.235 ms
+benchmarks-1  | IQR = 21.965 ms, LowerFence = 161.890 ms, UpperFence = 249.749 ms
+benchmarks-1  | ConfidenceInterval = [-197.393 ms; 610.666 ms] (CI 99.9%), Margin = 404.030 ms (195.53% of Mean)
+benchmarks-1  | Skewness = 0.14, Kurtosis = 0.67, MValue = 2
+benchmarks-1  | -------------------- Histogram --------------------
+benchmarks-1  | [174.683 ms ; 214.991 ms) | @@
+benchmarks-1  | [214.991 ms ; 250.389 ms) | @
+benchmarks-1  | ---------------------------------------------------
+benchmarks-1  | 
+benchmarks-1  | CustomerHistoryBenchmarks.'EF AsNoTracking entities (Include + second query)': Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | Runtime = .NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+benchmarks-1  | Mean = 193.718 ms, StdErr = 15.222 ms (7.86%), N = 3, StdDev = 26.365 ms
+benchmarks-1  | Min = 176.213 ms, Q1 = 178.557 ms, Median = 180.900 ms, Q3 = 202.470 ms, Max = 224.040 ms
+benchmarks-1  | IQR = 23.914 ms, LowerFence = 142.686 ms, UpperFence = 238.341 ms
+benchmarks-1  | ConfidenceInterval = [-287.269 ms; 674.705 ms] (CI 99.9%), Margin = 480.987 ms (248.29% of Mean)
+benchmarks-1  | Skewness = 0.37, Kurtosis = 0.67, MValue = 2
+benchmarks-1  | -------------------- Histogram --------------------
+benchmarks-1  | [176.134 ms ; 224.119 ms) | @@@
+benchmarks-1  | ---------------------------------------------------
+benchmarks-1  | 
+benchmarks-1  | CustomerHistoryBenchmarks.'EF AsNoTracking + Select projection (single query)': Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | Runtime = .NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+benchmarks-1  | Mean = 112.914 ms, StdErr = 14.948 ms (13.24%), N = 3, StdDev = 25.891 ms
+benchmarks-1  | Min = 97.305 ms, Q1 = 97.971 ms, Median = 98.636 ms, Q3 = 120.718 ms, Max = 142.800 ms
+benchmarks-1  | IQR = 22.748 ms, LowerFence = 63.849 ms, UpperFence = 154.839 ms
+benchmarks-1  | ConfidenceInterval = [-359.430 ms; 585.257 ms] (CI 99.9%), Margin = 472.343 ms (418.32% of Mean)
+benchmarks-1  | Skewness = 0.38, Kurtosis = 0.67, MValue = 2
+benchmarks-1  | -------------------- Histogram --------------------
+benchmarks-1  | [96.491 ms ; 143.614 ms) | @@@
+benchmarks-1  | ---------------------------------------------------
+benchmarks-1  | 
+benchmarks-1  | CustomerHistoryBenchmarks.'EF compiled query + projection (single query)': Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | Runtime = .NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+benchmarks-1  | Mean = 117.583 ms, StdErr = 8.194 ms (6.97%), N = 3, StdDev = 14.192 ms
+benchmarks-1  | Min = 101.582 ms, Q1 = 112.053 ms, Median = 122.524 ms, Q3 = 125.584 ms, Max = 128.644 ms
+benchmarks-1  | IQR = 13.531 ms, LowerFence = 91.756 ms, UpperFence = 145.881 ms
+benchmarks-1  | ConfidenceInterval = [-141.325 ms; 376.491 ms] (CI 99.9%), Margin = 258.908 ms (220.19% of Mean)
+benchmarks-1  | Skewness = -0.31, Kurtosis = 0.67, MValue = 2
+benchmarks-1  | -------------------- Histogram --------------------
+benchmarks-1  | [ 88.667 ms ; 112.669 ms) | @
+benchmarks-1  | [112.669 ms ; 141.559 ms) | @@
+benchmarks-1  | ---------------------------------------------------
+benchmarks-1  | 
+benchmarks-1  | CustomerHistoryBenchmarks.'Dapper (single query)': Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | Runtime = .NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+benchmarks-1  | Mean = 83.373 ms, StdErr = 4.139 ms (4.96%), N = 3, StdDev = 7.168 ms
+benchmarks-1  | Min = 79.034 ms, Q1 = 79.236 ms, Median = 79.437 ms, Q3 = 85.542 ms, Max = 91.647 ms
+benchmarks-1  | IQR = 6.306 ms, LowerFence = 69.776 ms, UpperFence = 95.001 ms
+benchmarks-1  | ConfidenceInterval = [-47.403 ms; 214.148 ms] (CI 99.9%), Margin = 130.775 ms (156.86% of Mean)
+benchmarks-1  | Skewness = 0.38, Kurtosis = 0.67, MValue = 2
+benchmarks-1  | -------------------- Histogram --------------------
+benchmarks-1  | [78.817 ms ; 91.864 ms) | @@@
+benchmarks-1  | ---------------------------------------------------
+benchmarks-1  | 
+benchmarks-1  | // * Summary *
+benchmarks-1  | 
+benchmarks-1  | BenchmarkDotNet v0.15.8, Linux Ubuntu 24.04.5 LTS (Noble Numbat) (container)
+benchmarks-1  | 12th Gen Intel Core i5-12600K 3.69GHz, 1 CPU, 16 logical and 8 physical cores
+benchmarks-1  | .NET SDK 10.0.402
+benchmarks-1  |   [Host]     : .NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3
+benchmarks-1  |   Job-FEWCWF : .NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3
+benchmarks-1  | 
+benchmarks-1  | InvocationCount=1  IterationCount=3  UnrollFactor=1  
+benchmarks-1  | WarmupCount=1  
+benchmarks-1  | 
+benchmarks-1  | | Method                                               | Mean      | Error     | StdDev    | Ratio | RatioSD | Gen0      | Gen1      | Allocated | Alloc Ratio |
+benchmarks-1  | |----------------------------------------------------- |----------:|----------:|----------:|------:|--------:|----------:|----------:|----------:|------------:|
+benchmarks-1  | | 'EF tracked entities (Include + second query)'       | 206.64 ms | 404.03 ms | 22.146 ms |  1.01 |    0.13 | 6000.0000 | 3000.0000 |  68.78 MB |        1.00 |
+benchmarks-1  | | 'EF AsNoTracking entities (Include + second query)'  | 193.72 ms | 480.99 ms | 26.365 ms |  0.94 |    0.14 | 3000.0000 | 1000.0000 |  34.32 MB |        0.50 |
+benchmarks-1  | | 'EF AsNoTracking + Select projection (single query)' | 112.91 ms | 472.34 ms | 25.891 ms |  0.55 |    0.12 | 1000.0000 |         - |  19.49 MB |        0.28 |
+benchmarks-1  | | 'EF compiled query + projection (single query)'      | 117.58 ms | 258.91 ms | 14.192 ms |  0.57 |    0.08 | 1000.0000 |         - |   19.2 MB |        0.28 |
+benchmarks-1  | | 'Dapper (single query)'                              |  83.37 ms | 130.78 ms |  7.168 ms |  0.41 |    0.05 | 1000.0000 |         - |  15.09 MB |        0.22 |
+benchmarks-1  | 
+benchmarks-1  | // * Warnings *
+benchmarks-1  | MinIterationTime
+benchmarks-1  |   CustomerHistoryBenchmarks.'EF AsNoTracking + Select projection (single query)': InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1 -> The minimum observed iteration time is 97.305ms which is very small. It's recommended to increase it to at least 100ms using more operations.
+benchmarks-1  |   CustomerHistoryBenchmarks.'Dapper (single query)': InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1                              -> The minimum observed iteration time is 79.034ms which is very small. It's recommended to increase it to at least 100ms using more operations.
+benchmarks-1  | 
+benchmarks-1  | // * Legends *
+benchmarks-1  |   Mean        : Arithmetic mean of all measurements
+benchmarks-1  |   Error       : Half of 99.9% confidence interval
+benchmarks-1  |   StdDev      : Standard deviation of all measurements
+benchmarks-1  |   Ratio       : Mean of the ratio distribution ([Current]/[Baseline])
+benchmarks-1  |   RatioSD     : Standard deviation of the ratio distribution ([Current]/[Baseline])
+benchmarks-1  |   Gen0        : GC Generation 0 collects per 1000 operations
+benchmarks-1  |   Gen1        : GC Generation 1 collects per 1000 operations
+benchmarks-1  |   Allocated   : Allocated memory per single operation (managed only, inclusive, 1KB = 1024B)
+benchmarks-1  |   Alloc Ratio : Allocated memory ratio distribution ([Current]/[Baseline])
+benchmarks-1  |   1 ms        : 1 Millisecond (0.001 sec)
+benchmarks-1  | 
+benchmarks-1  | // * Diagnostic Output - MemoryDiagnoser *
+benchmarks-1  | 
+benchmarks-1  | 
+benchmarks-1  | // ***** BenchmarkRunner: End *****
+benchmarks-1  | Run time: 00:00:09 (9.96 sec), executed benchmarks: 5
+benchmarks-1  | 
+benchmarks-1  | // Found 5 benchmarks:
+benchmarks-1  | //   OrderDetailBenchmarks.'EF tracked entities (Include + second query)': Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | //   OrderDetailBenchmarks.'EF AsNoTracking entities (Include + second query)': Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | //   OrderDetailBenchmarks.'EF AsNoTracking + Select projection (two queries)': Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | //   OrderDetailBenchmarks.'EF compiled query + projection (two queries)': Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | //   OrderDetailBenchmarks.'Dapper (QueryMultiple, two result sets)': Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | 
+benchmarks-1  | // **************************
+benchmarks-1  | // Benchmark: OrderDetailBenchmarks.'EF tracked entities (Include + second query)': Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | // *** Execute ***
+benchmarks-1  | // Launch: 1 / 1
+benchmarks-1  | // Execute: dotnet OrderLightCqrs.Benchmarks-Job-FEWCWF-1.dll --anonymousPipes 121 122 --benchmarkName OrderLightCqrs.Benchmarks.OrderDetailBenchmarks.EfTracked --job "InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2" --benchmarkId 5 in /src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/bin/Release/net10.0
+benchmarks-1  | // Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+benchmarks-1  | // BeforeAnythingElse
+benchmarks-1  | 
+benchmarks-1  | // Benchmark Process Environment Information:
+benchmarks-1  | // BenchmarkDotNet v0.15.8
+benchmarks-1  | // Runtime=.NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3
+benchmarks-1  | // GC=Concurrent Workstation
+benchmarks-1  | // HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL,AvxVnni,SERIALIZE VectorSize=256
+benchmarks-1  | // Job: Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | 
+benchmarks-1  | OverheadJitting  1: 1 op, 183917.00 ns, 183.9170 us/op
+benchmarks-1  | WorkloadJitting  1: 1 op, 772727645.00 ns, 772.7276 ms/op
+benchmarks-1  | 
+benchmarks-1  | OverheadWarmup   1: 1 op, 551.00 ns, 551.0000 ns/op
+benchmarks-1  | OverheadWarmup   2: 1 op, 453.00 ns, 453.0000 ns/op
+benchmarks-1  | OverheadWarmup   3: 1 op, 397.00 ns, 397.0000 ns/op
+benchmarks-1  | OverheadWarmup   4: 1 op, 489.00 ns, 489.0000 ns/op
+benchmarks-1  | OverheadWarmup   5: 1 op, 428.00 ns, 428.0000 ns/op
+benchmarks-1  | OverheadWarmup   6: 1 op, 475.00 ns, 475.0000 ns/op
+benchmarks-1  | OverheadWarmup   7: 1 op, 428.00 ns, 428.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | OverheadActual   1: 1 op, 475.00 ns, 475.0000 ns/op
+benchmarks-1  | OverheadActual   2: 1 op, 492.00 ns, 492.0000 ns/op
+benchmarks-1  | OverheadActual   3: 1 op, 425.00 ns, 425.0000 ns/op
+benchmarks-1  | OverheadActual   4: 1 op, 459.00 ns, 459.0000 ns/op
+benchmarks-1  | OverheadActual   5: 1 op, 460.00 ns, 460.0000 ns/op
+benchmarks-1  | OverheadActual   6: 1 op, 407.00 ns, 407.0000 ns/op
+benchmarks-1  | OverheadActual   7: 1 op, 401.00 ns, 401.0000 ns/op
+benchmarks-1  | OverheadActual   8: 1 op, 454.00 ns, 454.0000 ns/op
+benchmarks-1  | OverheadActual   9: 1 op, 351.00 ns, 351.0000 ns/op
+benchmarks-1  | OverheadActual  10: 1 op, 719.00 ns, 719.0000 ns/op
+benchmarks-1  | OverheadActual  11: 1 op, 439.00 ns, 439.0000 ns/op
+benchmarks-1  | OverheadActual  12: 1 op, 404.00 ns, 404.0000 ns/op
+benchmarks-1  | OverheadActual  13: 1 op, 418.00 ns, 418.0000 ns/op
+benchmarks-1  | OverheadActual  14: 1 op, 333.00 ns, 333.0000 ns/op
+benchmarks-1  | OverheadActual  15: 1 op, 303.00 ns, 303.0000 ns/op
+benchmarks-1  | OverheadActual  16: 1 op, 512.00 ns, 512.0000 ns/op
+benchmarks-1  | OverheadActual  17: 1 op, 461.00 ns, 461.0000 ns/op
+benchmarks-1  | OverheadActual  18: 1 op, 329.00 ns, 329.0000 ns/op
+benchmarks-1  | OverheadActual  19: 1 op, 412.00 ns, 412.0000 ns/op
+benchmarks-1  | OverheadActual  20: 1 op, 506.00 ns, 506.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | WorkloadWarmup   1: 1 op, 47237489.00 ns, 47.2375 ms/op
+benchmarks-1  | WorkloadWarmup   2: 1 op, 11165074.00 ns, 11.1651 ms/op
+benchmarks-1  | 
+benchmarks-1  | // BeforeActualRun
+benchmarks-1  | WorkloadActual   1: 1 op, 2256454.00 ns, 2.2565 ms/op
+benchmarks-1  | WorkloadActual   2: 1 op, 2196099.00 ns, 2.1961 ms/op
+benchmarks-1  | WorkloadActual   3: 1 op, 1988038.00 ns, 1.9880 ms/op
+benchmarks-1  | WorkloadActual   4: 1 op, 2451117.00 ns, 2.4511 ms/op
+benchmarks-1  | WorkloadActual   5: 1 op, 1788340.00 ns, 1.7883 ms/op
+benchmarks-1  | 
+benchmarks-1  | // AfterActualRun
+benchmarks-1  | WorkloadResult   1: 1 op, 2256022.00 ns, 2.2560 ms/op
+benchmarks-1  | WorkloadResult   2: 1 op, 2195667.00 ns, 2.1957 ms/op
+benchmarks-1  | WorkloadResult   3: 1 op, 1987606.00 ns, 1.9876 ms/op
+benchmarks-1  | WorkloadResult   4: 1 op, 2450685.00 ns, 2.4507 ms/op
+benchmarks-1  | WorkloadResult   5: 1 op, 1787908.00 ns, 1.7879 ms/op
+benchmarks-1  | // GC:  0 0 0 100576 1
+benchmarks-1  | // Threading:  6 0 1
+benchmarks-1  | 
+benchmarks-1  | // AfterAll
+benchmarks-1  | // Benchmark Process 392 has exited with code 0.
+benchmarks-1  | 
+benchmarks-1  | Mean = 2.136 ms, StdErr = 0.114 ms (5.34%), N = 5, StdDev = 0.255 ms
+benchmarks-1  | Min = 1.788 ms, Q1 = 1.988 ms, Median = 2.196 ms, Q3 = 2.256 ms, Max = 2.451 ms
+benchmarks-1  | IQR = 0.268 ms, LowerFence = 1.585 ms, UpperFence = 2.659 ms
+benchmarks-1  | ConfidenceInterval = [1.154 ms; 3.118 ms] (CI 99.9%), Margin = 0.982 ms (45.99% of Mean)
+benchmarks-1  | Skewness = -0.14, Kurtosis = 1.19, MValue = 2
+benchmarks-1  | 
+benchmarks-1  | // ** Remained 14 (70.0 %) benchmark(s) to run. Estimated finish 2026-11-02 22:36 (0h 0m from now) **
+benchmarks-1  | // **************************
+benchmarks-1  | // Benchmark: OrderDetailBenchmarks.'EF AsNoTracking entities (Include + second query)': Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | // *** Execute ***
+benchmarks-1  | // Launch: 1 / 1
+benchmarks-1  | // Execute: dotnet OrderLightCqrs.Benchmarks-Job-FEWCWF-1.dll --anonymousPipes 121 122 --benchmarkName OrderLightCqrs.Benchmarks.OrderDetailBenchmarks.EfAsNoTracking --job "InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2" --benchmarkId 6 in /src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/bin/Release/net10.0
+benchmarks-1  | // Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+benchmarks-1  | // BeforeAnythingElse
+benchmarks-1  | 
+benchmarks-1  | // Benchmark Process Environment Information:
+benchmarks-1  | // BenchmarkDotNet v0.15.8
+benchmarks-1  | // Runtime=.NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3
+benchmarks-1  | // GC=Concurrent Workstation
+benchmarks-1  | // HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL,AvxVnni,SERIALIZE VectorSize=256
+benchmarks-1  | // Job: Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | 
+benchmarks-1  | OverheadJitting  1: 1 op, 170432.00 ns, 170.4320 us/op
+benchmarks-1  | WorkloadJitting  1: 1 op, 721708313.00 ns, 721.7083 ms/op
+benchmarks-1  | 
+benchmarks-1  | OverheadWarmup   1: 1 op, 425.00 ns, 425.0000 ns/op
+benchmarks-1  | OverheadWarmup   2: 1 op, 288.00 ns, 288.0000 ns/op
+benchmarks-1  | OverheadWarmup   3: 1 op, 260.00 ns, 260.0000 ns/op
+benchmarks-1  | OverheadWarmup   4: 1 op, 286.00 ns, 286.0000 ns/op
+benchmarks-1  | OverheadWarmup   5: 1 op, 379.00 ns, 379.0000 ns/op
+benchmarks-1  | OverheadWarmup   6: 1 op, 289.00 ns, 289.0000 ns/op
+benchmarks-1  | OverheadWarmup   7: 1 op, 272.00 ns, 272.0000 ns/op
+benchmarks-1  | OverheadWarmup   8: 1 op, 310.00 ns, 310.0000 ns/op
+benchmarks-1  | OverheadWarmup   9: 1 op, 293.00 ns, 293.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | OverheadActual   1: 1 op, 294.00 ns, 294.0000 ns/op
+benchmarks-1  | OverheadActual   2: 1 op, 350.00 ns, 350.0000 ns/op
+benchmarks-1  | OverheadActual   3: 1 op, 309.00 ns, 309.0000 ns/op
+benchmarks-1  | OverheadActual   4: 1 op, 587.00 ns, 587.0000 ns/op
+benchmarks-1  | OverheadActual   5: 1 op, 273.00 ns, 273.0000 ns/op
+benchmarks-1  | OverheadActual   6: 1 op, 294.00 ns, 294.0000 ns/op
+benchmarks-1  | OverheadActual   7: 1 op, 463.00 ns, 463.0000 ns/op
+benchmarks-1  | OverheadActual   8: 1 op, 239.00 ns, 239.0000 ns/op
+benchmarks-1  | OverheadActual   9: 1 op, 288.00 ns, 288.0000 ns/op
+benchmarks-1  | OverheadActual  10: 1 op, 285.00 ns, 285.0000 ns/op
+benchmarks-1  | OverheadActual  11: 1 op, 284.00 ns, 284.0000 ns/op
+benchmarks-1  | OverheadActual  12: 1 op, 345.00 ns, 345.0000 ns/op
+benchmarks-1  | OverheadActual  13: 1 op, 395.00 ns, 395.0000 ns/op
+benchmarks-1  | OverheadActual  14: 1 op, 307.00 ns, 307.0000 ns/op
+benchmarks-1  | OverheadActual  15: 1 op, 295.00 ns, 295.0000 ns/op
+benchmarks-1  | OverheadActual  16: 1 op, 416.00 ns, 416.0000 ns/op
+benchmarks-1  | OverheadActual  17: 1 op, 301.00 ns, 301.0000 ns/op
+benchmarks-1  | OverheadActual  18: 1 op, 299.00 ns, 299.0000 ns/op
+benchmarks-1  | OverheadActual  19: 1 op, 335.00 ns, 335.0000 ns/op
+benchmarks-1  | OverheadActual  20: 1 op, 287.00 ns, 287.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | WorkloadWarmup   1: 1 op, 45969730.00 ns, 45.9697 ms/op
+benchmarks-1  | WorkloadWarmup   2: 1 op, 10322461.00 ns, 10.3225 ms/op
+benchmarks-1  | 
+benchmarks-1  | // BeforeActualRun
+benchmarks-1  | WorkloadActual   1: 1 op, 2247147.00 ns, 2.2471 ms/op
+benchmarks-1  | WorkloadActual   2: 1 op, 1935035.00 ns, 1.9350 ms/op
+benchmarks-1  | WorkloadActual   3: 1 op, 2139151.00 ns, 2.1392 ms/op
+benchmarks-1  | WorkloadActual   4: 1 op, 2010158.00 ns, 2.0102 ms/op
+benchmarks-1  | WorkloadActual   5: 1 op, 1668659.00 ns, 1.6687 ms/op
+benchmarks-1  | 
+benchmarks-1  | // AfterActualRun
+benchmarks-1  | WorkloadResult   1: 1 op, 2246847.00 ns, 2.2468 ms/op
+benchmarks-1  | WorkloadResult   2: 1 op, 1934735.00 ns, 1.9347 ms/op
+benchmarks-1  | WorkloadResult   3: 1 op, 2138851.00 ns, 2.1389 ms/op
+benchmarks-1  | WorkloadResult   4: 1 op, 2009858.00 ns, 2.0099 ms/op
+benchmarks-1  | WorkloadResult   5: 1 op, 1668359.00 ns, 1.6684 ms/op
+benchmarks-1  | // GC:  0 0 0 100848 1
+benchmarks-1  | // Threading:  6 0 1
+benchmarks-1  | 
+benchmarks-1  | // AfterAll
+benchmarks-1  | // Benchmark Process 405 has exited with code 0.
+benchmarks-1  | 
+benchmarks-1  | Mean = 2.000 ms, StdErr = 0.099 ms (4.93%), N = 5, StdDev = 0.221 ms
+benchmarks-1  | Min = 1.668 ms, Q1 = 1.935 ms, Median = 2.010 ms, Q3 = 2.139 ms, Max = 2.247 ms
+benchmarks-1  | IQR = 0.204 ms, LowerFence = 1.629 ms, UpperFence = 2.445 ms
+benchmarks-1  | ConfidenceInterval = [1.151 ms; 2.849 ms] (CI 99.9%), Margin = 0.849 ms (42.47% of Mean)
+benchmarks-1  | Skewness = -0.35, Kurtosis = 1.37, MValue = 2
+benchmarks-1  | 
+benchmarks-1  | // ** Remained 13 (65.0 %) benchmark(s) to run. Estimated finish 2026-11-02 22:36 (0h 0m from now) **
+benchmarks-1  | // **************************
+benchmarks-1  | // Benchmark: OrderDetailBenchmarks.'EF AsNoTracking + Select projection (two queries)': Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | // *** Execute ***
+benchmarks-1  | // Launch: 1 / 1
+benchmarks-1  | // Execute: dotnet OrderLightCqrs.Benchmarks-Job-FEWCWF-1.dll --anonymousPipes 121 122 --benchmarkName OrderLightCqrs.Benchmarks.OrderDetailBenchmarks.EfProjection --job "InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2" --benchmarkId 7 in /src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/bin/Release/net10.0
+benchmarks-1  | // Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+benchmarks-1  | // BeforeAnythingElse
+benchmarks-1  | 
+benchmarks-1  | // Benchmark Process Environment Information:
+benchmarks-1  | // BenchmarkDotNet v0.15.8
+benchmarks-1  | // Runtime=.NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3
+benchmarks-1  | // GC=Concurrent Workstation
+benchmarks-1  | // HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL,AvxVnni,SERIALIZE VectorSize=256
+benchmarks-1  | // Job: Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | 
+benchmarks-1  | OverheadJitting  1: 1 op, 164016.00 ns, 164.0160 us/op
+benchmarks-1  | WorkloadJitting  1: 1 op, 620755044.00 ns, 620.7550 ms/op
+benchmarks-1  | 
+benchmarks-1  | OverheadWarmup   1: 1 op, 410.00 ns, 410.0000 ns/op
+benchmarks-1  | OverheadWarmup   2: 1 op, 312.00 ns, 312.0000 ns/op
+benchmarks-1  | OverheadWarmup   3: 1 op, 416.00 ns, 416.0000 ns/op
+benchmarks-1  | OverheadWarmup   4: 1 op, 383.00 ns, 383.0000 ns/op
+benchmarks-1  | OverheadWarmup   5: 1 op, 340.00 ns, 340.0000 ns/op
+benchmarks-1  | OverheadWarmup   6: 1 op, 564.00 ns, 564.0000 ns/op
+benchmarks-1  | OverheadWarmup   7: 1 op, 378.00 ns, 378.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | OverheadActual   1: 1 op, 382.00 ns, 382.0000 ns/op
+benchmarks-1  | OverheadActual   2: 1 op, 545.00 ns, 545.0000 ns/op
+benchmarks-1  | OverheadActual   3: 1 op, 425.00 ns, 425.0000 ns/op
+benchmarks-1  | OverheadActual   4: 1 op, 627.00 ns, 627.0000 ns/op
+benchmarks-1  | OverheadActual   5: 1 op, 341.00 ns, 341.0000 ns/op
+benchmarks-1  | OverheadActual   6: 1 op, 357.00 ns, 357.0000 ns/op
+benchmarks-1  | OverheadActual   7: 1 op, 359.00 ns, 359.0000 ns/op
+benchmarks-1  | OverheadActual   8: 1 op, 357.00 ns, 357.0000 ns/op
+benchmarks-1  | OverheadActual   9: 1 op, 297.00 ns, 297.0000 ns/op
+benchmarks-1  | OverheadActual  10: 1 op, 314.00 ns, 314.0000 ns/op
+benchmarks-1  | OverheadActual  11: 1 op, 305.00 ns, 305.0000 ns/op
+benchmarks-1  | OverheadActual  12: 1 op, 331.00 ns, 331.0000 ns/op
+benchmarks-1  | OverheadActual  13: 1 op, 336.00 ns, 336.0000 ns/op
+benchmarks-1  | OverheadActual  14: 1 op, 356.00 ns, 356.0000 ns/op
+benchmarks-1  | OverheadActual  15: 1 op, 263.00 ns, 263.0000 ns/op
+benchmarks-1  | OverheadActual  16: 1 op, 300.00 ns, 300.0000 ns/op
+benchmarks-1  | OverheadActual  17: 1 op, 304.00 ns, 304.0000 ns/op
+benchmarks-1  | OverheadActual  18: 1 op, 439.00 ns, 439.0000 ns/op
+benchmarks-1  | OverheadActual  19: 1 op, 395.00 ns, 395.0000 ns/op
+benchmarks-1  | OverheadActual  20: 1 op, 340.00 ns, 340.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | WorkloadWarmup   1: 1 op, 46379685.00 ns, 46.3797 ms/op
+benchmarks-1  | WorkloadWarmup   2: 1 op, 9761339.00 ns, 9.7613 ms/op
+benchmarks-1  | 
+benchmarks-1  | // BeforeActualRun
+benchmarks-1  | WorkloadActual   1: 1 op, 1750978.00 ns, 1.7510 ms/op
+benchmarks-1  | WorkloadActual   2: 1 op, 1531776.00 ns, 1.5318 ms/op
+benchmarks-1  | WorkloadActual   3: 1 op, 1864511.00 ns, 1.8645 ms/op
+benchmarks-1  | WorkloadActual   4: 1 op, 1365048.00 ns, 1.3650 ms/op
+benchmarks-1  | WorkloadActual   5: 1 op, 1752067.00 ns, 1.7521 ms/op
+benchmarks-1  | 
+benchmarks-1  | // AfterActualRun
+benchmarks-1  | WorkloadResult   1: 1 op, 1750629.50 ns, 1.7506 ms/op
+benchmarks-1  | WorkloadResult   2: 1 op, 1531427.50 ns, 1.5314 ms/op
+benchmarks-1  | WorkloadResult   3: 1 op, 1864162.50 ns, 1.8642 ms/op
+benchmarks-1  | WorkloadResult   4: 1 op, 1364699.50 ns, 1.3647 ms/op
+benchmarks-1  | WorkloadResult   5: 1 op, 1751718.50 ns, 1.7517 ms/op
+benchmarks-1  | // GC:  0 0 0 104976 1
+benchmarks-1  | // Threading:  4 0 1
+benchmarks-1  | 
+benchmarks-1  | // AfterAll
+benchmarks-1  | // Benchmark Process 421 has exited with code 0.
+benchmarks-1  | 
+benchmarks-1  | Mean = 1.653 ms, StdErr = 0.090 ms (5.44%), N = 5, StdDev = 0.201 ms
+benchmarks-1  | Min = 1.365 ms, Q1 = 1.531 ms, Median = 1.751 ms, Q3 = 1.752 ms, Max = 1.864 ms
+benchmarks-1  | IQR = 0.220 ms, LowerFence = 1.201 ms, UpperFence = 2.082 ms
+benchmarks-1  | ConfidenceInterval = [0.878 ms; 2.427 ms] (CI 99.9%), Margin = 0.774 ms (46.86% of Mean)
+benchmarks-1  | Skewness = -0.35, Kurtosis = 1.13, MValue = 2
+benchmarks-1  | 
+benchmarks-1  | // ** Remained 12 (60.0 %) benchmark(s) to run. Estimated finish 2026-11-02 22:36 (0h 0m from now) **
+benchmarks-1  | // **************************
+benchmarks-1  | // Benchmark: OrderDetailBenchmarks.'EF compiled query + projection (two queries)': Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | // *** Execute ***
+benchmarks-1  | // Launch: 1 / 1
+benchmarks-1  | // Execute: dotnet OrderLightCqrs.Benchmarks-Job-FEWCWF-1.dll --anonymousPipes 121 122 --benchmarkName OrderLightCqrs.Benchmarks.OrderDetailBenchmarks.EfCompiledProjection --job "InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2" --benchmarkId 8 in /src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/bin/Release/net10.0
+benchmarks-1  | // Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+benchmarks-1  | // BeforeAnythingElse
+benchmarks-1  | 
+benchmarks-1  | // Benchmark Process Environment Information:
+benchmarks-1  | // BenchmarkDotNet v0.15.8
+benchmarks-1  | // Runtime=.NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3
+benchmarks-1  | // GC=Concurrent Workstation
+benchmarks-1  | // HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL,AvxVnni,SERIALIZE VectorSize=256
+benchmarks-1  | // Job: Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | 
+benchmarks-1  | OverheadJitting  1: 1 op, 158532.00 ns, 158.5320 us/op
+benchmarks-1  | WorkloadJitting  1: 1 op, 623396031.00 ns, 623.3960 ms/op
+benchmarks-1  | 
+benchmarks-1  | OverheadWarmup   1: 1 op, 539.00 ns, 539.0000 ns/op
+benchmarks-1  | OverheadWarmup   2: 1 op, 446.00 ns, 446.0000 ns/op
+benchmarks-1  | OverheadWarmup   3: 1 op, 734.00 ns, 734.0000 ns/op
+benchmarks-1  | OverheadWarmup   4: 1 op, 563.00 ns, 563.0000 ns/op
+benchmarks-1  | OverheadWarmup   5: 1 op, 472.00 ns, 472.0000 ns/op
+benchmarks-1  | OverheadWarmup   6: 1 op, 463.00 ns, 463.0000 ns/op
+benchmarks-1  | OverheadWarmup   7: 1 op, 352.00 ns, 352.0000 ns/op
+benchmarks-1  | OverheadWarmup   8: 1 op, 402.00 ns, 402.0000 ns/op
+benchmarks-1  | OverheadWarmup   9: 1 op, 375.00 ns, 375.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | OverheadActual   1: 1 op, 482.00 ns, 482.0000 ns/op
+benchmarks-1  | OverheadActual   2: 1 op, 795.00 ns, 795.0000 ns/op
+benchmarks-1  | OverheadActual   3: 1 op, 537.00 ns, 537.0000 ns/op
+benchmarks-1  | OverheadActual   4: 1 op, 462.00 ns, 462.0000 ns/op
+benchmarks-1  | OverheadActual   5: 1 op, 468.00 ns, 468.0000 ns/op
+benchmarks-1  | OverheadActual   6: 1 op, 446.00 ns, 446.0000 ns/op
+benchmarks-1  | OverheadActual   7: 1 op, 361.00 ns, 361.0000 ns/op
+benchmarks-1  | OverheadActual   8: 1 op, 640.00 ns, 640.0000 ns/op
+benchmarks-1  | OverheadActual   9: 1 op, 674.00 ns, 674.0000 ns/op
+benchmarks-1  | OverheadActual  10: 1 op, 536.00 ns, 536.0000 ns/op
+benchmarks-1  | OverheadActual  11: 1 op, 657.00 ns, 657.0000 ns/op
+benchmarks-1  | OverheadActual  12: 1 op, 577.00 ns, 577.0000 ns/op
+benchmarks-1  | OverheadActual  13: 1 op, 331.00 ns, 331.0000 ns/op
+benchmarks-1  | OverheadActual  14: 1 op, 305.00 ns, 305.0000 ns/op
+benchmarks-1  | OverheadActual  15: 1 op, 284.00 ns, 284.0000 ns/op
+benchmarks-1  | OverheadActual  16: 1 op, 498.00 ns, 498.0000 ns/op
+benchmarks-1  | OverheadActual  17: 1 op, 293.00 ns, 293.0000 ns/op
+benchmarks-1  | OverheadActual  18: 1 op, 295.00 ns, 295.0000 ns/op
+benchmarks-1  | OverheadActual  19: 1 op, 523.00 ns, 523.0000 ns/op
+benchmarks-1  | OverheadActual  20: 1 op, 484.00 ns, 484.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | WorkloadWarmup   1: 1 op, 13186059.00 ns, 13.1861 ms/op
+benchmarks-1  | WorkloadWarmup   2: 1 op, 43371235.00 ns, 43.3712 ms/op
+benchmarks-1  | 
+benchmarks-1  | // BeforeActualRun
+benchmarks-1  | WorkloadActual   1: 1 op, 1264734.00 ns, 1.2647 ms/op
+benchmarks-1  | WorkloadActual   2: 1 op, 1126787.00 ns, 1.1268 ms/op
+benchmarks-1  | WorkloadActual   3: 1 op, 1181107.00 ns, 1.1811 ms/op
+benchmarks-1  | WorkloadActual   4: 1 op, 1254360.00 ns, 1.2544 ms/op
+benchmarks-1  | WorkloadActual   5: 1 op, 1206213.00 ns, 1.2062 ms/op
+benchmarks-1  | 
+benchmarks-1  | // AfterActualRun
+benchmarks-1  | WorkloadResult   1: 1 op, 1264251.00 ns, 1.2643 ms/op
+benchmarks-1  | WorkloadResult   2: 1 op, 1126304.00 ns, 1.1263 ms/op
+benchmarks-1  | WorkloadResult   3: 1 op, 1180624.00 ns, 1.1806 ms/op
+benchmarks-1  | WorkloadResult   4: 1 op, 1253877.00 ns, 1.2539 ms/op
+benchmarks-1  | WorkloadResult   5: 1 op, 1205730.00 ns, 1.2057 ms/op
+benchmarks-1  | // GC:  0 0 0 66784 1
+benchmarks-1  | // Threading:  4 0 1
+benchmarks-1  | 
+benchmarks-1  | // AfterAll
+benchmarks-1  | // Benchmark Process 434 has exited with code 0.
+benchmarks-1  | 
+benchmarks-1  | Mean = 1.206 ms, StdErr = 0.025 ms (2.09%), N = 5, StdDev = 0.056 ms
+benchmarks-1  | Min = 1.126 ms, Q1 = 1.181 ms, Median = 1.206 ms, Q3 = 1.254 ms, Max = 1.264 ms
+benchmarks-1  | IQR = 0.073 ms, LowerFence = 1.071 ms, UpperFence = 1.364 ms
+benchmarks-1  | ConfidenceInterval = [0.989 ms; 1.423 ms] (CI 99.9%), Margin = 0.217 ms (17.98% of Mean)
+benchmarks-1  | Skewness = -0.25, Kurtosis = 1.15, MValue = 2
+benchmarks-1  | 
+benchmarks-1  | // ** Remained 11 (55.0 %) benchmark(s) to run. Estimated finish 2026-11-02 22:36 (0h 0m from now) **
+benchmarks-1  | // **************************
+benchmarks-1  | // Benchmark: OrderDetailBenchmarks.'Dapper (QueryMultiple, two result sets)': Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | // *** Execute ***
+benchmarks-1  | // Launch: 1 / 1
+benchmarks-1  | // Execute: dotnet OrderLightCqrs.Benchmarks-Job-FEWCWF-1.dll --anonymousPipes 121 122 --benchmarkName OrderLightCqrs.Benchmarks.OrderDetailBenchmarks.Dapper --job "InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2" --benchmarkId 9 in /src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/bin/Release/net10.0
+benchmarks-1  | // Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+benchmarks-1  | // BeforeAnythingElse
+benchmarks-1  | 
+benchmarks-1  | // Benchmark Process Environment Information:
+benchmarks-1  | // BenchmarkDotNet v0.15.8
+benchmarks-1  | // Runtime=.NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3
+benchmarks-1  | // GC=Concurrent Workstation
+benchmarks-1  | // HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL,AvxVnni,SERIALIZE VectorSize=256
+benchmarks-1  | // Job: Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | 
+benchmarks-1  | OverheadJitting  1: 1 op, 253176.00 ns, 253.1760 us/op
+benchmarks-1  | WorkloadJitting  1: 1 op, 46580844.00 ns, 46.5808 ms/op
+benchmarks-1  | 
+benchmarks-1  | OverheadWarmup   1: 1 op, 437.00 ns, 437.0000 ns/op
+benchmarks-1  | OverheadWarmup   2: 1 op, 397.00 ns, 397.0000 ns/op
+benchmarks-1  | OverheadWarmup   3: 1 op, 235.00 ns, 235.0000 ns/op
+benchmarks-1  | OverheadWarmup   4: 1 op, 271.00 ns, 271.0000 ns/op
+benchmarks-1  | OverheadWarmup   5: 1 op, 213.00 ns, 213.0000 ns/op
+benchmarks-1  | OverheadWarmup   6: 1 op, 207.00 ns, 207.0000 ns/op
+benchmarks-1  | OverheadWarmup   7: 1 op, 272.00 ns, 272.0000 ns/op
+benchmarks-1  | OverheadWarmup   8: 1 op, 229.00 ns, 229.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | OverheadActual   1: 1 op, 247.00 ns, 247.0000 ns/op
+benchmarks-1  | OverheadActual   2: 1 op, 237.00 ns, 237.0000 ns/op
+benchmarks-1  | OverheadActual   3: 1 op, 285.00 ns, 285.0000 ns/op
+benchmarks-1  | OverheadActual   4: 1 op, 231.00 ns, 231.0000 ns/op
+benchmarks-1  | OverheadActual   5: 1 op, 299.00 ns, 299.0000 ns/op
+benchmarks-1  | OverheadActual   6: 1 op, 221.00 ns, 221.0000 ns/op
+benchmarks-1  | OverheadActual   7: 1 op, 235.00 ns, 235.0000 ns/op
+benchmarks-1  | OverheadActual   8: 1 op, 331.00 ns, 331.0000 ns/op
+benchmarks-1  | OverheadActual   9: 1 op, 293.00 ns, 293.0000 ns/op
+benchmarks-1  | OverheadActual  10: 1 op, 296.00 ns, 296.0000 ns/op
+benchmarks-1  | OverheadActual  11: 1 op, 423.00 ns, 423.0000 ns/op
+benchmarks-1  | OverheadActual  12: 1 op, 292.00 ns, 292.0000 ns/op
+benchmarks-1  | OverheadActual  13: 1 op, 234.00 ns, 234.0000 ns/op
+benchmarks-1  | OverheadActual  14: 1 op, 233.00 ns, 233.0000 ns/op
+benchmarks-1  | OverheadActual  15: 1 op, 238.00 ns, 238.0000 ns/op
+benchmarks-1  | OverheadActual  16: 1 op, 213.00 ns, 213.0000 ns/op
+benchmarks-1  | OverheadActual  17: 1 op, 213.00 ns, 213.0000 ns/op
+benchmarks-1  | OverheadActual  18: 1 op, 287.00 ns, 287.0000 ns/op
+benchmarks-1  | OverheadActual  19: 1 op, 226.00 ns, 226.0000 ns/op
+benchmarks-1  | OverheadActual  20: 1 op, 244.00 ns, 244.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | WorkloadWarmup   1: 1 op, 1114486.00 ns, 1.1145 ms/op
+benchmarks-1  | WorkloadWarmup   2: 1 op, 619386.00 ns, 619.3860 us/op
+benchmarks-1  | 
+benchmarks-1  | // BeforeActualRun
+benchmarks-1  | WorkloadActual   1: 1 op, 599275.00 ns, 599.2750 us/op
+benchmarks-1  | WorkloadActual   2: 1 op, 675974.00 ns, 675.9740 us/op
+benchmarks-1  | WorkloadActual   3: 1 op, 575807.00 ns, 575.8070 us/op
+benchmarks-1  | WorkloadActual   4: 1 op, 682653.00 ns, 682.6530 us/op
+benchmarks-1  | WorkloadActual   5: 1 op, 602028.00 ns, 602.0280 us/op
+benchmarks-1  | 
+benchmarks-1  | // AfterActualRun
+benchmarks-1  | WorkloadResult   1: 1 op, 599034.00 ns, 599.0340 us/op
+benchmarks-1  | WorkloadResult   2: 1 op, 675733.00 ns, 675.7330 us/op
+benchmarks-1  | WorkloadResult   3: 1 op, 575566.00 ns, 575.5660 us/op
+benchmarks-1  | WorkloadResult   4: 1 op, 682412.00 ns, 682.4120 us/op
+benchmarks-1  | WorkloadResult   5: 1 op, 601787.00 ns, 601.7870 us/op
+benchmarks-1  | // GC:  0 0 0 6488 1
+benchmarks-1  | // Threading:  2 0 1
+benchmarks-1  | 
+benchmarks-1  | // AfterAll
+benchmarks-1  | // Benchmark Process 447 has exited with code 0.
+benchmarks-1  | 
+benchmarks-1  | Mean = 626.906 us, StdErr = 21.804 us (3.48%), N = 5, StdDev = 48.756 us
+benchmarks-1  | Min = 575.566 us, Q1 = 599.034 us, Median = 601.787 us, Q3 = 675.733 us, Max = 682.412 us
+benchmarks-1  | IQR = 76.699 us, LowerFence = 483.986 us, UpperFence = 790.782 us
+benchmarks-1  | ConfidenceInterval = [439.164 us; 814.648 us] (CI 99.9%), Margin = 187.742 us (29.95% of Mean)
+benchmarks-1  | Skewness = 0.2, Kurtosis = 0.82, MValue = 2
+benchmarks-1  | 
+benchmarks-1  | // ** Remained 10 (50.0 %) benchmark(s) to run. Estimated finish 2026-11-02 22:36 (0h 0m from now) **
+benchmarks-1  | // ***** BenchmarkRunner: Finish  *****
+benchmarks-1  | 
+benchmarks-1  | // * Export *
+benchmarks-1  |   BenchmarkDotNet.Artifacts/results/OrderLightCqrs.Benchmarks.OrderDetailBenchmarks-report.csv
+benchmarks-1  |   BenchmarkDotNet.Artifacts/results/OrderLightCqrs.Benchmarks.OrderDetailBenchmarks-report-github.md
+benchmarks-1  |   BenchmarkDotNet.Artifacts/results/OrderLightCqrs.Benchmarks.OrderDetailBenchmarks-report.html
+benchmarks-1  | 
+benchmarks-1  | // * Detailed results *
+benchmarks-1  | OrderDetailBenchmarks.'EF tracked entities (Include + second query)': Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | Runtime = .NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+benchmarks-1  | Mean = 2.136 ms, StdErr = 0.114 ms (5.34%), N = 5, StdDev = 0.255 ms
+benchmarks-1  | Min = 1.788 ms, Q1 = 1.988 ms, Median = 2.196 ms, Q3 = 2.256 ms, Max = 2.451 ms
+benchmarks-1  | IQR = 0.268 ms, LowerFence = 1.585 ms, UpperFence = 2.659 ms
+benchmarks-1  | ConfidenceInterval = [1.154 ms; 3.118 ms] (CI 99.9%), Margin = 0.982 ms (45.99% of Mean)
+benchmarks-1  | Skewness = -0.14, Kurtosis = 1.19, MValue = 2
+benchmarks-1  | -------------------- Histogram --------------------
+benchmarks-1  | [1.692 ms ; 2.127 ms) | @@
+benchmarks-1  | [2.127 ms ; 2.519 ms) | @@@
+benchmarks-1  | ---------------------------------------------------
+benchmarks-1  | 
+benchmarks-1  | OrderDetailBenchmarks.'EF AsNoTracking entities (Include + second query)': Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | Runtime = .NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+benchmarks-1  | Mean = 2.000 ms, StdErr = 0.099 ms (4.93%), N = 5, StdDev = 0.221 ms
+benchmarks-1  | Min = 1.668 ms, Q1 = 1.935 ms, Median = 2.010 ms, Q3 = 2.139 ms, Max = 2.247 ms
+benchmarks-1  | IQR = 0.204 ms, LowerFence = 1.629 ms, UpperFence = 2.445 ms
+benchmarks-1  | ConfidenceInterval = [1.151 ms; 2.849 ms] (CI 99.9%), Margin = 0.849 ms (42.47% of Mean)
+benchmarks-1  | Skewness = -0.35, Kurtosis = 1.37, MValue = 2
+benchmarks-1  | -------------------- Histogram --------------------
+benchmarks-1  | [1.499 ms ; 1.838 ms) | @
+benchmarks-1  | [1.838 ms ; 2.260 ms) | @@@@
+benchmarks-1  | ---------------------------------------------------
+benchmarks-1  | 
+benchmarks-1  | OrderDetailBenchmarks.'EF AsNoTracking + Select projection (two queries)': Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | Runtime = .NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+benchmarks-1  | Mean = 1.653 ms, StdErr = 0.090 ms (5.44%), N = 5, StdDev = 0.201 ms
+benchmarks-1  | Min = 1.365 ms, Q1 = 1.531 ms, Median = 1.751 ms, Q3 = 1.752 ms, Max = 1.864 ms
+benchmarks-1  | IQR = 0.220 ms, LowerFence = 1.201 ms, UpperFence = 2.082 ms
+benchmarks-1  | ConfidenceInterval = [0.878 ms; 2.427 ms] (CI 99.9%), Margin = 0.774 ms (46.86% of Mean)
+benchmarks-1  | Skewness = -0.35, Kurtosis = 1.13, MValue = 2
+benchmarks-1  | -------------------- Histogram --------------------
+benchmarks-1  | [1.294 ms ; 1.653 ms) | @@
+benchmarks-1  | [1.653 ms ; 2.019 ms) | @@@
+benchmarks-1  | ---------------------------------------------------
+benchmarks-1  | 
+benchmarks-1  | OrderDetailBenchmarks.'EF compiled query + projection (two queries)': Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | Runtime = .NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+benchmarks-1  | Mean = 1.206 ms, StdErr = 0.025 ms (2.09%), N = 5, StdDev = 0.056 ms
+benchmarks-1  | Min = 1.126 ms, Q1 = 1.181 ms, Median = 1.206 ms, Q3 = 1.254 ms, Max = 1.264 ms
+benchmarks-1  | IQR = 0.073 ms, LowerFence = 1.071 ms, UpperFence = 1.364 ms
+benchmarks-1  | ConfidenceInterval = [0.989 ms; 1.423 ms] (CI 99.9%), Margin = 0.217 ms (17.98% of Mean)
+benchmarks-1  | Skewness = -0.25, Kurtosis = 1.15, MValue = 2
+benchmarks-1  | -------------------- Histogram --------------------
+benchmarks-1  | [1.083 ms ; 1.179 ms) | @
+benchmarks-1  | [1.179 ms ; 1.266 ms) | @@@@
+benchmarks-1  | ---------------------------------------------------
+benchmarks-1  | 
+benchmarks-1  | OrderDetailBenchmarks.'Dapper (QueryMultiple, two result sets)': Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | Runtime = .NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+benchmarks-1  | Mean = 626.906 us, StdErr = 21.804 us (3.48%), N = 5, StdDev = 48.756 us
+benchmarks-1  | Min = 575.566 us, Q1 = 599.034 us, Median = 601.787 us, Q3 = 675.733 us, Max = 682.412 us
+benchmarks-1  | IQR = 76.699 us, LowerFence = 483.986 us, UpperFence = 790.782 us
+benchmarks-1  | ConfidenceInterval = [439.164 us; 814.648 us] (CI 99.9%), Margin = 187.742 us (29.95% of Mean)
+benchmarks-1  | Skewness = 0.2, Kurtosis = 0.82, MValue = 2
+benchmarks-1  | -------------------- Histogram --------------------
+benchmarks-1  | [551.254 us ; 641.650 us) | @@@
+benchmarks-1  | [641.650 us ; 719.835 us) | @@
+benchmarks-1  | ---------------------------------------------------
+benchmarks-1  | 
+benchmarks-1  | // * Summary *
+benchmarks-1  | 
+benchmarks-1  | BenchmarkDotNet v0.15.8, Linux Ubuntu 24.04.5 LTS (Noble Numbat) (container)
+benchmarks-1  | 12th Gen Intel Core i5-12600K 3.69GHz, 1 CPU, 16 logical and 8 physical cores
+benchmarks-1  | .NET SDK 10.0.402
+benchmarks-1  |   [Host]     : .NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3
+benchmarks-1  |   Job-ARDWEO : .NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3
+benchmarks-1  | 
+benchmarks-1  | InvocationCount=1  IterationCount=5  UnrollFactor=1  
+benchmarks-1  | WarmupCount=2  
+benchmarks-1  | 
+benchmarks-1  | | Method                                              | Mean       | Error    | StdDev    | Ratio | RatioSD | Allocated | Alloc Ratio |
+benchmarks-1  | |---------------------------------------------------- |-----------:|---------:|----------:|------:|--------:|----------:|------------:|
+benchmarks-1  | | 'EF tracked entities (Include + second query)'      | 2,135.6 us | 982.1 us | 255.04 us |  1.01 |    0.16 |  98.22 KB |        1.00 |
+benchmarks-1  | | 'EF AsNoTracking entities (Include + second query)' | 1,999.7 us | 849.2 us | 220.54 us |  0.95 |    0.14 |  98.48 KB |        1.00 |
+benchmarks-1  | | 'EF AsNoTracking + Select projection (two queries)' | 1,652.5 us | 774.4 us | 201.10 us |  0.78 |    0.12 | 102.52 KB |        1.04 |
+benchmarks-1  | | 'EF compiled query + projection (two queries)'      | 1,206.2 us | 216.8 us |  56.30 us |  0.57 |    0.07 |  65.22 KB |        0.66 |
+benchmarks-1  | | 'Dapper (QueryMultiple, two result sets)'           |   626.9 us | 187.7 us |  48.76 us |  0.30 |    0.04 |   6.34 KB |        0.06 |
+benchmarks-1  | 
+benchmarks-1  | // * Warnings *
+benchmarks-1  | MinIterationTime
+benchmarks-1  |   OrderDetailBenchmarks.'EF tracked entities (Include + second query)': InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2      -> The minimum observed iteration time is 1.788ms which is very small. It's recommended to increase it to at least 100ms using more operations.
+benchmarks-1  |   OrderDetailBenchmarks.'EF AsNoTracking entities (Include + second query)': InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2 -> The minimum observed iteration time is 1.669ms which is very small. It's recommended to increase it to at least 100ms using more operations.
+benchmarks-1  |   OrderDetailBenchmarks.'EF AsNoTracking + Select projection (two queries)': InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2 -> The minimum observed iteration time is 1.365ms which is very small. It's recommended to increase it to at least 100ms using more operations.
+benchmarks-1  |   OrderDetailBenchmarks.'EF compiled query + projection (two queries)': InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2      -> The minimum observed iteration time is 1.127ms which is very small. It's recommended to increase it to at least 100ms using more operations.
+benchmarks-1  |   OrderDetailBenchmarks.'Dapper (QueryMultiple, two result sets)': InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2           -> The minimum observed iteration time is 575.807us which is very small. It's recommended to increase it to at least 100ms using more operations.
+benchmarks-1  | 
+benchmarks-1  | // * Legends *
+benchmarks-1  |   Mean        : Arithmetic mean of all measurements
+benchmarks-1  |   Error       : Half of 99.9% confidence interval
+benchmarks-1  |   StdDev      : Standard deviation of all measurements
+benchmarks-1  |   Ratio       : Mean of the ratio distribution ([Current]/[Baseline])
+benchmarks-1  |   RatioSD     : Standard deviation of the ratio distribution ([Current]/[Baseline])
+benchmarks-1  |   Allocated   : Allocated memory per single operation (managed only, inclusive, 1KB = 1024B)
+benchmarks-1  |   Alloc Ratio : Allocated memory ratio distribution ([Current]/[Baseline])
+benchmarks-1  |   1 us        : 1 Microsecond (0.000001 sec)
+benchmarks-1  | 
+benchmarks-1  | // * Diagnostic Output - MemoryDiagnoser *
+benchmarks-1  | 
+benchmarks-1  | 
+benchmarks-1  | // ***** BenchmarkRunner: End *****
+benchmarks-1  | Run time: 00:00:05 (5.15 sec), executed benchmarks: 5
+benchmarks-1  | 
+benchmarks-1  | // Found 5 benchmarks:
+benchmarks-1  | //   OrderListBenchmarks.'EF tracked entities (Include + second query)': Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | //   OrderListBenchmarks.'EF AsNoTracking entities (Include + second query)': Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | //   OrderListBenchmarks.'EF AsNoTracking + Select projection (single query)': Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | //   OrderListBenchmarks.'EF compiled query + projection (single query)': Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | //   OrderListBenchmarks.'Dapper (single query + count query)': Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | 
+benchmarks-1  | // **************************
+benchmarks-1  | // Benchmark: OrderListBenchmarks.'EF tracked entities (Include + second query)': Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | // *** Execute ***
+benchmarks-1  | // Launch: 1 / 1
+benchmarks-1  | // Execute: dotnet OrderLightCqrs.Benchmarks-Job-FEWCWF-1.dll --anonymousPipes 121 122 --benchmarkName OrderLightCqrs.Benchmarks.OrderListBenchmarks.EfTracked --job "InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2" --benchmarkId 10 in /src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/bin/Release/net10.0
+benchmarks-1  | // Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+benchmarks-1  | // BeforeAnythingElse
+benchmarks-1  | 
+benchmarks-1  | // Benchmark Process Environment Information:
+benchmarks-1  | // BenchmarkDotNet v0.15.8
+benchmarks-1  | // Runtime=.NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3
+benchmarks-1  | // GC=Concurrent Workstation
+benchmarks-1  | // HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL,AvxVnni,SERIALIZE VectorSize=256
+benchmarks-1  | // Job: Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | 
+benchmarks-1  | OverheadJitting  1: 1 op, 178652.00 ns, 178.6520 us/op
+benchmarks-1  | WorkloadJitting  1: 1 op, 932053997.00 ns, 932.0540 ms/op
+benchmarks-1  | 
+benchmarks-1  | OverheadWarmup   1: 1 op, 521.00 ns, 521.0000 ns/op
+benchmarks-1  | OverheadWarmup   2: 1 op, 324.00 ns, 324.0000 ns/op
+benchmarks-1  | OverheadWarmup   3: 1 op, 496.00 ns, 496.0000 ns/op
+benchmarks-1  | OverheadWarmup   4: 1 op, 587.00 ns, 587.0000 ns/op
+benchmarks-1  | OverheadWarmup   5: 1 op, 608.00 ns, 608.0000 ns/op
+benchmarks-1  | OverheadWarmup   6: 1 op, 430.00 ns, 430.0000 ns/op
+benchmarks-1  | OverheadWarmup   7: 1 op, 339.00 ns, 339.0000 ns/op
+benchmarks-1  | OverheadWarmup   8: 1 op, 492.00 ns, 492.0000 ns/op
+benchmarks-1  | OverheadWarmup   9: 1 op, 413.00 ns, 413.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | OverheadActual   1: 1 op, 574.00 ns, 574.0000 ns/op
+benchmarks-1  | OverheadActual   2: 1 op, 446.00 ns, 446.0000 ns/op
+benchmarks-1  | OverheadActual   3: 1 op, 606.00 ns, 606.0000 ns/op
+benchmarks-1  | OverheadActual   4: 1 op, 441.00 ns, 441.0000 ns/op
+benchmarks-1  | OverheadActual   5: 1 op, 564.00 ns, 564.0000 ns/op
+benchmarks-1  | OverheadActual   6: 1 op, 528.00 ns, 528.0000 ns/op
+benchmarks-1  | OverheadActual   7: 1 op, 448.00 ns, 448.0000 ns/op
+benchmarks-1  | OverheadActual   8: 1 op, 561.00 ns, 561.0000 ns/op
+benchmarks-1  | OverheadActual   9: 1 op, 726.00 ns, 726.0000 ns/op
+benchmarks-1  | OverheadActual  10: 1 op, 705.00 ns, 705.0000 ns/op
+benchmarks-1  | OverheadActual  11: 1 op, 677.00 ns, 677.0000 ns/op
+benchmarks-1  | OverheadActual  12: 1 op, 748.00 ns, 748.0000 ns/op
+benchmarks-1  | OverheadActual  13: 1 op, 736.00 ns, 736.0000 ns/op
+benchmarks-1  | OverheadActual  14: 1 op, 459.00 ns, 459.0000 ns/op
+benchmarks-1  | OverheadActual  15: 1 op, 661.00 ns, 661.0000 ns/op
+benchmarks-1  | OverheadActual  16: 1 op, 682.00 ns, 682.0000 ns/op
+benchmarks-1  | OverheadActual  17: 1 op, 701.00 ns, 701.0000 ns/op
+benchmarks-1  | OverheadActual  18: 1 op, 476.00 ns, 476.0000 ns/op
+benchmarks-1  | OverheadActual  19: 1 op, 598.00 ns, 598.0000 ns/op
+benchmarks-1  | OverheadActual  20: 1 op, 413.00 ns, 413.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | WorkloadWarmup   1: 1 op, 48993503.00 ns, 48.9935 ms/op
+benchmarks-1  | WorkloadWarmup   2: 1 op, 13781113.00 ns, 13.7811 ms/op
+benchmarks-1  | 
+benchmarks-1  | // BeforeActualRun
+benchmarks-1  | WorkloadActual   1: 1 op, 5126967.00 ns, 5.1270 ms/op
+benchmarks-1  | WorkloadActual   2: 1 op, 8127062.00 ns, 8.1271 ms/op
+benchmarks-1  | WorkloadActual   3: 1 op, 7586298.00 ns, 7.5863 ms/op
+benchmarks-1  | WorkloadActual   4: 1 op, 7376943.00 ns, 7.3769 ms/op
+benchmarks-1  | WorkloadActual   5: 1 op, 6349806.00 ns, 6.3498 ms/op
+benchmarks-1  | 
+benchmarks-1  | // AfterActualRun
+benchmarks-1  | WorkloadResult   1: 1 op, 5126381.00 ns, 5.1264 ms/op
+benchmarks-1  | WorkloadResult   2: 1 op, 8126476.00 ns, 8.1265 ms/op
+benchmarks-1  | WorkloadResult   3: 1 op, 7585712.00 ns, 7.5857 ms/op
+benchmarks-1  | WorkloadResult   4: 1 op, 7376357.00 ns, 7.3764 ms/op
+benchmarks-1  | WorkloadResult   5: 1 op, 6349220.00 ns, 6.3492 ms/op
+benchmarks-1  | // GC:  0 0 0 528360 1
+benchmarks-1  | // Threading:  9 0 1
+benchmarks-1  | 
+benchmarks-1  | // AfterAll
+benchmarks-1  | // Benchmark Process 459 has exited with code 0.
+benchmarks-1  | 
+benchmarks-1  | Mean = 6.913 ms, StdErr = 0.531 ms (7.69%), N = 5, StdDev = 1.188 ms
+benchmarks-1  | Min = 5.126 ms, Q1 = 6.349 ms, Median = 7.376 ms, Q3 = 7.586 ms, Max = 8.126 ms
+benchmarks-1  | IQR = 1.236 ms, LowerFence = 4.494 ms, UpperFence = 9.440 ms
+benchmarks-1  | ConfidenceInterval = [2.337 ms; 11.489 ms] (CI 99.9%), Margin = 4.576 ms (66.20% of Mean)
+benchmarks-1  | Skewness = -0.44, Kurtosis = 1.27, MValue = 2
+benchmarks-1  | 
+benchmarks-1  | // ** Remained 9 (45.0 %) benchmark(s) to run. Estimated finish 2026-11-02 22:36 (0h 0m from now) **
+benchmarks-1  | // **************************
+benchmarks-1  | // Benchmark: OrderListBenchmarks.'EF AsNoTracking entities (Include + second query)': Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | // *** Execute ***
+benchmarks-1  | // Launch: 1 / 1
+benchmarks-1  | // Execute: dotnet OrderLightCqrs.Benchmarks-Job-FEWCWF-1.dll --anonymousPipes 121 122 --benchmarkName OrderLightCqrs.Benchmarks.OrderListBenchmarks.EfAsNoTracking --job "InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2" --benchmarkId 11 in /src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/bin/Release/net10.0
+benchmarks-1  | // Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+benchmarks-1  | // BeforeAnythingElse
+benchmarks-1  | 
+benchmarks-1  | // Benchmark Process Environment Information:
+benchmarks-1  | // BenchmarkDotNet v0.15.8
+benchmarks-1  | // Runtime=.NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3
+benchmarks-1  | // GC=Concurrent Workstation
+benchmarks-1  | // HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL,AvxVnni,SERIALIZE VectorSize=256
+benchmarks-1  | // Job: Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | 
+benchmarks-1  | OverheadJitting  1: 1 op, 187976.00 ns, 187.9760 us/op
+benchmarks-1  | WorkloadJitting  1: 1 op, 954834290.00 ns, 954.8343 ms/op
+benchmarks-1  | 
+benchmarks-1  | OverheadWarmup   1: 1 op, 485.00 ns, 485.0000 ns/op
+benchmarks-1  | OverheadWarmup   2: 1 op, 549.00 ns, 549.0000 ns/op
+benchmarks-1  | OverheadWarmup   3: 1 op, 365.00 ns, 365.0000 ns/op
+benchmarks-1  | OverheadWarmup   4: 1 op, 424.00 ns, 424.0000 ns/op
+benchmarks-1  | OverheadWarmup   5: 1 op, 429.00 ns, 429.0000 ns/op
+benchmarks-1  | OverheadWarmup   6: 1 op, 299.00 ns, 299.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | OverheadActual   1: 1 op, 562.00 ns, 562.0000 ns/op
+benchmarks-1  | OverheadActual   2: 1 op, 703.00 ns, 703.0000 ns/op
+benchmarks-1  | OverheadActual   3: 1 op, 466.00 ns, 466.0000 ns/op
+benchmarks-1  | OverheadActual   4: 1 op, 454.00 ns, 454.0000 ns/op
+benchmarks-1  | OverheadActual   5: 1 op, 733.00 ns, 733.0000 ns/op
+benchmarks-1  | OverheadActual   6: 1 op, 709.00 ns, 709.0000 ns/op
+benchmarks-1  | OverheadActual   7: 1 op, 500.00 ns, 500.0000 ns/op
+benchmarks-1  | OverheadActual   8: 1 op, 610.00 ns, 610.0000 ns/op
+benchmarks-1  | OverheadActual   9: 1 op, 583.00 ns, 583.0000 ns/op
+benchmarks-1  | OverheadActual  10: 1 op, 462.00 ns, 462.0000 ns/op
+benchmarks-1  | OverheadActual  11: 1 op, 579.00 ns, 579.0000 ns/op
+benchmarks-1  | OverheadActual  12: 1 op, 592.00 ns, 592.0000 ns/op
+benchmarks-1  | OverheadActual  13: 1 op, 360.00 ns, 360.0000 ns/op
+benchmarks-1  | OverheadActual  14: 1 op, 307.00 ns, 307.0000 ns/op
+benchmarks-1  | OverheadActual  15: 1 op, 384.00 ns, 384.0000 ns/op
+benchmarks-1  | OverheadActual  16: 1 op, 376.00 ns, 376.0000 ns/op
+benchmarks-1  | OverheadActual  17: 1 op, 551.00 ns, 551.0000 ns/op
+benchmarks-1  | OverheadActual  18: 1 op, 475.00 ns, 475.0000 ns/op
+benchmarks-1  | OverheadActual  19: 1 op, 368.00 ns, 368.0000 ns/op
+benchmarks-1  | OverheadActual  20: 1 op, 374.00 ns, 374.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | WorkloadWarmup   1: 1 op, 48867694.00 ns, 48.8677 ms/op
+benchmarks-1  | WorkloadWarmup   2: 1 op, 12584459.00 ns, 12.5845 ms/op
+benchmarks-1  | 
+benchmarks-1  | // BeforeActualRun
+benchmarks-1  | WorkloadActual   1: 1 op, 4250274.00 ns, 4.2503 ms/op
+benchmarks-1  | WorkloadActual   2: 1 op, 5936687.00 ns, 5.9367 ms/op
+benchmarks-1  | WorkloadActual   3: 1 op, 4178983.00 ns, 4.1790 ms/op
+benchmarks-1  | WorkloadActual   4: 1 op, 4228827.00 ns, 4.2288 ms/op
+benchmarks-1  | WorkloadActual   5: 1 op, 4150577.00 ns, 4.1506 ms/op
+benchmarks-1  | 
+benchmarks-1  | // AfterActualRun
+benchmarks-1  | WorkloadResult   1: 1 op, 4249786.50 ns, 4.2498 ms/op
+benchmarks-1  | WorkloadResult   2: 1 op, 4178495.50 ns, 4.1785 ms/op
+benchmarks-1  | WorkloadResult   3: 1 op, 4228339.50 ns, 4.2283 ms/op
+benchmarks-1  | WorkloadResult   4: 1 op, 4150089.50 ns, 4.1501 ms/op
+benchmarks-1  | // GC:  0 0 0 294280 1
+benchmarks-1  | // Threading:  9 0 1
+benchmarks-1  | 
+benchmarks-1  | // AfterAll
+benchmarks-1  | // Benchmark Process 472 has exited with code 0.
+benchmarks-1  | 
+benchmarks-1  | Mean = 4.202 ms, StdErr = 0.023 ms (0.54%), N = 4, StdDev = 0.046 ms
+benchmarks-1  | Min = 4.150 ms, Q1 = 4.171 ms, Median = 4.203 ms, Q3 = 4.234 ms, Max = 4.250 ms
+benchmarks-1  | IQR = 0.062 ms, LowerFence = 4.078 ms, UpperFence = 4.327 ms
+benchmarks-1  | ConfidenceInterval = [3.907 ms; 4.496 ms] (CI 99.9%), Margin = 0.294 ms (7.01% of Mean)
+benchmarks-1  | Skewness = -0.05, Kurtosis = 0.77, MValue = 2
+benchmarks-1  | 
+benchmarks-1  | // ** Remained 8 (40.0 %) benchmark(s) to run. Estimated finish 2026-11-02 22:36 (0h 0m from now) **
+benchmarks-1  | // **************************
+benchmarks-1  | // Benchmark: OrderListBenchmarks.'EF AsNoTracking + Select projection (single query)': Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | // *** Execute ***
+benchmarks-1  | // Launch: 1 / 1
+benchmarks-1  | // Execute: dotnet OrderLightCqrs.Benchmarks-Job-FEWCWF-1.dll --anonymousPipes 121 122 --benchmarkName OrderLightCqrs.Benchmarks.OrderListBenchmarks.EfProjection --job "InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2" --benchmarkId 12 in /src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/bin/Release/net10.0
+benchmarks-1  | // Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+benchmarks-1  | // BeforeAnythingElse
+benchmarks-1  | 
+benchmarks-1  | // Benchmark Process Environment Information:
+benchmarks-1  | // BenchmarkDotNet v0.15.8
+benchmarks-1  | // Runtime=.NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3
+benchmarks-1  | // GC=Concurrent Workstation
+benchmarks-1  | // HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL,AvxVnni,SERIALIZE VectorSize=256
+benchmarks-1  | // Job: Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | 
+benchmarks-1  | OverheadJitting  1: 1 op, 203547.00 ns, 203.5470 us/op
+benchmarks-1  | WorkloadJitting  1: 1 op, 765241409.00 ns, 765.2414 ms/op
+benchmarks-1  | 
+benchmarks-1  | OverheadWarmup   1: 1 op, 496.00 ns, 496.0000 ns/op
+benchmarks-1  | OverheadWarmup   2: 1 op, 290.00 ns, 290.0000 ns/op
+benchmarks-1  | OverheadWarmup   3: 1 op, 471.00 ns, 471.0000 ns/op
+benchmarks-1  | OverheadWarmup   4: 1 op, 337.00 ns, 337.0000 ns/op
+benchmarks-1  | OverheadWarmup   5: 1 op, 434.00 ns, 434.0000 ns/op
+benchmarks-1  | OverheadWarmup   6: 1 op, 325.00 ns, 325.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | OverheadActual   1: 1 op, 472.00 ns, 472.0000 ns/op
+benchmarks-1  | OverheadActual   2: 1 op, 419.00 ns, 419.0000 ns/op
+benchmarks-1  | OverheadActual   3: 1 op, 303.00 ns, 303.0000 ns/op
+benchmarks-1  | OverheadActual   4: 1 op, 345.00 ns, 345.0000 ns/op
+benchmarks-1  | OverheadActual   5: 1 op, 360.00 ns, 360.0000 ns/op
+benchmarks-1  | OverheadActual   6: 1 op, 371.00 ns, 371.0000 ns/op
+benchmarks-1  | OverheadActual   7: 1 op, 286.00 ns, 286.0000 ns/op
+benchmarks-1  | OverheadActual   8: 1 op, 293.00 ns, 293.0000 ns/op
+benchmarks-1  | OverheadActual   9: 1 op, 304.00 ns, 304.0000 ns/op
+benchmarks-1  | OverheadActual  10: 1 op, 479.00 ns, 479.0000 ns/op
+benchmarks-1  | OverheadActual  11: 1 op, 347.00 ns, 347.0000 ns/op
+benchmarks-1  | OverheadActual  12: 1 op, 315.00 ns, 315.0000 ns/op
+benchmarks-1  | OverheadActual  13: 1 op, 438.00 ns, 438.0000 ns/op
+benchmarks-1  | OverheadActual  14: 1 op, 371.00 ns, 371.0000 ns/op
+benchmarks-1  | OverheadActual  15: 1 op, 366.00 ns, 366.0000 ns/op
+benchmarks-1  | OverheadActual  16: 1 op, 430.00 ns, 430.0000 ns/op
+benchmarks-1  | OverheadActual  17: 1 op, 314.00 ns, 314.0000 ns/op
+benchmarks-1  | OverheadActual  18: 1 op, 286.00 ns, 286.0000 ns/op
+benchmarks-1  | OverheadActual  19: 1 op, 306.00 ns, 306.0000 ns/op
+benchmarks-1  | OverheadActual  20: 1 op, 719.00 ns, 719.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | WorkloadWarmup   1: 1 op, 48479804.00 ns, 48.4798 ms/op
+benchmarks-1  | WorkloadWarmup   2: 1 op, 11884778.00 ns, 11.8848 ms/op
+benchmarks-1  | 
+benchmarks-1  | // BeforeActualRun
+benchmarks-1  | WorkloadActual   1: 1 op, 3543154.00 ns, 3.5432 ms/op
+benchmarks-1  | WorkloadActual   2: 1 op, 3246966.00 ns, 3.2470 ms/op
+benchmarks-1  | WorkloadActual   3: 1 op, 3472319.00 ns, 3.4723 ms/op
+benchmarks-1  | WorkloadActual   4: 1 op, 3546446.00 ns, 3.5464 ms/op
+benchmarks-1  | WorkloadActual   5: 1 op, 3353087.00 ns, 3.3531 ms/op
+benchmarks-1  | 
+benchmarks-1  | // AfterActualRun
+benchmarks-1  | WorkloadResult   1: 1 op, 3542800.50 ns, 3.5428 ms/op
+benchmarks-1  | WorkloadResult   2: 1 op, 3246612.50 ns, 3.2466 ms/op
+benchmarks-1  | WorkloadResult   3: 1 op, 3471965.50 ns, 3.4720 ms/op
+benchmarks-1  | WorkloadResult   4: 1 op, 3546092.50 ns, 3.5461 ms/op
+benchmarks-1  | WorkloadResult   5: 1 op, 3352733.50 ns, 3.3527 ms/op
+benchmarks-1  | // GC:  0 0 0 129000 1
+benchmarks-1  | // Threading:  4 0 1
+benchmarks-1  | 
+benchmarks-1  | // AfterAll
+benchmarks-1  | // Benchmark Process 486 has exited with code 0.
+benchmarks-1  | 
+benchmarks-1  | Mean = 3.432 ms, StdErr = 0.058 ms (1.69%), N = 5, StdDev = 0.130 ms
+benchmarks-1  | Min = 3.247 ms, Q1 = 3.353 ms, Median = 3.472 ms, Q3 = 3.543 ms, Max = 3.546 ms
+benchmarks-1  | IQR = 0.190 ms, LowerFence = 3.068 ms, UpperFence = 3.828 ms
+benchmarks-1  | ConfidenceInterval = [2.932 ms; 3.932 ms] (CI 99.9%), Margin = 0.500 ms (14.58% of Mean)
+benchmarks-1  | Skewness = -0.36, Kurtosis = 1.08, MValue = 2
+benchmarks-1  | 
+benchmarks-1  | // ** Remained 7 (35.0 %) benchmark(s) to run. Estimated finish 2026-11-02 22:36 (0h 0m from now) **
+benchmarks-1  | // **************************
+benchmarks-1  | // Benchmark: OrderListBenchmarks.'EF compiled query + projection (single query)': Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | // *** Execute ***
+benchmarks-1  | // Launch: 1 / 1
+benchmarks-1  | // Execute: dotnet OrderLightCqrs.Benchmarks-Job-FEWCWF-1.dll --anonymousPipes 121 122 --benchmarkName OrderLightCqrs.Benchmarks.OrderListBenchmarks.EfCompiledProjection --job "InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2" --benchmarkId 13 in /src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/bin/Release/net10.0
+benchmarks-1  | // Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+benchmarks-1  | // BeforeAnythingElse
+benchmarks-1  | 
+benchmarks-1  | // Benchmark Process Environment Information:
+benchmarks-1  | // BenchmarkDotNet v0.15.8
+benchmarks-1  | // Runtime=.NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3
+benchmarks-1  | // GC=Concurrent Workstation
+benchmarks-1  | // HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL,AvxVnni,SERIALIZE VectorSize=256
+benchmarks-1  | // Job: Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | 
+benchmarks-1  | OverheadJitting  1: 1 op, 177848.00 ns, 177.8480 us/op
+benchmarks-1  | 
+benchmarks-1  | System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation.
+benchmarks-1  |  ---> System.InvalidOperationException: The LINQ expression 'DbSet<Order>()
+benchmarks-1  |     .Where(o => (int)o.Status == (int)@status && o.CreatedAtUtc >= @fromUtc && o.CreatedAtUtc < @toUtc)
+benchmarks-1  |     .OrderByDescending(o => o.CreatedAtUtc)
+benchmarks-1  |     .Skip(@skip)
+benchmarks-1  |     .Take(@take)
+benchmarks-1  |     .Select(o => new OrderListRow(
+benchmarks-1  |         o.Id, 
+benchmarks-1  |         DbSet<Customer>()
+benchmarks-1  |             .Where(c => c.Id == o.CustomerId)
+benchmarks-1  |             .Select(c => c.Name)
+benchmarks-1  |             .First(), 
+benchmarks-1  |         o.CreatedAtUtc, 
+benchmarks-1  |         o.Status.ToString(), 
+benchmarks-1  |         DbSet<OrderLine>()
+benchmarks-1  |             .Where(o0 => EF.Property<Guid?>(o, "Id") != null && object.Equals(
+benchmarks-1  |                 objA: (object)EF.Property<Guid?>(o, "Id"), 
+benchmarks-1  |                 objB: (object)EF.Property<Guid?>(o0, "OrderId")))
+benchmarks-1  |             .Count(), 
+benchmarks-1  |         DbSet<OrderLine>()
+benchmarks-1  |             .Where(o1 => EF.Property<Guid?>(o, "Id") != null && object.Equals(
+benchmarks-1  |                 objA: (object)EF.Property<Guid?>(o, "Id"), 
+benchmarks-1  |                 objB: (object)EF.Property<Guid?>(o1, "OrderId")))
+benchmarks-1  |             .Sum(o1 => (decimal)o1.Quantity * o1.UnitPrice)
+benchmarks-1  |     ))
+benchmarks-1  |     .ToList()' could not be translated. Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable', 'AsAsyncEnumerable', 'ToList', or 'ToListAsync'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+benchmarks-1  |    at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+benchmarks-1  |    at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+benchmarks-1  |    at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+benchmarks-1  |    at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutorExpression[TResult](Expression query)
+benchmarks-1  |    at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+benchmarks-1  |    at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+benchmarks-1  |    at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+benchmarks-1  |    at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CreateCompiledAsyncQuery[TResult](Expression query)
+benchmarks-1  |    at Microsoft.EntityFrameworkCore.Query.Internal.CompiledAsyncTaskQuery`2.CreateCompiledQuery(IQueryCompiler queryCompiler, Expression expression)
+benchmarks-1  |    at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryBase`2.<>c.<EnsureExecutor>b__7_0(CompiledQueryBase`2 t, TContext c, LambdaExpression q)
+benchmarks-1  |    at Microsoft.EntityFrameworkCore.Internal.NonCapturingLazyInitializer.EnsureInitialized[TParam1,TParam2,TParam3,TValue](TValue& target, TParam1 param1, TParam2 param2, TParam3 param3, Func`4 valueFactory)
+benchmarks-1  |    at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryBase`2.EnsureExecutor(TContext context)
+benchmarks-1  |    at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryBase`2.ExecuteCore(TContext context, CancellationToken cancellationToken, Object[] parameters)
+benchmarks-1  |    at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryBase`2.ExecuteCore(TContext context, Object[] parameters)
+benchmarks-1  |    at Microsoft.EntityFrameworkCore.Query.Internal.CompiledAsyncTaskQuery`2.ExecuteAsync[TParam1,TParam2,TParam3,TParam4,TParam5](TContext context, TParam1 param1, TParam2 param2, TParam3 param3, TParam4 param4, TParam5 param5)
+benchmarks-1  |    at OrderLightCqrs.Benchmarks.OrderListBenchmarks.EfCompiledProjection() in /src/Benchmarks/OrderListBenchmarks.cs:line 146
+benchmarks-1  |    at OrderLightCqrs.Benchmarks.OrderListBenchmarks.EfCompiledProjection() in /src/Benchmarks/OrderListBenchmarks.cs:line 148
+benchmarks-1  |    at BenchmarkDotNet.Helpers.AwaitHelper.GetResult[T](Task`1 task)
+benchmarks-1  |    at BenchmarkDotNet.Autogenerated.Runnable_13.<.ctor>b__3_3() in /src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/OrderLightCqrs.Benchmarks-Job-FEWCWF-1.notcs:line 2410
+benchmarks-1  |    at BenchmarkDotNet.Autogenerated.Runnable_13.WorkloadActionUnroll(Int64 invokeCount) in /src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/OrderLightCqrs.Benchmarks-Job-FEWCWF-1.notcs:line 2486
+benchmarks-1  |    at BenchmarkDotNet.Engines.Engine.Measure(Action`1 action, Int64 invokeCount)
+benchmarks-1  |    at BenchmarkDotNet.Engines.Engine.RunIteration(IterationData data)
+benchmarks-1  |    at BenchmarkDotNet.Engines.EngineFactory.Jit(Engine engine, Int32 jitIndex, Int32 invokeCount, Int32 unrollFactor)
+benchmarks-1  |    at BenchmarkDotNet.Engines.EngineFactory.CreateReadyToRun(EngineParameters engineParameters)
+benchmarks-1  |    at BenchmarkDotNet.Autogenerated.Runnable_13.Run(IHost host, String benchmarkName) in /src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/OrderLightCqrs.Benchmarks-Job-FEWCWF-1.notcs:line 2389
+benchmarks-1  |    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+benchmarks-1  |    at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+benchmarks-1  |    --- End of inner exception stack trace ---
+benchmarks-1  |    at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+benchmarks-1  |    at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+benchmarks-1  |    at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+benchmarks-1  |    at BenchmarkDotNet.Autogenerated.UniqueProgramName.AfterAssemblyLoadingAttached(String[] args) in /src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/OrderLightCqrs.Benchmarks-Job-FEWCWF-1.notcs:line 57
+benchmarks-1  | // AfterAll
+benchmarks-1  | No Workload Results were obtained from the run.
+benchmarks-1  | // Benchmark Process 499 has exited with code 255.
+benchmarks-1  | 
+benchmarks-1  | // ** Remained 6 (30.0 %) benchmark(s) to run. Estimated finish 2026-11-02 22:36 (0h 0m from now) **
+benchmarks-1  | // **************************
+benchmarks-1  | // Benchmark: OrderListBenchmarks.'Dapper (single query + count query)': Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | // *** Execute ***
+benchmarks-1  | // Launch: 1 / 1
+benchmarks-1  | // Execute: dotnet OrderLightCqrs.Benchmarks-Job-FEWCWF-1.dll --anonymousPipes 121 122 --benchmarkName OrderLightCqrs.Benchmarks.OrderListBenchmarks.Dapper --job "InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2" --benchmarkId 14 in /src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/bin/Release/net10.0
+benchmarks-1  | // Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+benchmarks-1  | // BeforeAnythingElse
+benchmarks-1  | 
+benchmarks-1  | // Benchmark Process Environment Information:
+benchmarks-1  | // BenchmarkDotNet v0.15.8
+benchmarks-1  | // Runtime=.NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3
+benchmarks-1  | // GC=Concurrent Workstation
+benchmarks-1  | // HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL,AvxVnni,SERIALIZE VectorSize=256
+benchmarks-1  | // Job: Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | 
+benchmarks-1  | OverheadJitting  1: 1 op, 184269.00 ns, 184.2690 us/op
+benchmarks-1  | WorkloadJitting  1: 1 op, 173002138.00 ns, 173.0021 ms/op
+benchmarks-1  | 
+benchmarks-1  | OverheadWarmup   1: 1 op, 476.00 ns, 476.0000 ns/op
+benchmarks-1  | OverheadWarmup   2: 1 op, 295.00 ns, 295.0000 ns/op
+benchmarks-1  | OverheadWarmup   3: 1 op, 308.00 ns, 308.0000 ns/op
+benchmarks-1  | OverheadWarmup   4: 1 op, 298.00 ns, 298.0000 ns/op
+benchmarks-1  | OverheadWarmup   5: 1 op, 241.00 ns, 241.0000 ns/op
+benchmarks-1  | OverheadWarmup   6: 1 op, 242.00 ns, 242.0000 ns/op
+benchmarks-1  | OverheadWarmup   7: 1 op, 354.00 ns, 354.0000 ns/op
+benchmarks-1  | OverheadWarmup   8: 1 op, 272.00 ns, 272.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | OverheadActual   1: 1 op, 287.00 ns, 287.0000 ns/op
+benchmarks-1  | OverheadActual   2: 1 op, 402.00 ns, 402.0000 ns/op
+benchmarks-1  | OverheadActual   3: 1 op, 348.00 ns, 348.0000 ns/op
+benchmarks-1  | OverheadActual   4: 1 op, 234.00 ns, 234.0000 ns/op
+benchmarks-1  | OverheadActual   5: 1 op, 230.00 ns, 230.0000 ns/op
+benchmarks-1  | OverheadActual   6: 1 op, 296.00 ns, 296.0000 ns/op
+benchmarks-1  | OverheadActual   7: 1 op, 347.00 ns, 347.0000 ns/op
+benchmarks-1  | OverheadActual   8: 1 op, 312.00 ns, 312.0000 ns/op
+benchmarks-1  | OverheadActual   9: 1 op, 250.00 ns, 250.0000 ns/op
+benchmarks-1  | OverheadActual  10: 1 op, 267.00 ns, 267.0000 ns/op
+benchmarks-1  | OverheadActual  11: 1 op, 304.00 ns, 304.0000 ns/op
+benchmarks-1  | OverheadActual  12: 1 op, 242.00 ns, 242.0000 ns/op
+benchmarks-1  | OverheadActual  13: 1 op, 338.00 ns, 338.0000 ns/op
+benchmarks-1  | OverheadActual  14: 1 op, 306.00 ns, 306.0000 ns/op
+benchmarks-1  | OverheadActual  15: 1 op, 316.00 ns, 316.0000 ns/op
+benchmarks-1  | OverheadActual  16: 1 op, 325.00 ns, 325.0000 ns/op
+benchmarks-1  | OverheadActual  17: 1 op, 245.00 ns, 245.0000 ns/op
+benchmarks-1  | OverheadActual  18: 1 op, 271.00 ns, 271.0000 ns/op
+benchmarks-1  | OverheadActual  19: 1 op, 302.00 ns, 302.0000 ns/op
+benchmarks-1  | OverheadActual  20: 1 op, 224.00 ns, 224.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | WorkloadWarmup   1: 1 op, 3502214.00 ns, 3.5022 ms/op
+benchmarks-1  | WorkloadWarmup   2: 1 op, 2606419.00 ns, 2.6064 ms/op
+benchmarks-1  | 
+benchmarks-1  | // BeforeActualRun
+benchmarks-1  | WorkloadActual   1: 1 op, 2527832.00 ns, 2.5278 ms/op
+benchmarks-1  | WorkloadActual   2: 1 op, 2306308.00 ns, 2.3063 ms/op
+benchmarks-1  | WorkloadActual   3: 1 op, 2327712.00 ns, 2.3277 ms/op
+benchmarks-1  | WorkloadActual   4: 1 op, 2286357.00 ns, 2.2864 ms/op
+benchmarks-1  | WorkloadActual   5: 1 op, 2476373.00 ns, 2.4764 ms/op
+benchmarks-1  | 
+benchmarks-1  | // AfterActualRun
+benchmarks-1  | WorkloadResult   1: 1 op, 2527533.00 ns, 2.5275 ms/op
+benchmarks-1  | WorkloadResult   2: 1 op, 2306009.00 ns, 2.3060 ms/op
+benchmarks-1  | WorkloadResult   3: 1 op, 2327413.00 ns, 2.3274 ms/op
+benchmarks-1  | WorkloadResult   4: 1 op, 2286058.00 ns, 2.2861 ms/op
+benchmarks-1  | WorkloadResult   5: 1 op, 2476074.00 ns, 2.4761 ms/op
+benchmarks-1  | // GC:  0 0 0 28120 1
+benchmarks-1  | // Threading:  3 0 1
+benchmarks-1  | 
+benchmarks-1  | // AfterAll
+benchmarks-1  | // Benchmark Process 512 has exited with code 0.
+benchmarks-1  | 
+benchmarks-1  | Mean = 2.385 ms, StdErr = 0.049 ms (2.05%), N = 5, StdDev = 0.109 ms
+benchmarks-1  | Min = 2.286 ms, Q1 = 2.306 ms, Median = 2.327 ms, Q3 = 2.476 ms, Max = 2.528 ms
+benchmarks-1  | IQR = 0.170 ms, LowerFence = 2.051 ms, UpperFence = 2.731 ms
+benchmarks-1  | ConfidenceInterval = [1.963 ms; 2.806 ms] (CI 99.9%), Margin = 0.422 ms (17.68% of Mean)
+benchmarks-1  | Skewness = 0.31, Kurtosis = 0.88, MValue = 2
+benchmarks-1  | 
+benchmarks-1  | // ** Remained 5 (25.0 %) benchmark(s) to run. Estimated finish 2026-11-02 22:36 (0h 0m from now) **
+benchmarks-1  | // ***** BenchmarkRunner: Finish  *****
+benchmarks-1  | 
+benchmarks-1  | // * Export *
+benchmarks-1  |   BenchmarkDotNet.Artifacts/results/OrderLightCqrs.Benchmarks.OrderListBenchmarks-report.csv
+benchmarks-1  |   BenchmarkDotNet.Artifacts/results/OrderLightCqrs.Benchmarks.OrderListBenchmarks-report-github.md
+benchmarks-1  |   BenchmarkDotNet.Artifacts/results/OrderLightCqrs.Benchmarks.OrderListBenchmarks-report.html
+benchmarks-1  | 
+benchmarks-1  | // * Detailed results *
+benchmarks-1  | OrderListBenchmarks.'EF tracked entities (Include + second query)': Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | Runtime = .NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+benchmarks-1  | Mean = 6.913 ms, StdErr = 0.531 ms (7.69%), N = 5, StdDev = 1.188 ms
+benchmarks-1  | Min = 5.126 ms, Q1 = 6.349 ms, Median = 7.376 ms, Q3 = 7.586 ms, Max = 8.126 ms
+benchmarks-1  | IQR = 1.236 ms, LowerFence = 4.494 ms, UpperFence = 9.440 ms
+benchmarks-1  | ConfidenceInterval = [2.337 ms; 11.489 ms] (CI 99.9%), Margin = 4.576 ms (66.20% of Mean)
+benchmarks-1  | Skewness = -0.44, Kurtosis = 1.27, MValue = 2
+benchmarks-1  | -------------------- Histogram --------------------
+benchmarks-1  | [4.214 ms ; 6.326 ms) | @
+benchmarks-1  | [6.326 ms ; 8.150 ms) | @@@@
+benchmarks-1  | ---------------------------------------------------
+benchmarks-1  | 
+benchmarks-1  | OrderListBenchmarks.'EF AsNoTracking entities (Include + second query)': Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | Runtime = .NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+benchmarks-1  | Mean = 4.202 ms, StdErr = 0.023 ms (0.54%), N = 4, StdDev = 0.046 ms
+benchmarks-1  | Min = 4.150 ms, Q1 = 4.171 ms, Median = 4.203 ms, Q3 = 4.234 ms, Max = 4.250 ms
+benchmarks-1  | IQR = 0.062 ms, LowerFence = 4.078 ms, UpperFence = 4.327 ms
+benchmarks-1  | ConfidenceInterval = [3.907 ms; 4.496 ms] (CI 99.9%), Margin = 0.294 ms (7.01% of Mean)
+benchmarks-1  | Skewness = -0.05, Kurtosis = 0.77, MValue = 2
+benchmarks-1  | -------------------- Histogram --------------------
+benchmarks-1  | [4.112 ms ; 4.256 ms) | @@@@
+benchmarks-1  | ---------------------------------------------------
+benchmarks-1  | 
+benchmarks-1  | OrderListBenchmarks.'EF AsNoTracking + Select projection (single query)': Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | Runtime = .NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+benchmarks-1  | Mean = 3.432 ms, StdErr = 0.058 ms (1.69%), N = 5, StdDev = 0.130 ms
+benchmarks-1  | Min = 3.247 ms, Q1 = 3.353 ms, Median = 3.472 ms, Q3 = 3.543 ms, Max = 3.546 ms
+benchmarks-1  | IQR = 0.190 ms, LowerFence = 3.068 ms, UpperFence = 3.828 ms
+benchmarks-1  | ConfidenceInterval = [2.932 ms; 3.932 ms] (CI 99.9%), Margin = 0.500 ms (14.58% of Mean)
+benchmarks-1  | Skewness = -0.36, Kurtosis = 1.08, MValue = 2
+benchmarks-1  | -------------------- Histogram --------------------
+benchmarks-1  | [3.147 ms ; 3.350 ms) | @
+benchmarks-1  | [3.350 ms ; 3.549 ms) | @@@@
+benchmarks-1  | ---------------------------------------------------
+benchmarks-1  | 
+benchmarks-1  | OrderListBenchmarks.'EF compiled query + projection (single query)': Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | Runtime = .NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+benchmarks-1  | There are not any results runs
+benchmarks-1  | 
+benchmarks-1  | OrderListBenchmarks.'Dapper (single query + count query)': Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | Runtime = .NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+benchmarks-1  | Mean = 2.385 ms, StdErr = 0.049 ms (2.05%), N = 5, StdDev = 0.109 ms
+benchmarks-1  | Min = 2.286 ms, Q1 = 2.306 ms, Median = 2.327 ms, Q3 = 2.476 ms, Max = 2.528 ms
+benchmarks-1  | IQR = 0.170 ms, LowerFence = 2.051 ms, UpperFence = 2.731 ms
+benchmarks-1  | ConfidenceInterval = [1.963 ms; 2.806 ms] (CI 99.9%), Margin = 0.422 ms (17.68% of Mean)
+benchmarks-1  | Skewness = 0.31, Kurtosis = 0.88, MValue = 2
+benchmarks-1  | -------------------- Histogram --------------------
+benchmarks-1  | [2.223 ms ; 2.418 ms) | @@@
+benchmarks-1  | [2.418 ms ; 2.612 ms) | @@
+benchmarks-1  | ---------------------------------------------------
+benchmarks-1  | 
+benchmarks-1  | // * Summary *
+benchmarks-1  | 
+benchmarks-1  | BenchmarkDotNet v0.15.8, Linux Ubuntu 24.04.5 LTS (Noble Numbat) (container)
+benchmarks-1  | 12th Gen Intel Core i5-12600K 3.69GHz, 1 CPU, 16 logical and 8 physical cores
+benchmarks-1  | .NET SDK 10.0.402
+benchmarks-1  |   [Host]     : .NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3
+benchmarks-1  |   Job-ARDWEO : .NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3
+benchmarks-1  | 
+benchmarks-1  | InvocationCount=1  IterationCount=5  UnrollFactor=1  
+benchmarks-1  | WarmupCount=2  
+benchmarks-1  | 
+benchmarks-1  | | Method                                               | Mean     | Error     | StdDev    | Ratio | RatioSD | Allocated | Alloc Ratio |
+benchmarks-1  | |----------------------------------------------------- |---------:|----------:|----------:|------:|--------:|----------:|------------:|
+benchmarks-1  | | 'EF tracked entities (Include + second query)'       | 6.913 ms | 4.5763 ms | 1.1884 ms |  1.03 |    0.25 | 515.98 KB |        1.00 |
+benchmarks-1  | | 'EF AsNoTracking entities (Include + second query)'  | 4.202 ms | 0.2943 ms | 0.0455 ms |  0.62 |    0.11 | 287.38 KB |        0.56 |
+benchmarks-1  | | 'EF AsNoTracking + Select projection (single query)' | 3.432 ms | 0.5004 ms | 0.1299 ms |  0.51 |    0.09 | 125.98 KB |        0.24 |
+benchmarks-1  | | 'EF compiled query + projection (single query)'      |       NA |        NA |        NA |     ? |       ? |        NA |           ? |
+benchmarks-1  | | 'Dapper (single query + count query)'                | 2.385 ms | 0.4216 ms | 0.1095 ms |  0.35 |    0.06 |  27.46 KB |        0.05 |
+benchmarks-1  | 
+benchmarks-1  | Benchmarks with issues:
+benchmarks-1  |   OrderListBenchmarks.'EF compiled query + projection (single query)': Job-ARDWEO(InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2)
+benchmarks-1  | 
+benchmarks-1  | // * Warnings *
+benchmarks-1  | MinIterationTime
+benchmarks-1  |   OrderListBenchmarks.'EF tracked entities (Include + second query)': InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2       -> The minimum observed iteration time is 5.127ms which is very small. It's recommended to increase it to at least 100ms using more operations.
+benchmarks-1  |   OrderListBenchmarks.'EF AsNoTracking entities (Include + second query)': InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2  -> The minimum observed iteration time is 4.151ms which is very small. It's recommended to increase it to at least 100ms using more operations.
+benchmarks-1  |   OrderListBenchmarks.'EF AsNoTracking + Select projection (single query)': InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2 -> The minimum observed iteration time is 3.247ms which is very small. It's recommended to increase it to at least 100ms using more operations.
+benchmarks-1  |   OrderListBenchmarks.'Dapper (single query + count query)': InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2                -> The minimum observed iteration time is 2.286ms which is very small. It's recommended to increase it to at least 100ms using more operations.
+benchmarks-1  | BaselineCustomAnalyzer
+benchmarks-1  |   Summary -> A question mark '?' symbol indicates that it was not possible to compute the (Ratio, RatioSD, Alloc Ratio) column(s) because the baseline or benchmark could not be found, or the baseline value is too close to zero.
+benchmarks-1  | 
+benchmarks-1  | // * Hints *
+benchmarks-1  | Outliers
+benchmarks-1  |   OrderListBenchmarks.'EF AsNoTracking entities (Include + second query)': InvocationCount=1, IterationCount=5, UnrollFactor=1, WarmupCount=2 -> 1 outlier  was  removed (5.94 ms)
+benchmarks-1  | 
+benchmarks-1  | // * Legends *
+benchmarks-1  |   Mean        : Arithmetic mean of all measurements
+benchmarks-1  |   Error       : Half of 99.9% confidence interval
+benchmarks-1  |   StdDev      : Standard deviation of all measurements
+benchmarks-1  |   Ratio       : Mean of the ratio distribution ([Current]/[Baseline])
+benchmarks-1  |   RatioSD     : Standard deviation of the ratio distribution ([Current]/[Baseline])
+benchmarks-1  |   Allocated   : Allocated memory per single operation (managed only, inclusive, 1KB = 1024B)
+benchmarks-1  |   Alloc Ratio : Allocated memory ratio distribution ([Current]/[Baseline])
+benchmarks-1  |   1 ms        : 1 Millisecond (0.001 sec)
+benchmarks-1  | 
+benchmarks-1  | // * Diagnostic Output - MemoryDiagnoser *
+benchmarks-1  | 
+benchmarks-1  | 
+benchmarks-1  | // ***** BenchmarkRunner: End *****
+benchmarks-1  | Run time: 00:00:05 (5.07 sec), executed benchmarks: 5
+benchmarks-1  | 
+benchmarks-1  | // Found 5 benchmarks:
+benchmarks-1  | //   SalesReportBenchmarks.'EF tracked entities, grouped in memory': Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | //   SalesReportBenchmarks.'EF AsNoTracking entities, grouped in memory': Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | //   SalesReportBenchmarks.'EF AsNoTracking + Select projection (GroupBy translated to SQL)': Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | //   SalesReportBenchmarks.'EF compiled query + projection (GroupBy translated to SQL)': Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | //   SalesReportBenchmarks.'Dapper (single aggregate query)': Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | 
+benchmarks-1  | // **************************
+benchmarks-1  | // Benchmark: SalesReportBenchmarks.'EF tracked entities, grouped in memory': Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | // *** Execute ***
+benchmarks-1  | // Launch: 1 / 1
+benchmarks-1  | // Execute: dotnet OrderLightCqrs.Benchmarks-Job-FEWCWF-1.dll --anonymousPipes 121 122 --benchmarkName OrderLightCqrs.Benchmarks.SalesReportBenchmarks.EfTracked --job "InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1" --benchmarkId 15 in /src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/bin/Release/net10.0
+benchmarks-1  | // Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+benchmarks-1  | // BeforeAnythingElse
+benchmarks-1  | 
+benchmarks-1  | // Benchmark Process Environment Information:
+benchmarks-1  | // BenchmarkDotNet v0.15.8
+benchmarks-1  | // Runtime=.NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3
+benchmarks-1  | // GC=Concurrent Workstation
+benchmarks-1  | // HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL,AvxVnni,SERIALIZE VectorSize=256
+benchmarks-1  | // Job: Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | 
+benchmarks-1  | OverheadJitting  1: 1 op, 221221.00 ns, 221.2210 us/op
+benchmarks-1  | WorkloadJitting  1: 1 op, 3587275167.00 ns, 3.5873 s/op
+benchmarks-1  | 
+benchmarks-1  | OverheadWarmup   1: 1 op, 916.00 ns, 916.0000 ns/op
+benchmarks-1  | OverheadWarmup   2: 1 op, 482.00 ns, 482.0000 ns/op
+benchmarks-1  | OverheadWarmup   3: 1 op, 394.00 ns, 394.0000 ns/op
+benchmarks-1  | OverheadWarmup   4: 1 op, 622.00 ns, 622.0000 ns/op
+benchmarks-1  | OverheadWarmup   5: 1 op, 684.00 ns, 684.0000 ns/op
+benchmarks-1  | OverheadWarmup   6: 1 op, 572.00 ns, 572.0000 ns/op
+benchmarks-1  | OverheadWarmup   7: 1 op, 674.00 ns, 674.0000 ns/op
+benchmarks-1  | OverheadWarmup   8: 1 op, 433.00 ns, 433.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | OverheadActual   1: 1 op, 756.00 ns, 756.0000 ns/op
+benchmarks-1  | OverheadActual   2: 1 op, 751.00 ns, 751.0000 ns/op
+benchmarks-1  | OverheadActual   3: 1 op, 799.00 ns, 799.0000 ns/op
+benchmarks-1  | OverheadActual   4: 1 op, 770.00 ns, 770.0000 ns/op
+benchmarks-1  | OverheadActual   5: 1 op, 505.00 ns, 505.0000 ns/op
+benchmarks-1  | OverheadActual   6: 1 op, 504.00 ns, 504.0000 ns/op
+benchmarks-1  | OverheadActual   7: 1 op, 526.00 ns, 526.0000 ns/op
+benchmarks-1  | OverheadActual   8: 1 op, 417.00 ns, 417.0000 ns/op
+benchmarks-1  | OverheadActual   9: 1 op, 370.00 ns, 370.0000 ns/op
+benchmarks-1  | OverheadActual  10: 1 op, 597.00 ns, 597.0000 ns/op
+benchmarks-1  | OverheadActual  11: 1 op, 400.00 ns, 400.0000 ns/op
+benchmarks-1  | OverheadActual  12: 1 op, 384.00 ns, 384.0000 ns/op
+benchmarks-1  | OverheadActual  13: 1 op, 505.00 ns, 505.0000 ns/op
+benchmarks-1  | OverheadActual  14: 1 op, 352.00 ns, 352.0000 ns/op
+benchmarks-1  | OverheadActual  15: 1 op, 372.00 ns, 372.0000 ns/op
+benchmarks-1  | OverheadActual  16: 1 op, 469.00 ns, 469.0000 ns/op
+benchmarks-1  | OverheadActual  17: 1 op, 365.00 ns, 365.0000 ns/op
+benchmarks-1  | OverheadActual  18: 1 op, 439.00 ns, 439.0000 ns/op
+benchmarks-1  | OverheadActual  19: 1 op, 605.00 ns, 605.0000 ns/op
+benchmarks-1  | OverheadActual  20: 1 op, 410.00 ns, 410.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | WorkloadWarmup   1: 1 op, 2067199049.00 ns, 2.0672 s/op
+benchmarks-1  | 
+benchmarks-1  | // BeforeActualRun
+benchmarks-1  | WorkloadActual   1: 1 op, 2110580111.00 ns, 2.1106 s/op
+benchmarks-1  | WorkloadActual   2: 1 op, 2059644123.00 ns, 2.0596 s/op
+benchmarks-1  | WorkloadActual   3: 1 op, 2130810746.00 ns, 2.1308 s/op
+benchmarks-1  | 
+benchmarks-1  | // AfterActualRun
+benchmarks-1  | WorkloadResult   1: 1 op, 2110579624.50 ns, 2.1106 s/op
+benchmarks-1  | WorkloadResult   2: 1 op, 2059643636.50 ns, 2.0596 s/op
+benchmarks-1  | WorkloadResult   3: 1 op, 2130810259.50 ns, 2.1308 s/op
+benchmarks-1  | // GC:  66 34 5 807073720 1
+benchmarks-1  | // Threading:  836 0 1
+benchmarks-1  | 
+benchmarks-1  | // AfterAll
+benchmarks-1  | // Benchmark Process 524 has exited with code 0.
+benchmarks-1  | 
+benchmarks-1  | Mean = 2.100 s, StdErr = 0.021 s (1.01%), N = 3, StdDev = 0.037 s
+benchmarks-1  | Min = 2.060 s, Q1 = 2.085 s, Median = 2.111 s, Q3 = 2.121 s, Max = 2.131 s
+benchmarks-1  | IQR = 0.036 s, LowerFence = 2.032 s, UpperFence = 2.174 s
+benchmarks-1  | ConfidenceInterval = [1.431 s; 2.769 s] (CI 99.9%), Margin = 0.669 s (31.85% of Mean)
+benchmarks-1  | Skewness = -0.26, Kurtosis = 0.67, MValue = 2
+benchmarks-1  | 
+benchmarks-1  | // ** Remained 4 (20.0 %) benchmark(s) to run. Estimated finish 2026-11-02 22:36 (0h 0m from now) **
+benchmarks-1  | // **************************
+benchmarks-1  | // Benchmark: SalesReportBenchmarks.'EF AsNoTracking entities, grouped in memory': Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | // *** Execute ***
+benchmarks-1  | // Launch: 1 / 1
+benchmarks-1  | // Execute: dotnet OrderLightCqrs.Benchmarks-Job-FEWCWF-1.dll --anonymousPipes 121 122 --benchmarkName OrderLightCqrs.Benchmarks.SalesReportBenchmarks.EfAsNoTracking --job "InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1" --benchmarkId 16 in /src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/bin/Release/net10.0
+benchmarks-1  | // Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+benchmarks-1  | // BeforeAnythingElse
+benchmarks-1  | 
+benchmarks-1  | // Benchmark Process Environment Information:
+benchmarks-1  | // BenchmarkDotNet v0.15.8
+benchmarks-1  | // Runtime=.NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3
+benchmarks-1  | // GC=Concurrent Workstation
+benchmarks-1  | // HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL,AvxVnni,SERIALIZE VectorSize=256
+benchmarks-1  | // Job: Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | 
+benchmarks-1  | OverheadJitting  1: 1 op, 210258.00 ns, 210.2580 us/op
+benchmarks-1  | WorkloadJitting  1: 1 op, 2197901113.00 ns, 2.1979 s/op
+benchmarks-1  | 
+benchmarks-1  | OverheadWarmup   1: 1 op, 749.00 ns, 749.0000 ns/op
+benchmarks-1  | OverheadWarmup   2: 1 op, 781.00 ns, 781.0000 ns/op
+benchmarks-1  | OverheadWarmup   3: 1 op, 485.00 ns, 485.0000 ns/op
+benchmarks-1  | OverheadWarmup   4: 1 op, 467.00 ns, 467.0000 ns/op
+benchmarks-1  | OverheadWarmup   5: 1 op, 659.00 ns, 659.0000 ns/op
+benchmarks-1  | OverheadWarmup   6: 1 op, 571.00 ns, 571.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | OverheadActual   1: 1 op, 568.00 ns, 568.0000 ns/op
+benchmarks-1  | OverheadActual   2: 1 op, 853.00 ns, 853.0000 ns/op
+benchmarks-1  | OverheadActual   3: 1 op, 972.00 ns, 972.0000 ns/op
+benchmarks-1  | OverheadActual   4: 1 op, 1291.00 ns, 1.2910 us/op
+benchmarks-1  | OverheadActual   5: 1 op, 1112.00 ns, 1.1120 us/op
+benchmarks-1  | OverheadActual   6: 1 op, 784.00 ns, 784.0000 ns/op
+benchmarks-1  | OverheadActual   7: 1 op, 669.00 ns, 669.0000 ns/op
+benchmarks-1  | OverheadActual   8: 1 op, 604.00 ns, 604.0000 ns/op
+benchmarks-1  | OverheadActual   9: 1 op, 496.00 ns, 496.0000 ns/op
+benchmarks-1  | OverheadActual  10: 1 op, 533.00 ns, 533.0000 ns/op
+benchmarks-1  | OverheadActual  11: 1 op, 643.00 ns, 643.0000 ns/op
+benchmarks-1  | OverheadActual  12: 1 op, 776.00 ns, 776.0000 ns/op
+benchmarks-1  | OverheadActual  13: 1 op, 1226.00 ns, 1.2260 us/op
+benchmarks-1  | OverheadActual  14: 1 op, 1243.00 ns, 1.2430 us/op
+benchmarks-1  | OverheadActual  15: 1 op, 1251.00 ns, 1.2510 us/op
+benchmarks-1  | OverheadActual  16: 1 op, 1854.00 ns, 1.8540 us/op
+benchmarks-1  | OverheadActual  17: 1 op, 1180.00 ns, 1.1800 us/op
+benchmarks-1  | OverheadActual  18: 1 op, 1176.00 ns, 1.1760 us/op
+benchmarks-1  | OverheadActual  19: 1 op, 1434.00 ns, 1.4340 us/op
+benchmarks-1  | OverheadActual  20: 1 op, 1380.00 ns, 1.3800 us/op
+benchmarks-1  | 
+benchmarks-1  | WorkloadWarmup   1: 1 op, 997371262.00 ns, 997.3713 ms/op
+benchmarks-1  | 
+benchmarks-1  | // BeforeActualRun
+benchmarks-1  | WorkloadActual   1: 1 op, 863054057.00 ns, 863.0541 ms/op
+benchmarks-1  | WorkloadActual   2: 1 op, 941723459.00 ns, 941.7235 ms/op
+benchmarks-1  | WorkloadActual   3: 1 op, 878020006.00 ns, 878.0200 ms/op
+benchmarks-1  | 
+benchmarks-1  | // AfterActualRun
+benchmarks-1  | WorkloadResult   1: 1 op, 863053015.00 ns, 863.0530 ms/op
+benchmarks-1  | WorkloadResult   2: 1 op, 941722417.00 ns, 941.7224 ms/op
+benchmarks-1  | WorkloadResult   3: 1 op, 878018964.00 ns, 878.0190 ms/op
+benchmarks-1  | // GC:  35 13 3 397826696 1
+benchmarks-1  | // Threading:  708 0 1
+benchmarks-1  | 
+benchmarks-1  | // AfterAll
+benchmarks-1  | // Benchmark Process 542 has exited with code 0.
+benchmarks-1  | 
+benchmarks-1  | Mean = 894.265 ms, StdErr = 24.119 ms (2.70%), N = 3, StdDev = 41.775 ms
+benchmarks-1  | Min = 863.053 ms, Q1 = 870.536 ms, Median = 878.019 ms, Q3 = 909.871 ms, Max = 941.722 ms
+benchmarks-1  | IQR = 39.335 ms, LowerFence = 811.534 ms, UpperFence = 968.873 ms
+benchmarks-1  | ConfidenceInterval = [132.130 ms; 1,656.399 ms] (CI 99.9%), Margin = 762.134 ms (85.22% of Mean)
+benchmarks-1  | Skewness = 0.33, Kurtosis = 0.67, MValue = 2
+benchmarks-1  | 
+benchmarks-1  | // ** Remained 3 (15.0 %) benchmark(s) to run. Estimated finish 2026-11-02 22:36 (0h 0m from now) **
+benchmarks-1  | // **************************
+benchmarks-1  | // Benchmark: SalesReportBenchmarks.'EF AsNoTracking + Select projection (GroupBy translated to SQL)': Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | // *** Execute ***
+benchmarks-1  | // Launch: 1 / 1
+benchmarks-1  | // Execute: dotnet OrderLightCqrs.Benchmarks-Job-FEWCWF-1.dll --anonymousPipes 121 122 --benchmarkName OrderLightCqrs.Benchmarks.SalesReportBenchmarks.EfProjection --job "InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1" --benchmarkId 17 in /src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/bin/Release/net10.0
+benchmarks-1  | // Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+benchmarks-1  | // BeforeAnythingElse
+benchmarks-1  | 
+benchmarks-1  | // Benchmark Process Environment Information:
+benchmarks-1  | // BenchmarkDotNet v0.15.8
+benchmarks-1  | // Runtime=.NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3
+benchmarks-1  | // GC=Concurrent Workstation
+benchmarks-1  | // HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL,AvxVnni,SERIALIZE VectorSize=256
+benchmarks-1  | // Job: Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | 
+benchmarks-1  | OverheadJitting  1: 1 op, 182155.00 ns, 182.1550 us/op
+benchmarks-1  | WorkloadJitting  1: 1 op, 1589237886.00 ns, 1.5892 s/op
+benchmarks-1  | 
+benchmarks-1  | OverheadWarmup   1: 1 op, 928.00 ns, 928.0000 ns/op
+benchmarks-1  | OverheadWarmup   2: 1 op, 746.00 ns, 746.0000 ns/op
+benchmarks-1  | OverheadWarmup   3: 1 op, 1340.00 ns, 1.3400 us/op
+benchmarks-1  | OverheadWarmup   4: 1 op, 909.00 ns, 909.0000 ns/op
+benchmarks-1  | OverheadWarmup   5: 1 op, 960.00 ns, 960.0000 ns/op
+benchmarks-1  | OverheadWarmup   6: 1 op, 1519.00 ns, 1.5190 us/op
+benchmarks-1  | OverheadWarmup   7: 1 op, 1287.00 ns, 1.2870 us/op
+benchmarks-1  | 
+benchmarks-1  | OverheadActual   1: 1 op, 1256.00 ns, 1.2560 us/op
+benchmarks-1  | OverheadActual   2: 1 op, 1142.00 ns, 1.1420 us/op
+benchmarks-1  | OverheadActual   3: 1 op, 1760.00 ns, 1.7600 us/op
+benchmarks-1  | OverheadActual   4: 1 op, 1136.00 ns, 1.1360 us/op
+benchmarks-1  | OverheadActual   5: 1 op, 1327.00 ns, 1.3270 us/op
+benchmarks-1  | OverheadActual   6: 1 op, 1459.00 ns, 1.4590 us/op
+benchmarks-1  | OverheadActual   7: 1 op, 1931.00 ns, 1.9310 us/op
+benchmarks-1  | OverheadActual   8: 1 op, 1148.00 ns, 1.1480 us/op
+benchmarks-1  | OverheadActual   9: 1 op, 1002.00 ns, 1.0020 us/op
+benchmarks-1  | OverheadActual  10: 1 op, 1538.00 ns, 1.5380 us/op
+benchmarks-1  | OverheadActual  11: 1 op, 1062.00 ns, 1.0620 us/op
+benchmarks-1  | OverheadActual  12: 1 op, 1370.00 ns, 1.3700 us/op
+benchmarks-1  | OverheadActual  13: 1 op, 1100.00 ns, 1.1000 us/op
+benchmarks-1  | OverheadActual  14: 1 op, 1618.00 ns, 1.6180 us/op
+benchmarks-1  | OverheadActual  15: 1 op, 1600.00 ns, 1.6000 us/op
+benchmarks-1  | OverheadActual  16: 1 op, 1479.00 ns, 1.4790 us/op
+benchmarks-1  | OverheadActual  17: 1 op, 1149.00 ns, 1.1490 us/op
+benchmarks-1  | OverheadActual  18: 1 op, 1407.00 ns, 1.4070 us/op
+benchmarks-1  | OverheadActual  19: 1 op, 1198.00 ns, 1.1980 us/op
+benchmarks-1  | OverheadActual  20: 1 op, 1378.00 ns, 1.3780 us/op
+benchmarks-1  | 
+benchmarks-1  | WorkloadWarmup   1: 1 op, 828840736.00 ns, 828.8407 ms/op
+benchmarks-1  | 
+benchmarks-1  | // BeforeActualRun
+benchmarks-1  | WorkloadActual   1: 1 op, 734089585.00 ns, 734.0896 ms/op
+benchmarks-1  | WorkloadActual   2: 1 op, 740833009.00 ns, 740.8330 ms/op
+benchmarks-1  | WorkloadActual   3: 1 op, 802467219.00 ns, 802.4672 ms/op
+benchmarks-1  | 
+benchmarks-1  | // AfterActualRun
+benchmarks-1  | WorkloadResult   1: 1 op, 734088236.50 ns, 734.0882 ms/op
+benchmarks-1  | WorkloadResult   2: 1 op, 740831660.50 ns, 740.8317 ms/op
+benchmarks-1  | WorkloadResult   3: 1 op, 802465870.50 ns, 802.4659 ms/op
+benchmarks-1  | // GC:  0 0 0 131352 1
+benchmarks-1  | // Threading:  2 0 1
+benchmarks-1  | 
+benchmarks-1  | // AfterAll
+benchmarks-1  | // Benchmark Process 559 has exited with code 0.
+benchmarks-1  | 
+benchmarks-1  | Mean = 759.129 ms, StdErr = 21.756 ms (2.87%), N = 3, StdDev = 37.682 ms
+benchmarks-1  | Min = 734.088 ms, Q1 = 737.460 ms, Median = 740.832 ms, Q3 = 771.649 ms, Max = 802.466 ms
+benchmarks-1  | IQR = 34.189 ms, LowerFence = 686.177 ms, UpperFence = 822.932 ms
+benchmarks-1  | ConfidenceInterval = [71.663 ms; 1,446.595 ms] (CI 99.9%), Margin = 687.466 ms (90.56% of Mean)
+benchmarks-1  | Skewness = 0.37, Kurtosis = 0.67, MValue = 2
+benchmarks-1  | 
+benchmarks-1  | // ** Remained 2 (10.0 %) benchmark(s) to run. Estimated finish 2026-11-02 22:36 (0h 0m from now) **
+benchmarks-1  | // **************************
+benchmarks-1  | // Benchmark: SalesReportBenchmarks.'EF compiled query + projection (GroupBy translated to SQL)': Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | // *** Execute ***
+benchmarks-1  | // Launch: 1 / 1
+benchmarks-1  | // Execute: dotnet OrderLightCqrs.Benchmarks-Job-FEWCWF-1.dll --anonymousPipes 121 122 --benchmarkName OrderLightCqrs.Benchmarks.SalesReportBenchmarks.EfCompiledProjection --job "InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1" --benchmarkId 18 in /src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/bin/Release/net10.0
+benchmarks-1  | // Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+benchmarks-1  | // BeforeAnythingElse
+benchmarks-1  | 
+benchmarks-1  | // Benchmark Process Environment Information:
+benchmarks-1  | // BenchmarkDotNet v0.15.8
+benchmarks-1  | // Runtime=.NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3
+benchmarks-1  | // GC=Concurrent Workstation
+benchmarks-1  | // HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL,AvxVnni,SERIALIZE VectorSize=256
+benchmarks-1  | // Job: Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | 
+benchmarks-1  | OverheadJitting  1: 1 op, 235173.00 ns, 235.1730 us/op
+benchmarks-1  | WorkloadJitting  1: 1 op, 1622096019.00 ns, 1.6221 s/op
+benchmarks-1  | 
+benchmarks-1  | OverheadWarmup   1: 1 op, 785.00 ns, 785.0000 ns/op
+benchmarks-1  | OverheadWarmup   2: 1 op, 1174.00 ns, 1.1740 us/op
+benchmarks-1  | OverheadWarmup   3: 1 op, 1129.00 ns, 1.1290 us/op
+benchmarks-1  | OverheadWarmup   4: 1 op, 1108.00 ns, 1.1080 us/op
+benchmarks-1  | OverheadWarmup   5: 1 op, 1121.00 ns, 1.1210 us/op
+benchmarks-1  | OverheadWarmup   6: 1 op, 1123.00 ns, 1.1230 us/op
+benchmarks-1  | OverheadWarmup   7: 1 op, 906.00 ns, 906.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | OverheadActual   1: 1 op, 1201.00 ns, 1.2010 us/op
+benchmarks-1  | OverheadActual   2: 1 op, 776.00 ns, 776.0000 ns/op
+benchmarks-1  | OverheadActual   3: 1 op, 1494.00 ns, 1.4940 us/op
+benchmarks-1  | OverheadActual   4: 1 op, 829.00 ns, 829.0000 ns/op
+benchmarks-1  | OverheadActual   5: 1 op, 920.00 ns, 920.0000 ns/op
+benchmarks-1  | OverheadActual   6: 1 op, 897.00 ns, 897.0000 ns/op
+benchmarks-1  | OverheadActual   7: 1 op, 858.00 ns, 858.0000 ns/op
+benchmarks-1  | OverheadActual   8: 1 op, 1044.00 ns, 1.0440 us/op
+benchmarks-1  | OverheadActual   9: 1 op, 925.00 ns, 925.0000 ns/op
+benchmarks-1  | OverheadActual  10: 1 op, 1317.00 ns, 1.3170 us/op
+benchmarks-1  | OverheadActual  11: 1 op, 1104.00 ns, 1.1040 us/op
+benchmarks-1  | OverheadActual  12: 1 op, 1448.00 ns, 1.4480 us/op
+benchmarks-1  | OverheadActual  13: 1 op, 1394.00 ns, 1.3940 us/op
+benchmarks-1  | OverheadActual  14: 1 op, 1311.00 ns, 1.3110 us/op
+benchmarks-1  | OverheadActual  15: 1 op, 1642.00 ns, 1.6420 us/op
+benchmarks-1  | OverheadActual  16: 1 op, 1616.00 ns, 1.6160 us/op
+benchmarks-1  | OverheadActual  17: 1 op, 1229.00 ns, 1.2290 us/op
+benchmarks-1  | OverheadActual  18: 1 op, 1516.00 ns, 1.5160 us/op
+benchmarks-1  | OverheadActual  19: 1 op, 1687.00 ns, 1.6870 us/op
+benchmarks-1  | OverheadActual  20: 1 op, 1318.00 ns, 1.3180 us/op
+benchmarks-1  | 
+benchmarks-1  | WorkloadWarmup   1: 1 op, 771042183.00 ns, 771.0422 ms/op
+benchmarks-1  | 
+benchmarks-1  | // BeforeActualRun
+benchmarks-1  | WorkloadActual   1: 1 op, 819314907.00 ns, 819.3149 ms/op
+benchmarks-1  | WorkloadActual   2: 1 op, 724649774.00 ns, 724.6498 ms/op
+benchmarks-1  | WorkloadActual   3: 1 op, 723594944.00 ns, 723.5949 ms/op
+benchmarks-1  | 
+benchmarks-1  | // AfterActualRun
+benchmarks-1  | WorkloadResult   1: 1 op, 819313637.00 ns, 819.3136 ms/op
+benchmarks-1  | WorkloadResult   2: 1 op, 724648504.00 ns, 724.6485 ms/op
+benchmarks-1  | WorkloadResult   3: 1 op, 723593674.00 ns, 723.5937 ms/op
+benchmarks-1  | // GC:  0 0 0 94392 1
+benchmarks-1  | // Threading:  2 0 1
+benchmarks-1  | 
+benchmarks-1  | // AfterAll
+benchmarks-1  | // Benchmark Process 576 has exited with code 0.
+benchmarks-1  | 
+benchmarks-1  | Mean = 755.852 ms, StdErr = 31.732 ms (4.20%), N = 3, StdDev = 54.962 ms
+benchmarks-1  | Min = 723.594 ms, Q1 = 724.121 ms, Median = 724.649 ms, Q3 = 771.981 ms, Max = 819.314 ms
+benchmarks-1  | IQR = 47.860 ms, LowerFence = 652.331 ms, UpperFence = 843.771 ms
+benchmarks-1  | ConfidenceInterval = [-246.859 ms; 1,758.563 ms] (CI 99.9%), Margin = 1,002.711 ms (132.66% of Mean)
+benchmarks-1  | Skewness = 0.38, Kurtosis = 0.67, MValue = 2
+benchmarks-1  | 
+benchmarks-1  | // ** Remained 1 (5.0 %) benchmark(s) to run. Estimated finish 2026-11-02 22:36 (0h 0m from now) **
+benchmarks-1  | // **************************
+benchmarks-1  | // Benchmark: SalesReportBenchmarks.'Dapper (single aggregate query)': Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | // *** Execute ***
+benchmarks-1  | // Launch: 1 / 1
+benchmarks-1  | // Execute: dotnet OrderLightCqrs.Benchmarks-Job-FEWCWF-1.dll --anonymousPipes 119 120 --benchmarkName OrderLightCqrs.Benchmarks.SalesReportBenchmarks.Dapper --job "InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1" --benchmarkId 19 in /src/Benchmarks/bin/Release/net10.0/OrderLightCqrs.Benchmarks-Job-FEWCWF-1/bin/Release/net10.0
+benchmarks-1  | // Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+benchmarks-1  | // BeforeAnythingElse
+benchmarks-1  | 
+benchmarks-1  | // Benchmark Process Environment Information:
+benchmarks-1  | // BenchmarkDotNet v0.15.8
+benchmarks-1  | // Runtime=.NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3
+benchmarks-1  | // GC=Concurrent Workstation
+benchmarks-1  | // HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL,AvxVnni,SERIALIZE VectorSize=256
+benchmarks-1  | // Job: Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | 
+benchmarks-1  | OverheadJitting  1: 1 op, 199766.00 ns, 199.7660 us/op
+benchmarks-1  | WorkloadJitting  1: 1 op, 1112800509.00 ns, 1.1128 s/op
+benchmarks-1  | 
+benchmarks-1  | OverheadWarmup   1: 1 op, 1061.00 ns, 1.0610 us/op
+benchmarks-1  | OverheadWarmup   2: 1 op, 700.00 ns, 700.0000 ns/op
+benchmarks-1  | OverheadWarmup   3: 1 op, 624.00 ns, 624.0000 ns/op
+benchmarks-1  | OverheadWarmup   4: 1 op, 571.00 ns, 571.0000 ns/op
+benchmarks-1  | OverheadWarmup   5: 1 op, 958.00 ns, 958.0000 ns/op
+benchmarks-1  | OverheadWarmup   6: 1 op, 962.00 ns, 962.0000 ns/op
+benchmarks-1  | OverheadWarmup   7: 1 op, 444.00 ns, 444.0000 ns/op
+benchmarks-1  | OverheadWarmup   8: 1 op, 566.00 ns, 566.0000 ns/op
+benchmarks-1  | OverheadWarmup   9: 1 op, 445.00 ns, 445.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | OverheadActual   1: 1 op, 371.00 ns, 371.0000 ns/op
+benchmarks-1  | OverheadActual   2: 1 op, 544.00 ns, 544.0000 ns/op
+benchmarks-1  | OverheadActual   3: 1 op, 800.00 ns, 800.0000 ns/op
+benchmarks-1  | OverheadActual   4: 1 op, 507.00 ns, 507.0000 ns/op
+benchmarks-1  | OverheadActual   5: 1 op, 496.00 ns, 496.0000 ns/op
+benchmarks-1  | OverheadActual   6: 1 op, 506.00 ns, 506.0000 ns/op
+benchmarks-1  | OverheadActual   7: 1 op, 550.00 ns, 550.0000 ns/op
+benchmarks-1  | OverheadActual   8: 1 op, 555.00 ns, 555.0000 ns/op
+benchmarks-1  | OverheadActual   9: 1 op, 447.00 ns, 447.0000 ns/op
+benchmarks-1  | OverheadActual  10: 1 op, 612.00 ns, 612.0000 ns/op
+benchmarks-1  | OverheadActual  11: 1 op, 423.00 ns, 423.0000 ns/op
+benchmarks-1  | OverheadActual  12: 1 op, 422.00 ns, 422.0000 ns/op
+benchmarks-1  | OverheadActual  13: 1 op, 411.00 ns, 411.0000 ns/op
+benchmarks-1  | OverheadActual  14: 1 op, 398.00 ns, 398.0000 ns/op
+benchmarks-1  | OverheadActual  15: 1 op, 421.00 ns, 421.0000 ns/op
+benchmarks-1  | OverheadActual  16: 1 op, 610.00 ns, 610.0000 ns/op
+benchmarks-1  | OverheadActual  17: 1 op, 529.00 ns, 529.0000 ns/op
+benchmarks-1  | OverheadActual  18: 1 op, 581.00 ns, 581.0000 ns/op
+benchmarks-1  | OverheadActual  19: 1 op, 527.00 ns, 527.0000 ns/op
+benchmarks-1  | OverheadActual  20: 1 op, 440.00 ns, 440.0000 ns/op
+benchmarks-1  | 
+benchmarks-1  | WorkloadWarmup   1: 1 op, 943882573.00 ns, 943.8826 ms/op
+benchmarks-1  | 
+benchmarks-1  | // BeforeActualRun
+benchmarks-1  | WorkloadActual   1: 1 op, 1001111833.00 ns, 1.0011 s/op
+benchmarks-1  | WorkloadActual   2: 1 op, 945482440.00 ns, 945.4824 ms/op
+benchmarks-1  | WorkloadActual   3: 1 op, 974304437.00 ns, 974.3044 ms/op
+benchmarks-1  | 
+benchmarks-1  | // AfterActualRun
+benchmarks-1  | WorkloadResult   1: 1 op, 1001111326.50 ns, 1.0011 s/op
+benchmarks-1  | WorkloadResult   2: 1 op, 945481933.50 ns, 945.4819 ms/op
+benchmarks-1  | WorkloadResult   3: 1 op, 974303930.50 ns, 974.3039 ms/op
+benchmarks-1  | // GC:  0 0 0 29472 1
+benchmarks-1  | // Threading:  2 0 1
+benchmarks-1  | 
+benchmarks-1  | // AfterAll
+benchmarks-1  | // Benchmark Process 591 has exited with code 0.
+benchmarks-1  | 
+benchmarks-1  | Mean = 973.632 ms, StdErr = 16.062 ms (1.65%), N = 3, StdDev = 27.821 ms
+benchmarks-1  | Min = 945.482 ms, Q1 = 959.893 ms, Median = 974.304 ms, Q3 = 987.708 ms, Max = 1,001.111 ms
+benchmarks-1  | IQR = 27.815 ms, LowerFence = 918.171 ms, UpperFence = 1,029.430 ms
+benchmarks-1  | ConfidenceInterval = [466.078 ms; 1,481.187 ms] (CI 99.9%), Margin = 507.555 ms (52.13% of Mean)
+benchmarks-1  | Skewness = -0.02, Kurtosis = 0.67, MValue = 2
+benchmarks-1  | 
+benchmarks-1  | // ** Remained 0 (0.0 %) benchmark(s) to run. Estimated finish 2026-11-02 22:36 (0h 0m from now) **
+benchmarks-1  | // ***** BenchmarkRunner: Finish  *****
+benchmarks-1  | 
+benchmarks-1  | // * Export *
+benchmarks-1  |   BenchmarkDotNet.Artifacts/results/OrderLightCqrs.Benchmarks.SalesReportBenchmarks-report.csv
+benchmarks-1  |   BenchmarkDotNet.Artifacts/results/OrderLightCqrs.Benchmarks.SalesReportBenchmarks-report-github.md
+benchmarks-1  |   BenchmarkDotNet.Artifacts/results/OrderLightCqrs.Benchmarks.SalesReportBenchmarks-report.html
+benchmarks-1  | 
+benchmarks-1  | // * Detailed results *
+benchmarks-1  | SalesReportBenchmarks.'EF tracked entities, grouped in memory': Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | Runtime = .NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+benchmarks-1  | Mean = 2.100 s, StdErr = 0.021 s (1.01%), N = 3, StdDev = 0.037 s
+benchmarks-1  | Min = 2.060 s, Q1 = 2.085 s, Median = 2.111 s, Q3 = 2.121 s, Max = 2.131 s
+benchmarks-1  | IQR = 0.036 s, LowerFence = 2.032 s, UpperFence = 2.174 s
+benchmarks-1  | ConfidenceInterval = [1.431 s; 2.769 s] (CI 99.9%), Margin = 0.669 s (31.85% of Mean)
+benchmarks-1  | Skewness = -0.26, Kurtosis = 0.67, MValue = 2
+benchmarks-1  | -------------------- Histogram --------------------
+benchmarks-1  | [2.026 s ; 2.087 s) | @
+benchmarks-1  | [2.087 s ; 2.164 s) | @@
+benchmarks-1  | ---------------------------------------------------
+benchmarks-1  | 
+benchmarks-1  | SalesReportBenchmarks.'EF AsNoTracking entities, grouped in memory': Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | Runtime = .NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+benchmarks-1  | Mean = 894.265 ms, StdErr = 24.119 ms (2.70%), N = 3, StdDev = 41.775 ms
+benchmarks-1  | Min = 863.053 ms, Q1 = 870.536 ms, Median = 878.019 ms, Q3 = 909.871 ms, Max = 941.722 ms
+benchmarks-1  | IQR = 39.335 ms, LowerFence = 811.534 ms, UpperFence = 968.873 ms
+benchmarks-1  | ConfidenceInterval = [132.130 ms; 1,656.399 ms] (CI 99.9%), Margin = 762.134 ms (85.22% of Mean)
+benchmarks-1  | Skewness = 0.33, Kurtosis = 0.67, MValue = 2
+benchmarks-1  | -------------------- Histogram --------------------
+benchmarks-1  | [825.036 ms ; 908.553 ms) | @@
+benchmarks-1  | [908.553 ms ; 979.739 ms) | @
+benchmarks-1  | ---------------------------------------------------
+benchmarks-1  | 
+benchmarks-1  | SalesReportBenchmarks.'EF AsNoTracking + Select projection (GroupBy translated to SQL)': Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | Runtime = .NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+benchmarks-1  | Mean = 759.129 ms, StdErr = 21.756 ms (2.87%), N = 3, StdDev = 37.682 ms
+benchmarks-1  | Min = 734.088 ms, Q1 = 737.460 ms, Median = 740.832 ms, Q3 = 771.649 ms, Max = 802.466 ms
+benchmarks-1  | IQR = 34.189 ms, LowerFence = 686.177 ms, UpperFence = 822.932 ms
+benchmarks-1  | ConfidenceInterval = [71.663 ms; 1,446.595 ms] (CI 99.9%), Margin = 687.466 ms (90.56% of Mean)
+benchmarks-1  | Skewness = 0.37, Kurtosis = 0.67, MValue = 2
+benchmarks-1  | -------------------- Histogram --------------------
+benchmarks-1  | [733.985 ms ; 802.569 ms) | @@@
+benchmarks-1  | ---------------------------------------------------
+benchmarks-1  | 
+benchmarks-1  | SalesReportBenchmarks.'EF compiled query + projection (GroupBy translated to SQL)': Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | Runtime = .NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+benchmarks-1  | Mean = 755.852 ms, StdErr = 31.732 ms (4.20%), N = 3, StdDev = 54.962 ms
+benchmarks-1  | Min = 723.594 ms, Q1 = 724.121 ms, Median = 724.649 ms, Q3 = 771.981 ms, Max = 819.314 ms
+benchmarks-1  | IQR = 47.860 ms, LowerFence = 652.331 ms, UpperFence = 843.771 ms
+benchmarks-1  | ConfidenceInterval = [-246.859 ms; 1,758.563 ms] (CI 99.9%), Margin = 1,002.711 ms (132.66% of Mean)
+benchmarks-1  | Skewness = 0.38, Kurtosis = 0.67, MValue = 2
+benchmarks-1  | -------------------- Histogram --------------------
+benchmarks-1  | [721.436 ms ; 821.471 ms) | @@@
+benchmarks-1  | ---------------------------------------------------
+benchmarks-1  | 
+benchmarks-1  | SalesReportBenchmarks.'Dapper (single aggregate query)': Job-FEWCWF(InvocationCount=1, IterationCount=3, UnrollFactor=1, WarmupCount=1)
+benchmarks-1  | Runtime = .NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+benchmarks-1  | Mean = 973.632 ms, StdErr = 16.062 ms (1.65%), N = 3, StdDev = 27.821 ms
+benchmarks-1  | Min = 945.482 ms, Q1 = 959.893 ms, Median = 974.304 ms, Q3 = 987.708 ms, Max = 1,001.111 ms
+benchmarks-1  | IQR = 27.815 ms, LowerFence = 918.171 ms, UpperFence = 1,029.430 ms
+benchmarks-1  | ConfidenceInterval = [466.078 ms; 1,481.187 ms] (CI 99.9%), Margin = 507.555 ms (52.13% of Mean)
+benchmarks-1  | Skewness = -0.02, Kurtosis = 0.67, MValue = 2
+benchmarks-1  | -------------------- Histogram --------------------
+benchmarks-1  | [920.164 ms ;   962.390 ms) | @
+benchmarks-1  | [962.390 ms ; 1,013.026 ms) | @@
+benchmarks-1  | ---------------------------------------------------
+benchmarks-1  | 
+benchmarks-1  | // * Summary *
+benchmarks-1  | 
+benchmarks-1  | BenchmarkDotNet v0.15.8, Linux Ubuntu 24.04.5 LTS (Noble Numbat) (container)
+benchmarks-1  | 12th Gen Intel Core i5-12600K 3.69GHz, 1 CPU, 16 logical and 8 physical cores
+benchmarks-1  | .NET SDK 10.0.402
+benchmarks-1  |   [Host]     : .NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3
+benchmarks-1  |   Job-FEWCWF : .NET 10.0.13 (10.0.13, 10.0.1326.50504), X64 RyuJIT x86-64-v3
+benchmarks-1  | 
+benchmarks-1  | InvocationCount=1  IterationCount=3  UnrollFactor=1  
+benchmarks-1  | WarmupCount=1  
+benchmarks-1  | 
+benchmarks-1  | | Method                                                            | Mean       | Error      | StdDev   | Ratio | RatioSD | Gen0       | Gen1       | Gen2      | Allocated    | Alloc Ratio |
+benchmarks-1  | |------------------------------------------------------------------ |-----------:|-----------:|---------:|------:|--------:|-----------:|-----------:|----------:|-------------:|------------:|
+benchmarks-1  | | 'EF tracked entities, grouped in memory'                          | 2,100.3 ms |   669.0 ms | 36.67 ms |  1.00 |    0.02 | 66000.0000 | 34000.0000 | 5000.0000 | 788157.93 KB |       1.000 |
+benchmarks-1  | | 'EF AsNoTracking entities, grouped in memory'                     |   894.3 ms |   762.1 ms | 41.78 ms |  0.43 |    0.02 | 35000.0000 | 13000.0000 | 3000.0000 | 388502.63 KB |       0.493 |
+benchmarks-1  | | 'EF AsNoTracking + Select projection (GroupBy translated to SQL)' |   759.1 ms |   687.5 ms | 37.68 ms |  0.36 |    0.02 |          - |          - |         - |    128.27 KB |       0.000 |
+benchmarks-1  | | 'EF compiled query + projection (GroupBy translated to SQL)'      |   755.9 ms | 1,002.7 ms | 54.96 ms |  0.36 |    0.02 |          - |          - |         - |     92.18 KB |       0.000 |
+benchmarks-1  | | 'Dapper (single aggregate query)'                                 |   973.6 ms |   507.6 ms | 27.82 ms |  0.46 |    0.01 |          - |          - |         - |     28.78 KB |       0.000 |
+benchmarks-1  | 
+benchmarks-1  | // * Legends *
+benchmarks-1  |   Mean        : Arithmetic mean of all measurements
+benchmarks-1  |   Error       : Half of 99.9% confidence interval
+benchmarks-1  |   StdDev      : Standard deviation of all measurements
+benchmarks-1  |   Ratio       : Mean of the ratio distribution ([Current]/[Baseline])
+benchmarks-1  |   RatioSD     : Standard deviation of the ratio distribution ([Current]/[Baseline])
+benchmarks-1  |   Gen0        : GC Generation 0 collects per 1000 operations
+benchmarks-1  |   Gen1        : GC Generation 1 collects per 1000 operations
+benchmarks-1  |   Gen2        : GC Generation 2 collects per 1000 operations
+benchmarks-1  |   Allocated   : Allocated memory per single operation (managed only, inclusive, 1KB = 1024B)
+benchmarks-1  |   Alloc Ratio : Allocated memory ratio distribution ([Current]/[Baseline])
+benchmarks-1  |   1 ms        : 1 Millisecond (0.001 sec)
+benchmarks-1  | 
+benchmarks-1  | // * Diagnostic Output - MemoryDiagnoser *
+benchmarks-1  | 
+benchmarks-1  | 
+benchmarks-1  | // ***** BenchmarkRunner: End *****
+benchmarks-1  | Run time: 00:00:39 (39.2 sec), executed benchmarks: 5
+benchmarks-1  | 
+benchmarks-1  | Global total time: 00:01:12 (72.08 sec), executed benchmarks: 20
+benchmarks-1  | // * Artifacts cleanup *
+benchmarks-1  | Artifacts cleanup is finished
+
+[Kbenchmarks-1 exited with code 0
+ Compose Stopping Aborting on container exit...
+ Container ef-core-dapper-light-cqrs-benchmarks-1 Stopping 
+ Container ef-core-dapper-light-cqrs-benchmarks-1 Stopped 
