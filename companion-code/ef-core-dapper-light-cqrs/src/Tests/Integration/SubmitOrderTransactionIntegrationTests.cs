@@ -56,7 +56,7 @@ public class SubmitOrderTransactionIntegrationTests : IAsyncLifetime
         await handler.HandleAsync(new SubmitOrderCommand(orderId));
 
         await using var verifyContext = _fixture.CreateContext();
-        var order = await new OrderRepository(verifyContext).GetByIdAsync(orderId);
+        Order? order = await new OrderRepository(verifyContext).GetByIdAsync(orderId);
         Assert.Equal(OrderStatus.Submitted, order!.Status);
 
         var auditRows = await verifyContext.OrderAuditLog.Where(a => a.OrderId == orderId).ToListAsync();
@@ -78,7 +78,7 @@ public class SubmitOrderTransactionIntegrationTests : IAsyncLifetime
         await Assert.ThrowsAsync<InvalidOperationException>(() => handler.HandleAsync(new SubmitOrderCommand(orderId)));
 
         await using var verifyContext = _fixture.CreateContext();
-        var order = await new OrderRepository(verifyContext).GetByIdAsync(orderId);
+        Order? order = await new OrderRepository(verifyContext).GetByIdAsync(orderId);
 
         // If the audit write and the EF save were NOT sharing a transaction, this would be
         // Submitted (EF's SaveChangesAsync already committed before the audit write ran).

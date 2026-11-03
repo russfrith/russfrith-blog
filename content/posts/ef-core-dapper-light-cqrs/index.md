@@ -22,12 +22,12 @@ The [full companion solution](https://github.com/russfrith/russfrith-blog/tree/m
 
 ## The architecture: light CQRS
 
-"CQRS" tends to conjure event sourcing, a separate read database, and a message bus, and that's not what's here. This is the smallest version of command/query separation that's still worth naming:
+"CQRS" tends to conjure event sourcing, a separate read database, and a message bus, and that's not what's here. There's no library involved either, no MediatR, no mediator pattern of any kind: this is the smallest version of command/query separation that's still worth naming, built entirely out of plain classes and interfaces I own.
 
 - **Write side**: a command handler calls a repository, which loads an `Order` aggregate, which enforces its own invariants, saved through EF Core and a unit of work.
 - **Read side**: a query service runs hand-written SQL through Dapper and returns a DTO. No repository, no aggregate, no domain type anywhere in the call stack.
 - **Same database.** Same Postgres instance, same tables, same migrations (owned by EF Core). No separate read store, no projections to keep in sync, no eventual consistency to reason about.
-- **No mediator.** Handlers are plain classes behind plain interfaces, injected the ordinary way: `IOrderQueries`, `ICreateOrderHandler`, `ISubmitOrderHandler`. Nothing routes through MediatR or anything like it.
+- **No mediator.** Handlers are plain classes behind plain interfaces, injected the ordinary way: `IOrderQueries`, `ICreateOrderHandler`, `ISubmitOrderHandler`.
 
 The one rule that makes this work, and the one an architecture test enforces: **repositories never serve reads, and query services never touch aggregates.** If a repository method's return type ends in `Dto`, that's a bug. If anything in the read namespace references the `Domain` assembly, that's a bug too. Two automated tests in the companion code check exactly this, and I'll show them later.
 
@@ -125,7 +125,7 @@ The important detail is what this code doesn't do: it never calls `Open()`, `Clo
 ```csharp
 public async Task HandleAsync(SubmitOrderCommand command, CancellationToken cancellationToken = default)
 {
-    var order = await _repository.GetByIdAsync(command.OrderId, cancellationToken)
+    Domain.Order order = await _repository.GetByIdAsync(command.OrderId, cancellationToken)
         ?? throw new Domain.DomainException($"Order {command.OrderId} was not found.");
 
     order.Submit();

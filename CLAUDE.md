@@ -62,6 +62,7 @@ Some posts reference runnable code — benchmarks, demos, sample projects — th
 - `companion-code/` is long-lived and public, not scratch work — commit source files (`.csproj`, `.cs`, `Dockerfile`, etc.) so readers can run things themselves.
 - Add a `.gitignore` entry for build output (`bin/`, `obj/`, or language-equivalent) — don't commit build artifacts, only source.
 - Include a `README.md` in each post's companion-code folder explaining how to build and run it (local + Docker, if applicable).
+- C# style rules for companion code (e.g. when to use `var` vs. an explicit type) live in `companion-code/CONVENTIONS.md`, not here — check it before writing or editing companion code.
 - When a post references companion code, prefer showing short, relevant snippets directly in the post itself rather than assuming readers will go clone the folder to understand the point being made — the companion code is for readers who want to reproduce or extend it, not a substitute for explaining things in the post.
 
 ## What not to touch without being asked

@@ -20,7 +20,7 @@ public class SubmitOrderHandler : ISubmitOrderHandler
 
     public async Task HandleAsync(SubmitOrderCommand command, CancellationToken cancellationToken = default)
     {
-        var order = await _repository.GetByIdAsync(command.OrderId, cancellationToken)
+        Domain.Order order = await _repository.GetByIdAsync(command.OrderId, cancellationToken)
             ?? throw new Domain.DomainException($"Order {command.OrderId} was not found.");
 
         order.Submit();

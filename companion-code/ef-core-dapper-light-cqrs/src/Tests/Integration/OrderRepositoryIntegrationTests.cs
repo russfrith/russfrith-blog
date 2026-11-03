@@ -38,7 +38,7 @@ public class OrderRepositoryIntegrationTests : IAsyncLifetime
 
         await using var readContext = _fixture.CreateContext();
         var readRepository = new OrderRepository(readContext);
-        var loaded = await readRepository.GetByIdAsync(order.Id);
+        Order? loaded = await readRepository.GetByIdAsync(order.Id);
 
         Assert.NotNull(loaded);
         Assert.Equal(order.Id, loaded!.Id);
@@ -52,7 +52,7 @@ public class OrderRepositoryIntegrationTests : IAsyncLifetime
         await using var context = _fixture.CreateContext();
         var repository = new OrderRepository(context);
 
-        var loaded = await repository.GetByIdAsync(Guid.NewGuid());
+        Order? loaded = await repository.GetByIdAsync(Guid.NewGuid());
 
         Assert.Null(loaded);
     }
@@ -73,13 +73,13 @@ public class OrderRepositoryIntegrationTests : IAsyncLifetime
 
         await using var submitContext = _fixture.CreateContext();
         var repository = new OrderRepository(submitContext);
-        var loaded = await repository.GetByIdAsync(order.Id);
+        Order? loaded = await repository.GetByIdAsync(order.Id);
         loaded!.Submit();
         await submitContext.SaveChangesAsync();
 
         await using var verifyContext = _fixture.CreateContext();
         var verifyRepository = new OrderRepository(verifyContext);
-        var verified = await verifyRepository.GetByIdAsync(order.Id);
+        Order? verified = await verifyRepository.GetByIdAsync(order.Id);
 
         Assert.Equal(OrderStatus.Submitted, verified!.Status);
         Assert.NotNull(verified.SubmittedAtUtc);
