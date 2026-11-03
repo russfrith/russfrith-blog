@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 326" width="800" height="326" role="img" aria-labelledby="diagram-title diagram-desc" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif">
+  <title id="diagram-title">Write path versus read path</title>
+  <desc id="diagram-desc">Write path: Command handler, to IOrderRepository, to Order aggregate (where invariants are enforced), to EF Core, to IUnitOfWork. Read path: IOrderQueries, to Dapper plus SQL, to DTO, with no aggregate and no repository involved.</desc>
+
+  <defs>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2a78d6" />
+    </marker>
+    <marker id="arrow-mint" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1baf7a" />
+    </marker>
+    <filter id="soft-shadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#0b0b0b" flood-opacity="0.18" />
+    </filter>
+  </defs>
+
+  <rect x="0" y="0" width="800" height="326" rx="10" fill="#fcfcfb" stroke="#e1e0d9" stroke-width="1" />
+
+  <!-- Write lane -->
+  <text x="16" y="48" font-size="15" font-weight="700" fill="#0b0b0b">Write</text>
+  <line x1="20" y1="100" x2="760" y2="100" stroke="#e1e0d9" stroke-width="4" stroke-linecap="round" />
+
+  <line x1="155" y1="100" x2="180" y2="100" stroke="#2a78d6" stroke-width="2.5" marker-end="url(#arrow-blue)" />
+  <line x1="300" y1="100" x2="325" y2="100" stroke="#2a78d6" stroke-width="2.5" marker-end="url(#arrow-blue)" />
+  <line x1="445" y1="100" x2="470" y2="100" stroke="#2a78d6" stroke-width="2.5" marker-end="url(#arrow-blue)" />
+  <line x1="590" y1="100" x2="615" y2="100" stroke="#2a78d6" stroke-width="2.5" marker-end="url(#arrow-blue)" />
+
+  <g filter="url(#soft-shadow)">
+    <rect x="40" y="68" width="110" height="64" rx="12" fill="#cde2fb" stroke="#2a78d6" stroke-width="4" />
+    <rect x="185" y="68" width="110" height="64" rx="12" fill="#cde2fb" stroke="#2a78d6" stroke-width="4" />
+    <rect x="330" y="68" width="110" height="64" rx="12" fill="#cde2fb" stroke="#2a78d6" stroke-width="4" />
+    <rect x="475" y="68" width="110" height="64" rx="12" fill="#cde2fb" stroke="#2a78d6" stroke-width="4" />
+    <rect x="620" y="68" width="110" height="64" rx="12" fill="#cde2fb" stroke="#2a78d6" stroke-width="4" />
+  </g>
+
+  <text x="95" y="94" text-anchor="middle" font-size="14" font-weight="600" fill="#0b0b0b">Command</text>
+  <text x="95" y="112" text-anchor="middle" font-size="14" font-weight="600" fill="#0b0b0b">handler</text>
+
+  <text x="240" y="94" text-anchor="middle" font-size="14" font-weight="600" fill="#0b0b0b">IOrder</text>
+  <text x="240" y="112" text-anchor="middle" font-size="14" font-weight="600" fill="#0b0b0b">Repository</text>
+
+  <text x="385" y="94" text-anchor="middle" font-size="14" font-weight="600" fill="#0b0b0b">Order</text>
+  <text x="385" y="112" text-anchor="middle" font-size="14" font-weight="600" fill="#0b0b0b">aggregate</text>
+
+  <text x="530" y="105" text-anchor="middle" font-size="14" font-weight="600" fill="#0b0b0b">EF Core</text>
+
+  <text x="675" y="105" text-anchor="middle" font-size="14" font-weight="600" fill="#0b0b0b">IUnitOfWork</text>
+
+  <line x1="385" y1="132" x2="385" y2="142" stroke="#52514e" stroke-width="1.5" />
+  <text x="385" y="158" text-anchor="middle" font-size="13" font-style="italic" fill="#52514e">(invariants enforced here)</text>
+
+  <!-- Read lane -->
+  <text x="16" y="188" font-size="15" font-weight="700" fill="#0b0b0b">Read</text>
+  <line x1="80" y1="240" x2="690" y2="240" stroke="#e1e0d9" stroke-width="4" stroke-linecap="round" />
+
+  <line x1="235" y1="240" x2="315" y2="240" stroke="#1baf7a" stroke-width="2.5" marker-end="url(#arrow-mint)" />
+  <line x1="455" y1="240" x2="535" y2="240" stroke="#1baf7a" stroke-width="2.5" marker-end="url(#arrow-mint)" />
+
+  <g filter="url(#soft-shadow)">
+    <rect x="100" y="208" width="130" height="64" rx="12" fill="#c6ebde" stroke="#1baf7a" stroke-width="4" />
+    <rect x="320" y="208" width="130" height="64" rx="12" fill="#c6ebde" stroke="#1baf7a" stroke-width="4" />
+    <rect x="540" y="208" width="130" height="64" rx="12" fill="#c6ebde" stroke="#1baf7a" stroke-width="4" />
+  </g>
+
+  <text x="165" y="234" text-anchor="middle" font-size="14" font-weight="600" fill="#0b0b0b">IOrder</text>
+  <text x="165" y="252" text-anchor="middle" font-size="14" font-weight="600" fill="#0b0b0b">Queries</text>
+
+  <text x="385" y="234" text-anchor="middle" font-size="14" font-weight="600" fill="#0b0b0b">Dapper</text>
+  <text x="385" y="252" text-anchor="middle" font-size="14" font-weight="600" fill="#0b0b0b">+ SQL</text>
+
+  <text x="605" y="245" text-anchor="middle" font-size="15" font-weight="700" fill="#0b0b0b">DTO</text>
+
+  <line x1="385" y1="272" x2="385" y2="282" stroke="#52514e" stroke-width="1.5" />
+  <text x="385" y="298" text-anchor="middle" font-size="13" font-style="italic" fill="#52514e">(no aggregate, no repository, in sight)</text>
+</svg>

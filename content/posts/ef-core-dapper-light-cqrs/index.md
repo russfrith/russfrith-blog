@@ -12,11 +12,11 @@ tags: ["dotnet", "csharp", "efcore", "dapper", "postgresql"]
 categories: ["database"]
 ---
 
-I use EF Core almost exclusively for database access in my .NET projects. For the write side of almost any app, I want an aggregate that protects its own invariants, a repository that hides the database, and a unit of work that commits a transaction. EF Core gives me all of that without much ceremony. So when I say "here's when I reached for Dapper," I want to be clear up front: this isn't a recommendation to replace EF Core, or even to use Dapper regularly. It's a description of the one place I've found where EF Core's own tools stopped being enough, and the rules I set for myself before I let a second data access library into the codebase.
+I use EF Core almost exclusively for database access in my .NET projects. For the write side of almost any app, I want an aggregate that protects its own invariants, a repository that hides the database, and a unit of work that commits a transaction. EF Core gives me all of that without much ceremony. So when I say "here's when I reached for Dapper," I want to be clear up front: this isn't a recommendation to replace EF Core, or even to use Dapper regularly. It's a description of one place where EF Core's own tools stopped being enough, and the rules I set for myself before I let a second data access library into the codebase.
 
-The trigger is almost always a read endpoint. A list screen with filters and paging, a report that aggregates across a hundred thousand rows, a customer history export, something domain-driven design never really promised to be fast at. The order aggregate that protects "a submitted order can't be modified" has no opinion about "show me the last 90 days of orders, by customer name, with a running total." Those are different problems, and forcing one tool to solve both is where the trouble starts.
+The trigger is almost always a read endpoint. A list screen with filters and paging, a report that aggregates across a hundred thousand rows, a customer history export, something domain-driven design never really promised to be fast at. The order aggregate that protects "a submitted order can't be modified" has no opinion about "show me the last 90 days of orders, by customer name, with a running total." Those are different problems, and forcing one tool to solve both is where the trouble can start.
 
-What follows is a worked example: an order-management system with a real `Order` aggregate on the write side, a Dapper-backed query layer on the read side, and five ways of fetching the same data (EF tracked, EF `AsNoTracking`, EF `AsNoTracking` with a projection, an EF compiled query, and Dapper) benchmarked against each other on 120,000 seeded orders in a containerized Postgres instance. The benchmark result I want to tease now: Dapper won three of the four scenarios, and EF Core won the fourth, cleanly, once I used EF's own tools properly. Both of those facts matter more than "Dapper is faster," which is the headline I was tempted to write before I ran the numbers.
+Our example is an order-management system with an `Order` aggregate on the write side, a Dapper-backed query layer on the read side, and five ways of fetching the same data (EF tracked, EF `AsNoTracking`, EF `AsNoTracking` with a projection, an EF compiled query, and Dapper) benchmarked against each other on 120,000 seeded orders in a containerized Postgres instance. The benchmark result I want to tease now: Dapper won three of the four scenarios, and EF Core won the fourth, cleanly, once I used EF's own tools properly. Both of those facts matter more than "Dapper is faster," which is the headline I was tempted to write before I ran the numbers.
 
 The [full companion solution](https://github.com/russfrith/russfrith-blog/tree/master/companion-code/ef-core-dapper-light-cqrs) runs entirely in Docker, including the tests and benchmarks, and every code snippet and SQL statement below is pulled directly from it.
 
@@ -27,9 +27,9 @@ The [full companion solution](https://github.com/russfrith/russfrith-blog/tree/m
 - **Write side**: a command handler calls a repository, which loads an `Order` aggregate, which enforces its own invariants, saved through EF Core and a unit of work.
 - **Read side**: a query service runs hand-written SQL through Dapper and returns a DTO. No repository, no aggregate, no domain type anywhere in the call stack.
 - **Same database.** Same Postgres instance, same tables, same migrations (owned by EF Core). No separate read store, no projections to keep in sync, no eventual consistency to reason about.
-- **No mediator.** Handlers are plain classes behind plain interfaces, injected the ordinary way: `IOrderQueries`, `ICreateOrderHandler`, `ISubmitOrderHandler`.
+- **No mediator.** Handlers are plain classes behind plain interfaces, resolved through constructor injection like anything else: `IOrderQueries`, `ICreateOrderHandler`, `ISubmitOrderHandler`.
 
-The one rule that makes this work, and the one an architecture test enforces: **repositories never serve reads, and query services never touch aggregates.** If a repository method's return type ends in `Dto`, that's a bug. If anything in the read namespace references the `Domain` assembly, that's a bug too. Two automated tests in the companion code check exactly this, and I'll show them later.
+The one rule that makes this specific split work, and the one an architecture test enforces: **repositories never serve reads, and query services never touch aggregates.** That's a rule for this architecture, not a universal law of repositories; an onion or vertical-slice architecture that isn't drawing a write/read line in the first place might reasonably use the same repository for both, and that's a legitimate choice there, not a violation of some broader principle. Here, where the whole point is keeping reads and writes on separate paths, a repository method whose return type ends in `Dto` is a bug, and so is anything in the read namespace referencing the `Domain` assembly. Two automated tests in the companion code check exactly this, and I'll show them later.
 
 What it isn't: there's no event store, no separate read database, no projection-rebuild job, and no mediator pattern. If you're picturing a message bus and a read model that's eventually consistent with the write model, that's a different, heavier thing than what's described here. This stays boring on purpose.
 
@@ -66,15 +66,7 @@ Dapper is the last resort on this list, not the first. If `AsNoTracking` plus a 
 
 ## Where Dapper lives
 
-```
-Write path:
-  Command handler -> IOrderRepository -> Order aggregate -> EF Core -> IUnitOfWork
-                                             (invariants enforced here)
-
-Read path:
-  IOrderQueries -> Dapper + SQL -> DTO
-                      (no aggregate, no repository, in sight)
-```
+![Diagram of the write path versus the read path. Write path: Command handler, to IOrderRepository, to Order aggregate (where invariants are enforced), to EF Core, to IUnitOfWork. Read path: IOrderQueries, to Dapper plus SQL, to DTO, with no aggregate and no repository involved.](write-read-path-diagram.svg)
 
 Dapper's entire footprint is one namespace: `Infrastructure.Reads`. `IOrderQueries` is the only interface the Api project calls for reads, `OrderQueries` is its only implementation, and nothing in that class imports anything from `Domain`. Two deliberately contained, documented exceptions let Dapper touch the write side too (covered later), but the default rule holds: Dapper reads, EF Core writes.
 
@@ -424,13 +416,12 @@ Three of four scenarios favor Dapper, by margins from about 1.4x (sales report, 
 
 **"EF Core is fast enough."** For most of what most apps do, yes, and the scenario-3 result above is the proof I didn't expect to find in my own benchmark: EF's own tools, used correctly, beat hand-written SQL on a heavy aggregation. The way to check this for your own app isn't to guess, it's to do what this post did: write the EF query with `AsNoTracking` and a projection, write the Dapper equivalent, run both against production-shaped data, and look at the actual numbers before reaching for a second tool.
 
-**The cognitive cost of two tools is real.** A team now needs to know two query languages, two sets of idioms for pagination and parameterization, and one more place a SQL injection vulnerability or an N+1 query can hide. The architecture tests in this post exist specifically to pay down that cost: they turn "Dapper stays in the read layer" from a convention someone has to remember into something the build enforces.
+**The cognitive cost of two tools is real.** A team now needs to know two query languages, two sets of idioms for pagination and parameterization, and one more place a SQL injection vulnerability or an N+1 query can hide. There's a type-safety cost too: an EF LINQ query is checked by the compiler against the model, so renaming a column or changing a property's type breaks the build. A Dapper query is a string; the same rename breaks it silently, and the only thing that catches it is a test actually running that query against real data, or a user hitting it in production. The architecture tests in this post exist specifically to pay down part of that cost: they turn "Dapper stays in the read layer" from a convention someone has to remember into something the build enforces.
 
-Where this actually lands, for me: EF Core first, always, for everything on the write side and for most reads. Dapper only after `AsNoTracking` and a projection have both been tried and measured, only in a query layer that never sees an aggregate, and only with an architecture test making sure it stays that way. That's a narrower rule than "use the fastest tool," and it's the one I'd actually want a team to follow after I've moved on to the next project.
+The rule I actually follow: EF Core first, always, for everything on the write side and for most reads. Dapper only after `AsNoTracking` and a projection have both been tried and measured, only in a query layer that never sees an aggregate, and only with an architecture test making sure it stays that way. That's a narrower rule than "use the fastest tool," and it's the one I'd actually want a team to follow after I've moved on to the next project.
 
 ## References
 
 1. Microsoft. [Dapper: query data](https://learn.microsoft.com/en-us/ef/core/performance/efficient-querying#use-dapper-when-needed-for-queries). _EF Core efficient querying, Microsoft Learn_.
 2. Microsoft. [Compiled queries](https://learn.microsoft.com/en-us/ef/core/performance/advanced-performance-topics#compiled-queries). _EF Core advanced performance topics, Microsoft Learn_.
 3. Microsoft. [AsNoTracking](https://learn.microsoft.com/en-us/ef/core/querying/tracking). _EF Core tracking vs. no-tracking queries, Microsoft Learn_.
-4. BenchmarkDotNet. [Getting started](https://benchmarkdotnet.org/articles/guides/getting-started.html). _BenchmarkDotNet documentation_.
