@@ -12,7 +12,7 @@ tags: ["dotnet", "csharp", "aspnetcore"]
 categories: ["programming"]
 ---
 
-.NET 8 and .NET 9 reached the end of support today. .NET 11 shipped today too, alongside .NET 10 as the new LTS. If you're still on 8 or 9, you no longer have a choice about moving, only a choice of where you land.
+.NET 8 and .NET 9 reached the end of support today with the release of .NET 11 as the STS, joining .NET 10 as the LTS. If you're still on 8 or 9, you no longer have a choice about moving, only a choice of where you land.
 
 Some of what hurt you on 8 gets fixed in 11. Some of what worked fine on 8 quietly stops working the way you expect, and that second kind is worth more of your attention than the changelog gives it: a few of those changes break the build and tell you immediately, a few crash on startup, and a few compile, pass your tests, and just behave differently. That last group is the one that costs you money, because nothing tells you it happened.
 
