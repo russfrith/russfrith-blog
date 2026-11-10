@@ -4,9 +4,9 @@ description: "What you gain, and what quietly changes, when you leave .NET 8 for
 date: 2026-11-10T14:09:29-05:00
 draft: false
 cover:
-  image: 11-ball-and-8-balls.jpg
-  alt: "A rack of fourteen 8-balls with a single red 11 in the middle"
-  caption: "Image created by author using [Grok](https://grok.com/)"
+  image: Cinematic-Billiard-Ball-Still-Life.png
+  alt: "One 11-ball and several 8-balls on a pool table"
+  caption: "Image created by author using [ChatGPT](https://chatgpt.com/)"
 ShowToc: true
 tags: ["dotnet", "csharp", "aspnetcore"]
 categories: ["programming"]
