@@ -395,15 +395,15 @@ A few of the items above won't show up until something is already wrong in produ
 
 ## Sources
 
-- [What's new in C# 15](https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-15)
-- [What's new in .NET 11](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-11/overview)
-- [.NET 11 minimum hardware requirements](https://learn.microsoft.com/en-us/dotnet/core/compatibility/jit/11/minimum-hardware-requirements)
-- [ASP.NET Core 11 breaking changes](https://learn.microsoft.com/en-us/aspnet/core/breaking-changes/11/overview)
-- [Obsolete Blazor APIs removed](https://learn.microsoft.com/en-us/aspnet/core/breaking-changes/11/blazor-obsolete-apis-removed)
-- [ASP.NET Core 11 release notes](https://learn.microsoft.com/en-us/aspnet/core/release-notes/aspnetcore-11)
-- [IHost.RunAsync/StopAsync now throw on BackgroundService failure](https://learn.microsoft.com/en-us/dotnet/core/compatibility/extensions/11/ihost-runasync-stopasync-throw-backgroundservice-failure)
-- [EF Core 11 breaking changes](https://learn.microsoft.com/en-us/ef/core/what-is-new/ef-core-11.0/breaking-changes)
-- [dotnet/efcore #30163](https://github.com/dotnet/efcore/issues/30163)
-- [Floating-point to integer conversions](https://learn.microsoft.com/en-us/dotnet/core/compatibility/jit/9.0/fp-to-integer)
-- [.NET support policy](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core)
-- [.NET STS releases supported for 24 months](https://devblogs.microsoft.com/dotnet/dotnet-sts-releases-supported-for-24-months/)
+- [What's new in C# 15](https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-15), Microsoft Learn
+- [What's new in .NET 11](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-11/overview), Microsoft Learn
+- [.NET 11 minimum hardware requirements](https://learn.microsoft.com/en-us/dotnet/core/compatibility/jit/11/minimum-hardware-requirements), Microsoft Learn
+- [ASP.NET Core 11 breaking changes](https://learn.microsoft.com/en-us/aspnet/core/breaking-changes/11/overview), Microsoft Learn
+- [Obsolete Blazor APIs removed](https://learn.microsoft.com/en-us/aspnet/core/breaking-changes/11/blazor-obsolete-apis-removed), Microsoft Learn
+- [ASP.NET Core 11 release notes](https://learn.microsoft.com/en-us/aspnet/core/release-notes/aspnetcore-11), Microsoft Learn
+- [IHost.RunAsync/StopAsync now throw on BackgroundService failure](https://learn.microsoft.com/en-us/dotnet/core/compatibility/extensions/11/ihost-runasync-stopasync-throw-backgroundservice-failure), Microsoft Learn
+- [EF Core 11 breaking changes](https://learn.microsoft.com/en-us/ef/core/what-is-new/ef-core-11.0/breaking-changes), Microsoft Learn
+- [dotnet/efcore #30163](https://github.com/dotnet/efcore/issues/30163), GitHub
+- [Floating-point to integer conversions](https://learn.microsoft.com/en-us/dotnet/core/compatibility/jit/9.0/fp-to-integer), Microsoft Learn
+- [.NET support policy](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core), Microsoft Learn
+- [.NET STS releases supported for 24 months](https://devblogs.microsoft.com/dotnet/dotnet-sts-releases-supported-for-24-months/), .NET Blog
