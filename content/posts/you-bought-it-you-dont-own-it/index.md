@@ -1,8 +1,8 @@
 ---
 title: "You Bought It. You Don't Own It."
 description: "A look at how copyright and licensing actually work behind the 'buy' button, from physical media to digital books, music, video, games, and software-tethered hardware."
-date: 2026-10-13T09:00:00-04:00
-draft: true
+date: 2026-11-12T12:36:06-05:00
+draft: false
 cover:
   image: krayboul-aIXmjJCq__A-unsplash.jpg
   alt: "Black and red vinyl record"
