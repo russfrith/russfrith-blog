@@ -16,7 +16,7 @@ categories: ["programming"]
 
 Some of what hurt you on 8 gets fixed in 11. Some of what worked fine on 8 quietly stops working the way you expect, and that second kind is worth more of your attention than the changelog gives it: a few of those changes break the build and tell you immediately, a few crash on startup, and a few compile, pass your tests, and just behave differently. That last group is the one that costs you money, because nothing tells you it happened.
 
-Everything below uses a small orders-service sample I built for this post. It isn't a real production app, and I'm not pretending it is; it exists to carry realistic-looking code through a migration, nothing more. I compiled and ran every clip for real, in Docker, against the official `mcr.microsoft.com/dotnet/sdk` images for 8.0, 10.0, and 11.0.
+Everything below uses a small orders-service sample I built for this post. It isn't a real production app, and I'm not pretending it is; it exists to carry realistic-looking code through a migration, nothing more. Every clip was compiled and run in Docker, against the official `mcr.microsoft.com/dotnet/sdk` images for 8.0, 10.0, and 11.0.
 
 {{< aside >}}
 The public `11.0` SDK image was still tagged RC3 (`11.0.100-rc.3.26522.148`, built 2026-11-06) when I ran these clips, even though today is the official GA date. I'm noting it here rather than pretending otherwise. Everything below should carry over to the GA bits unchanged, but if you see different behavior on the final release, that's why.
@@ -79,13 +79,13 @@ static class OrderLineExtensions
 
 ### Labeled break and continue
 
-The old way to escape two nested loops is a flag variable. I actually wrote and ran both versions to see whether the new IDE0410 analyzer catches the flag-variable pattern the way the docs suggest. In my test, it didn't; it only fired on a `goto`-based version of the same logic, with exactly this diagnostic:
+The old way to escape two nested loops is a flag variable. I wrote both versions to see whether the new IDE0410 analyzer catches the flag-variable pattern the way the docs suggest. It didn't; it only fired on a `goto`-based version of the same logic, with exactly this diagnostic:
 
 ```
 Program.cs(16,13): warning IDE0410: Use labeled jump statement (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0410)
 ```
 
-Old version, no warning from the analyzer in my test:
+Old version, no warning from the analyzer:
 
 ```csharp
 bool found = false;
