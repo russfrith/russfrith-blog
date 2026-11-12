@@ -82,7 +82,7 @@ None of this changes what you actually get. It only changes whether you're told 
 
 ## I'm not anti-digital
 
-I'm a software developer who tinkers with electronics for fun, so I live in this digital world by choice. I buy digital books and plenty of software I only ever "license" in the legal sense, and I stream most of the music I listen to. When I actually buy music these days, it's usually a physical copy. The convenience of digital is real and I'm not giving it up. What I've stopped doing is assuming the word "buy" on a checkout button means what it means at a bookstore. It doesn't, it hasn't for a long time, and the law has been consistent about that even when the marketing hasn't been. Knowing which one you're actually getting, before you pay, is the whole ask.
+I'm a software developer who tinkers with electronics for fun, so I live in this digital world by choice. I buy digital books and plenty of software I only ever "license" in the legal sense, and I stream most of the music I listen to. When I actually buy music these days, it's usually a physical copy. The convenience of digital is real and I'm not giving it up. What I don't do is assume the word "buy" on a checkout button means what it means at a bookstore. It doesn't, it hasn't for a long time, and the law has been consistent about that even when the marketing hasn't been. Knowing which one you're actually getting, before you pay, is the whole ask.
 
 *This is general information and opinion, not legal advice.*
 
