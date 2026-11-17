@@ -1,8 +1,8 @@
 ---
 title: "In Defense of the Repository: Constrained, Specification-Driven, and Tunable"
 description: "Why a narrow, enforced repository is still worth having over coding directly against EF Core's DbContext, with a five-way comparison and real numbers"
-date: 2026-11-14T09:00:00-05:00
-draft: true
+date: 2026-11-17T16:28:17-05:00
+draft: false
 cover:
   image: grok-books-on-shelves.jpg
   alt: "Books in a library"
