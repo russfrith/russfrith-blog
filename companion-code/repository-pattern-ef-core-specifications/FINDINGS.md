@@ -6,19 +6,37 @@ when I sit down to write.
 
 ## Friction points and surprises
 
-- **EF Core silently adds a secondary sort key to collection Includes.** `OpenOrdersForCustomer`
-  only specifies `OrderByDescending(o => o.CreatedAt)`, but the generated SQL for `Include(o =>
-  o.Lines)` comes out as `ORDER BY o.created_at DESC, o.id`. EF appends the primary key itself,
-  because a single-query collection Include needs a stable row order to correctly regroup child
-  rows back onto their parent. I didn't ask for this and it isn't documented anywhere obvious -
-  I only noticed it in the API container's query logs. It happens to make ties less likely, but
-  I don't rely on it: the contract test spaces out `CreatedAt` explicitly (`Task.Delay(5)` between
-  inserts) because two orders created in the same tick land on the *same* `CreatedAt`, and at
-  that point the named-method path (hand-written SQL, no implicit PK tiebreaker unless I add one)
-  and the spec path aren't guaranteed to agree on order. This is a real, if narrow, risk in any
-  "contract" between a hand-written query and an ORM-generated one: ties break differently unless
-  both paths order by the same tiebreaker. I'd call this out in the post as a genuine cost of the
-  tuned-path approach, not just a test artifact.
+- **EF Core silently adds a secondary sort key to collection Includes, but a hand-written
+  `ORDER BY` inside `FromSqlInterpolated` doesn't survive `Include()` at all.**
+  `OpenOrdersForCustomer` only specifies `OrderByDescending(o => o.CreatedAt)`, but the generated
+  SQL for `Include(o => o.Lines)` comes out as `ORDER BY o.created_at DESC, o.id`. EF appends the
+  primary key itself, because a single-query collection Include needs a stable row order to
+  correctly regroup child rows back onto their parent. I didn't ask for this and it isn't
+  documented anywhere obvious - I only noticed it in the API container's query logs.
+
+  The named-method path had a much bigger problem than "no implicit tiebreaker," and I only
+  found it by writing a standalone diagnostic and printing full-precision timestamps directly.
+  `GetOpenOrdersForCustomerAsync`'s original version put `ORDER BY created_at DESC` *inside* the
+  `FromSqlInterpolated` string, then chained `.Include(order => order.Lines)` on the result. That
+  ordering doesn't survive. EF composes the raw SQL as an unordered subquery to perform the join
+  `Include()` needs, so whatever `ORDER BY` is written inside the SQL text is advisory at best -
+  I reproduced rows coming back in a different order than the SQL text asked for, for two orders
+  400ms apart with no tie whatsoever, not just a tie-breaking edge case. The contract test caught
+  this as a flaky, order-reversed failure that didn't reproduce every run, which looked exactly
+  like the CreatedAt tie I'd anticipated, until the diagnostic showed it wasn't a tie at all.
+  (Along the way I also found the test environment's own clock resolution is coarser than I
+  assumed - a 5ms `Task.Delay` between inserts wasn't always enough to produce distinct
+  `CreatedAt` values under Docker Desktop on Windows - which is a real, separate gotcha but not
+  the cause of this specific failure.)
+
+  The actual fix: move the ordering out of the raw SQL string entirely and express it as a real
+  LINQ call *after* `.Include()` - `.OrderByDescending(order => order.CreatedAt).ThenBy(order =>
+  order.Id)`. That guarantees EF adds the ordering to the outermost composed query, not to a
+  subquery that's free to be reordered. The `.ThenBy(order => order.Id)` is still a real
+  tiebreaker on top of that, matching the one the spec path gets implicitly from `Include()`.
+  This is a sharper, more general lesson than "remember to add the same tiebreaker": an `ORDER BY`
+  inside hand-written SQL composed with `Include()` isn't just missing a tiebreaker, it isn't
+  trustworthy as an order *at all*, and the fix is to never put it there in the first place.
 
 - **The "one protected member" exception needed a real shape, not just a lesser evil.** The
   instructions asked for at most one narrow protected member on `EfRepository<T>`, used only for
@@ -95,11 +113,11 @@ helper used by options 1-4).
 
 | | Option 1: raw `DbContext` | Option 2: query objects | Option 3: classic repository | Option 4: spec repository | Option 5: constrained hybrid |
 |---|---|---|---|---|---|
-| Files / lines (the option's own code) | 1 file, 24 lines | 2 files, 32 lines | 3 files, 40 lines | 3 files, 46 lines | 1 file, 20 lines |
-| Shared one-time cost it leans on | none | none | none | Application's `ISpecification<T>` (8 files, 106 lines) | Application (8 files, 106 lines) + Infrastructure (8 files, 167 lines) |
+| Files / lines (the option's own code) | 1 file, 24 lines | 3 files, 41 lines | 4 files, 49 lines | 3 files, 51 lines | 1 file, 20 lines |
+| Shared one-time cost it leans on | none | none | none | Application's `ISpecification<T>` (8 files, 106 lines) | Application (8 files, 106 lines) + Infrastructure (8 files, 179 lines) |
 | Where the query's contract lives | inline LINQ in the handler | the query object's `ExecuteAsync` | the repository interface's method name | the `ISpecification<T>` object | both: `IOrderRepository`'s method **and** `OpenOrdersForCustomer`, pinned equal by a contract test |
 | Returns | aggregates | aggregates | aggregates | aggregates | aggregates |
-| Constrained to aggregate roots? | no - any entity | no | no | no (generic `T : class`) | yes (`T : class, IAggregateRoot`, compiler-enforced) |
+| Constrained to aggregate roots? | no - any entity | yes - via a thin `AggregateQueryObject<TAggregate>` base, compiler-enforced | yes - via a thin `AggregateRepository<TAggregate>` base, compiler-enforced | yes (`T : class, IAggregateRoot`, compiler-enforced) | yes (`T : class, IAggregateRoot`, compiler-enforced) |
 | `SaveChanges`/commit | on `DbContext`, called from the handler | on `DbContext`, called from the handler | on the repository itself | on the repository itself | on a separate `IUnitOfWork` only |
 | Unit-testable without a database | **no** - `DbContext` only does real query translation against a real provider | **no** - same reason, one level removed | **no** - interface helps for *mocking* the handler, but the query itself still needs EF+DB to prove correct | **yes** - `OpenOrdersForCustomer.Criteria` is a plain `Expression<Func<Order,bool>>`, compiled and run against in-memory `Order` instances in `SpecificationTests`, no DB | **yes** - same spec, same test, plus a contract test proving the tuned path matches it |
 | Ease of tuning one query | rewrite the LINQ in place; nothing stops a second use case from copy-pasting a slightly different version | same, but at least isolated to one class | swap the interface's implementation; still ad hoc inside it | swap the generic `Repository<T>`'s evaluator for everyone, or bypass the abstraction entirely - there's no hook for "just this one query" | add exactly one named method with its own tuned implementation, `GetOpenOrdersForCustomerAsync`, while every other query keeps using the generic spec path |
@@ -108,7 +126,7 @@ helper used by options 1-4).
 ## Where the constrained hybrid loses
 
 - **Raw line count for a single, simple query.** Option 1 is 24 lines and one file. Option 5's
-  *own* code is smaller (20 lines), but that's misleading - it's sitting on 106 + 167 = 273 lines
+  *own* code is smaller (20 lines), but that's misleading - it's sitting on 106 + 179 = 285 lines
   of Application/Infrastructure scaffolding that options 1-4 don't need at all for this scenario.
   If this app only ever needed this one query, option 1 wins outright and it isn't close.
 - **Time to add a second aggregate.** Option 1 and 2 scale by just writing more LINQ against the

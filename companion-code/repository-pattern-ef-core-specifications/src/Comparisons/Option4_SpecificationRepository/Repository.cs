@@ -1,10 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using RepositoryPattern.Application.Specifications;
 using RepositoryPattern.Comparisons.Shared;
+using RepositoryPattern.Domain;
 
 namespace RepositoryPattern.Comparisons.Option4_SpecificationRepository;
 
-public class Repository<T>(ComparisonDbContext dbContext) : IRepository<T> where T : class
+public class Repository<T>(ComparisonDbContext dbContext) : IRepository<T> where T : class, IAggregateRoot
 {
     public async Task<List<T>> ListAsync(ISpecification<T> specification, CancellationToken cancellationToken)
     {

@@ -127,14 +127,14 @@ public class SubmitOpenOrderHandler(IOrderRepository orderRepository, IUnitOfWor
 }
 ```
 
-Read those two side by side and the handler bodies are nearly identical. The difference is entirely in what each one is built on top of, not in what it does. That's the whole argument in miniature: options 1 and 5 look almost the same at the call site, and all the honest cost of option 5 is hidden one layer down, in scaffolding that doesn't exist for option 1 at all.
+Read those two side by side and the handler bodies are nearly identical. The difference is entirely in what each one is built on top of, not in what it does. That's the whole argument in a nutshell: options 1 and 5 look almost the same at the call site, and all the honest cost of option 5 is hidden one layer down, in scaffolding that doesn't exist for option 1 at all.
 
 Here's the comparison, measured from the actual code in the repository (file and line counts via `Get-ChildItem | Measure-Object -Line`, excluding generated migrations and the `Shared`/`ComparisonDbContext` helper options 1-4 lean on). All five return aggregates, never an `IQueryable` or a DTO, so that row isn't worth a column of its own:
 
 | | Option 1: raw `DbContext` | Option 2: query objects | Option 3: classic repository | Option 4: spec repository | Option 5: constrained hybrid |
 |---|---|---|---|---|---|
-| Files / lines (the option's own code) | 1 file, 24 lines | 2 files, 32 lines | 3 files, 40 lines | 3 files, 46 lines | 1 file, 20 lines |
-| Constrained to aggregate roots? | no, any entity | no | no | no (generic `T : class`) | yes (`T : class, IAggregateRoot`, compiler-enforced) |
+| Files / lines (the option's own code) | 1 file, 24 lines | 3 files, 41 lines | 4 files, 49 lines | 3 files, 51 lines | 1 file, 20 lines |
+| Constrained to aggregate roots? | no, any entity | yes (via a thin `AggregateQueryObject<TAggregate>` base, compiler-enforced) | yes (via a thin `AggregateRepository<TAggregate>` base, compiler-enforced) | yes (`T : class, IAggregateRoot`, compiler-enforced) | yes (`T : class, IAggregateRoot`, compiler-enforced) |
 | `SaveChanges` / commit | on `DbContext`, called from the handler | on `DbContext`, called from the handler | on the repository itself | on the repository itself | on a separate `IUnitOfWork` only |
 | Unit-testable without a database | no | no | no | yes | yes |
 
@@ -144,7 +144,7 @@ Four more criteria matter here, but their real answers are full sentences, not s
 - Contract lives inline in the LINQ, in the handler.
 - Tuning: rewrite the LINQ in place; nothing stops a second use case from copy-pasting a slightly different version.
 - What breaks first: nothing structural, just discipline.
-- Testability: no, `DbContext` only does real query translation against a real provider.
+- Testability: no, `DbContext` only translates queries against an actual provider.
 
 **Option 2: query objects**
 - Contract lives in the query object's `ExecuteAsync`.
@@ -161,7 +161,7 @@ Four more criteria matter here, but their real answers are full sentences, not s
 **Option 4: spec repository**
 - Contract lives in the `ISpecification<T>` object.
 - Tuning: swap the generic repository's evaluator for everyone, or bypass the abstraction entirely; there's no hook for "just this one query."
-- What breaks first: a generic repository with no governance; nothing stops someone reaching back into `DbContext` "just this once."
+- What breaks first: a new aggregate needs its own hand-written implementation class, since there's no open-generic registration doing that for free; and there's still no hook for tuning just one query.
 - Testability: yes. `OpenOrdersForCustomer.Criteria` is a plain `Expression<Func<Order,bool>>`, compiled and run against in-memory objects, no database involved.
 
 **Option 5: constrained hybrid**
@@ -170,9 +170,9 @@ Four more criteria matter here, but their real answers are full sentences, not s
 - What breaks first: the ceremony itself. A new aggregate needs an interface, maybe a derived class, and a DI registration before anyone can query it.
 - Testability: yes, same spec and the same test as option 4, plus a contract test proving the tuned path returns identical results.
 
-Notice the row I almost led with and then didn't: "files / lines." Option 5's own code is the smallest in the table, 20 lines. That's a misleading way to frame it. It's sitting on top of 273 lines of shared scaffolding that options 1-4 don't need at all for a single query. If this app only ever needed this one query against this one aggregate, option 1 wins outright, and it isn't close. The honest framing is "cheap once the scaffolding exists, expensive the first time," not "fewer lines." The same shape shows up more clearly as a picture than as a table row:
+Notice the row I almost led with and then didn't: "files / lines." Option 5's own code is the smallest in the table, 20 lines. That's a misleading way to frame it. It's sitting on top of 285 lines of shared scaffolding that options 1-4 don't need at all for a single query. If this app only ever needed this one query against this one aggregate, option 1 wins outright, and it isn't close. The honest framing is "cheap once the scaffolding exists, expensive the first time," not "fewer lines." The same shape shows up more clearly as a picture than as a table row:
 
-![Horizontal stacked bar chart of lines of code per option. Option 1, raw DbContext: 24 lines, all its own. Option 2, query objects: 32 lines, all its own. Option 3, classic repository: 40 lines, all its own. Option 4, specification repository: 46 lines of its own plus 106 lines of shared Application scaffolding, 152 total, with no Infrastructure reuse since its repository is a stand-in built for the comparison. Option 5, constrained hybrid: 20 lines of its own plus the same 106 lines of shared Application scaffolding plus 167 lines of shared Infrastructure scaffolding only it reuses, 293 total, since it's the actual production repository.](lines-of-code-comparison.svg)
+![Horizontal stacked bar chart of lines of code per option. Option 1, raw DbContext: 24 lines, all its own. Option 2, query objects: 41 lines, all its own. Option 3, classic repository: 49 lines, all its own. Option 4, specification repository: 51 lines of its own plus 106 lines of shared Application scaffolding, 157 total, with no Infrastructure reuse since its repository is a stand-in built for the comparison. Option 5, constrained hybrid: 20 lines of its own plus the same 106 lines of shared Application scaffolding plus 179 lines of shared Infrastructure scaffolding only it reuses, 305 total, since it's the actual production repository.](lines-of-code-comparison.svg)
 
 ## The key insight, and its caveat
 
@@ -217,7 +217,7 @@ The caveat on the caveat: this test proves the *predicate's logic* is right. It 
 
 ## The design
 
-Four pieces make the constrained version actually constrained, not just named differently from an unconstrained one.
+Four pieces make this version constrained, not just a differently-named copy of an unconstrained one.
 
 **A marker interface restricts what can get a repository at all.** `OrderLine` is part of the `Order` aggregate, but it never gets its own repository, because repository interfaces are generically constrained to `IAggregateRoot`:
 
@@ -462,7 +462,7 @@ public interface IOrderRepository : IRepository<Order>
 
 `OpenOrdersForCustomer`, shown above, is the method's *behavioral definition*. `OrderRepository` implements the method itself with `FromSqlInterpolated` instead of the LINQ the spec would otherwise generate:
 
-<!-- src: companion-code/repository-pattern-ef-core-specifications/src/Infrastructure/Persistence/OrderRepository.cs:1-23 -->
+<!-- src: companion-code/repository-pattern-ef-core-specifications/src/Infrastructure/Persistence/OrderRepository.cs:1-35 -->
 ```csharp
 using Microsoft.EntityFrameworkCore;
 using RepositoryPattern.Application.Abstractions;
@@ -476,22 +476,34 @@ internal sealed class OrderRepository(OrderingDbContext dbContext) : EfRepositor
     // otherwise generate from the spec's Include(). OpenOrdersForCustomer (the
     // spec) is this method's behavioral definition - the contract tests assert
     // the two return identical rows in identical order.
+    //
+    // The ORDER BY deliberately lives here, as a LINQ call after Include(),
+    // not inside the raw SQL string above. An ORDER BY written inside a
+    // FromSqlInterpolated string is not preserved once Include() composes a
+    // join on top of it - EF treats the raw SQL as an unordered subquery for
+    // that join, so the embedded ordering is silently dropped from the final
+    // query. This contract test caught exactly that: rows came back in
+    // whatever order the join happened to produce, not the order the SQL
+    // text asked for. ThenBy(order => order.Id) is still a real tiebreaker on
+    // top of that - the spec path gets one from EF's own Include() handling,
+    // so this needs to match it for two orders tied on CreatedAt.
     public async Task<List<Order>> GetOpenOrdersForCustomerAsync(Guid customerId, CancellationToken cancellationToken)
     {
         var query = ComposeWithRawSql($"""
             SELECT * FROM orders
             WHERE customer_id = {customerId} AND status IN (0, 1)
-            ORDER BY created_at DESC
             """);
 
-        return await query.Include(order => order.Lines).ToListAsync(cancellationToken);
+        return await query.Include(order => order.Lines)
+            .OrderByDescending(order => order.CreatedAt).ThenBy(order => order.Id)
+            .ToListAsync(cancellationToken);
     }
 }
 ```
 
 A tuned method and its spec can drift apart silently if nothing checks them against each other, so a contract test runs both against the same seeded data and asserts identical rows in identical order:
 
-<!-- src: companion-code/repository-pattern-ef-core-specifications/src/Tests/Infrastructure/OrderRepositoryContractTests.cs:19-60 -->
+<!-- src: companion-code/repository-pattern-ef-core-specifications/src/Tests/Infrastructure/OrderRepositoryContractTests.cs:19-63 -->
 ```csharp
     [Fact]
     public async Task Spec_path_and_named_method_path_return_identical_orders_in_identical_order()
@@ -502,9 +514,12 @@ A tuned method and its spec can drift apart silently if nothing checks them agai
 
         var customerId = Guid.NewGuid();
 
-        // Each order is created a few milliseconds apart: both paths order by
-        // CreatedAt with no secondary tiebreaker, so creating them at the same
-        // instant would leave their relative order undefined by either query.
+        // A short delay between inserts, purely so these two orders have
+        // genuinely different CreatedAt values for a meaningful "newest
+        // first" check. Correctness here no longer depends on it: both
+        // paths now order by CreatedAt descending then Id as a real LINQ
+        // call (see OrderRepository.GetOpenOrdersForCustomerAsync), so even
+        // a tied CreatedAt would still agree on order.
         var draft = Order.Create(customerId);
         draft.AddLine("Widget", 1, 9.99m);
         orderRepository.Add(draft);
@@ -537,11 +552,11 @@ A tuned method and its spec can drift apart silently if nothing checks them agai
     }
 ```
 
-The `Task.Delay(5)` calls between inserts aren't incidental; they exist to avoid a tie. Two orders created in the same tick get the same `CreatedAt`, and `OpenOrdersForCustomer` only orders by `CreatedAt`. Nothing in the spec itself says what should happen when two rows tie on that column.
+This test failed on me, intermittently, with the exact symptom you'd expect from a tie: the two orders coming back in reversed order between the spec path and the tuned path. The obvious theory was that `OpenOrdersForCustomer` only orders by `CreatedAt` and says nothing about what should happen when two rows tie on it.
 
-It turns out the two paths answer that question differently, and I only found out by reading the API's query logs. EF Core silently appends the primary key as a secondary sort key whenever a single query includes a collection navigation (`Include(o => o.Lines)` here), because a single query returns one row per child line, and EF needs a stable order across those rows to regroup them back onto the right parent. So the spec path's generated SQL comes out as `ORDER BY created_at DESC, id`, a tiebreaker I never asked for. The hand-written SQL on the tuned path is ordered `ORDER BY created_at DESC` only, with nothing after it, so two tied orders come out in a consistent order from the spec path but in whatever order Postgres happens to return them from the tuned path, no guarantee it's the same order.
+The theory didn't survive contact with a diagnostic. I wrote a throwaway console app that prints full-precision timestamps for both orders and both query results, and the two `CreatedAt` values weren't close, let alone tied: 400 milliseconds apart, no ambiguity about which came first. The tuned path still returned them in the wrong order anyway. The real bug was in `GetOpenOrdersForCustomerAsync` itself: its original version wrote `ORDER BY created_at DESC` *inside* the `FromSqlInterpolated` string, then chained `.Include(order => order.Lines)` onto the result, and that ordering doesn't survive. EF composes the raw SQL as an unordered subquery to perform the join `Include()` needs, so whatever order the SQL text asks for is advisory at best once a collection include is layered on top of it.
 
-I'd call this a genuine cost of the tuned-path approach, not a test artifact. Any "contract" between a hand-written query and an ORM-generated one needs both sides to order by the same tiebreaker, explicitly, or ties will break differently, and the contract test will be lying about what it proves on days it happens to pass.
+The fix is already in the code above: the `ORDER BY` moved out of the SQL string entirely and became a real LINQ call after `.Include()`, `.OrderByDescending(order => order.CreatedAt).ThenBy(order => order.Id)`, which guarantees EF adds the ordering to the outermost composed query instead of a subquery that's free to be reordered. The `ThenBy(order => order.Id)` earns its place too: the spec path still gets an implicit secondary sort on the primary key from EF's own `Include()` handling, so the tuned path needs the same tiebreaker to agree with it on the days `CreatedAt` really does tie. This is a sharper cost than I expected going in. An `ORDER BY` written inside hand-written SQL that's later composed with `Include()` isn't just missing a tiebreaker, it isn't a trustworthy order at all, and the only real fix is to never rely on it there in the first place.
 
 **The measured numbers.** Seeding, via a standalone Npgsql binary `COPY` with no EF Core in the hot path: 50,000 orders and roughly 100,000 order lines in 0.9 seconds, inside the `migrate-and-seed` container, on this machine. Query timing, for the busiest seeded customer (30 open orders out of 50,000 total orders across 2,000 customers), 50 iterations each, first call discarded as a warm-up, measured from a throwaway console app against the same running Postgres container, not part of the published code:
 
@@ -550,11 +565,11 @@ I'd call this a genuine cost of the tuned-path approach, not a test artifact. An
 | Spec path (`ListAsync(new OpenOrdersForCustomer(id))`, EF-translated LINQ + `Include`) | 2.87 ms |
 | Tuned path (`GetOpenOrdersForCustomerAsync(id)`, `FromSqlInterpolated` + `Include`) | 1.82 ms |
 
-About a 37% reduction, on this query, on this data shape, on one machine. Both paths still run the same `Include`-driven join for `Lines`; the gap comes from EF's LINQ translation and query-plan overhead on the filter and sort, not from avoiding the join. I don't want to oversell this. It's a real but modest number for a `WHERE` plus `ORDER BY` over an indexed column, and the win from having a named, tunable seam isn't usually going to be dramatic on a query this simple. It should matter more as a query gets more complex than this one (aggregations, window functions, joins EF Core can't express cleanly), which this post doesn't need to demonstrate, because the point of the comparison is the seam existing at all, not this specific number.
+About a 37% reduction, on this query, on this data shape, on one machine. Both paths still run the same `Include`-driven join for `Lines`; the gap comes from EF's LINQ translation and query-plan overhead on the filter and sort, not from avoiding the join. I don't want to oversell this. It's a modest number for a `WHERE` plus `ORDER BY` over an indexed column, and the win from having a named, tunable seam isn't usually going to be dramatic on a query this simple. It should matter more as a query gets more complex than this one (aggregations, window functions, joins EF Core can't express cleanly), which this post doesn't need to demonstrate, because the point of the comparison is the seam existing at all, not this specific number.
 
 ## Enforcing it
 
-A design like this is only as real as what stops someone from quietly reaching back into `DbContext` the next time a deadline is tight. Two kinds of rule do that here, for two different kinds of violation.
+A design like this is only as good as what stops someone from quietly reaching back into `DbContext` the next time a deadline is tight. Two kinds of rule do that here, for two different kinds of violation.
 
 **Dependency direction, with ArchUnitNET.** Domain depends on nothing else in the solution; Application and Api don't depend on EF Core; nothing outside Infrastructure depends on Infrastructure's persistence internals:
 
@@ -581,7 +596,7 @@ A design like this is only as real as what stops someone from quietly reaching b
 
 `Comparisons` is deliberately exempt from the EF Core rule, since options 1-4 need to reference it directly to exist at all; that exemption is documented right next to the rule it would otherwise trip. A real app wouldn't need this exemption at all: it ships one implementation, not four kept around for comparison, so nothing outside `Infrastructure` would ever need direct EF Core access.
 
-The rule that always passed is the real lesson from this project. The first version of `Application_does_not_depend_on_entity_framework_core` reported zero violations from the day I wrote it, and I nearly took that as a sign the rule worked. It didn't; `Microsoft.EntityFrameworkCore.DbContext` wasn't a real node in ArchUnitNET's loaded model yet, just an unresolved external reference nothing could match a namespace selector against. The fix was loading EF Core's own assembly into the architecture explicitly:
+The rule that always passed is the lesson worth remembering from this project. The first version of `Application_does_not_depend_on_entity_framework_core` reported zero violations from the day I wrote it, and I nearly took that as a sign the rule worked. It didn't; `Microsoft.EntityFrameworkCore.DbContext` wasn't a real node in ArchUnitNET's loaded model yet, just an unresolved external reference nothing could match a namespace selector against. The fix was loading EF Core's own assembly into the architecture explicitly:
 
 <!-- src: companion-code/repository-pattern-ef-core-specifications/src/ArchitectureTests/Architectures.cs:7-24 -->
 ```csharp
@@ -647,15 +662,15 @@ Two short notes worth knowing before you copy either tool into your own project:
 
 ## Where this loses, and when to skip it
 
-The `ScenarioEquivalenceTests` in the companion code prove all five options are behaviorally identical for this one scenario. Nobody on the list above is actually wrong about correctness. The real differences are all about longer-term properties: testability without a database, a compiler-enforced aggregate boundary, a named seam for tuning one query. Those properties don't come as a single package, though, so which of the three constrained shapes is worth building depends on which ones you actually need enforced.
+The `ScenarioEquivalenceTests` in the companion code prove all five options are behaviorally identical for this one scenario. Nobody on the list above is actually wrong about correctness. The differences are all about longer-term properties: testability without a database, a compiler-enforced aggregate boundary, a named seam for tuning one query. Those properties don't come as a single package, though, so which of the three constrained shapes is worth building depends on which ones you actually need enforced.
 
-One constraint is worth keeping no matter which of these you build: `IAggregateRoot`. It's a marker interface and a generic constraint, nothing more, and it's what stops a query object, a classic repository, or a specification repository alike from quietly growing a method that takes `OrderLine` instead of `Order`, reaching past the aggregate root the same way a bare `DbSet<OrderLine>` would. Only option 1, with no repository interface to attach it to in the first place, can't have it. Every other shape in this list can, and should.
+One constraint is worth keeping no matter which of these you build: `IAggregateRoot`. It's a marker interface and a generic constraint, nothing more. For a generic repository (options 4 and 5), it lives directly on the interface's own type parameter. For a non-generic shape (a query object or a classic repository, options 2 and 3), the interface has no type parameter to constrain, but the implementation can still derive from a thin, otherwise-empty base class, `AggregateQueryObject<TAggregate>` or `AggregateRepository<TAggregate>`, that exists only to carry it. Either way, it's what stops a query object or a repository method from quietly being written against `OrderLine` instead of `Order`, reaching past the aggregate root the same way a bare `DbSet<OrderLine>` would. Only option 1, with no class or interface of its own to attach anything to, can't have it. Every other shape in this list can, and should.
 
 **Skip the seam entirely when:**
 - You have one aggregate, a handful of queries, and no reason to think that changes. Option 1 is 24 lines and nothing else.
 - Nobody on the team is asking for unit tests that run without a database. If integration tests against a real, fast-to-spin-up database are an accepted cost already, specification-level testability doesn't move the needle.
 
-Query objects (option 2) and a classic named-method repository (option 3) sit in between, and they're legitimate stopping points of their own, not just steps toward something better. A query object gets you a named, swappable seam without `ISpecification<T>` at all. Reach for it when you want queries extracted into their own classes, one per use case, but don't care about testing the query logic without a database. A classic repository adds an interface worth attaching `IAggregateRoot` to and worth mocking at the handler level, without the specification machinery. Reach for it when you want that governance and that kind of handler-level test, but each query is simple enough that hand-writing its one method is less ceremony than building a spec for it.
+Query objects (option 2) and a classic named-method repository (option 3) sit in between, and they're legitimate stopping points of their own, not just steps toward something better. A query object gets you a named, swappable seam without `ISpecification<T>` at all. Reach for it when you want queries extracted into their own classes, one per use case, but don't care about testing the query logic without a database. A classic repository adds an interface worth mocking at the handler level, plus a thin `AggregateRepository<TAggregate>` base to carry the `IAggregateRoot` constraint, without the specification machinery. Reach for it when you want that governance and that kind of handler-level test, but each query is simple enough that hand-writing its one method is less ceremony than building a spec for it.
 
 **A plain specification repository (option 4) is probably enough when:**
 - You're fine without every new aggregate automatically getting a working repository implementation. Because `EfRepository<T>` is registered once as an open generic, any type that implements `IAggregateRoot` gets a complete, working `IRepository<T>` the instant it's declared, no new class, no extra registration. A plain specification repository, built without that open-generic registration, doesn't give you that: each aggregate still needs its own small class wiring up the interface, even though it leans on the same `ISpecification<T>` and evaluator underneath.

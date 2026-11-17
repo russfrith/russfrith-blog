@@ -25,9 +25,12 @@ public class OrderRepositoryContractTests(DatabaseFixture fixture) : IAsyncLifet
 
         var customerId = Guid.NewGuid();
 
-        // Each order is created a few milliseconds apart: both paths order by
-        // CreatedAt with no secondary tiebreaker, so creating them at the same
-        // instant would leave their relative order undefined by either query.
+        // A short delay between inserts, purely so these two orders have
+        // genuinely different CreatedAt values for a meaningful "newest
+        // first" check. Correctness here no longer depends on it: both
+        // paths now order by CreatedAt descending then Id as a real LINQ
+        // call (see OrderRepository.GetOpenOrdersForCustomerAsync), so even
+        // a tied CreatedAt would still agree on order.
         var draft = Order.Create(customerId);
         draft.AddLine("Widget", 1, 9.99m);
         orderRepository.Add(draft);
