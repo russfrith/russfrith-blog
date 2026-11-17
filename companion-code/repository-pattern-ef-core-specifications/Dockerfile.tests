@@ -1,0 +1,20 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+COPY RepositoryPatternEfCoreSpecifications.slnx .
+COPY src/Domain/RepositoryPattern.Domain.csproj src/Domain/
+COPY src/Application/RepositoryPattern.Application.csproj src/Application/
+COPY src/Infrastructure/RepositoryPattern.Infrastructure.csproj src/Infrastructure/
+COPY src/Api/RepositoryPattern.Api.csproj src/Api/
+COPY src/Comparisons/RepositoryPattern.Comparisons.csproj src/Comparisons/
+COPY src/Seeder/RepositoryPattern.Seeder.csproj src/Seeder/
+COPY src/Tests/RepositoryPattern.Tests.csproj src/Tests/
+COPY src/ArchitectureTests/RepositoryPattern.ArchitectureTests.csproj src/ArchitectureTests/
+RUN dotnet restore RepositoryPatternEfCoreSpecifications.slnx
+
+RUN apt-get update && apt-get install -y --no-install-recommends libgssapi-krb5-2 && rm -rf /var/lib/apt/lists/*
+
+COPY src/ src/
+RUN dotnet build RepositoryPatternEfCoreSpecifications.slnx -c Release --no-restore
+
+ENTRYPOINT ["sh", "-c", "dotnet test src/Tests/RepositoryPattern.Tests.csproj -c Release --no-build && dotnet test src/ArchitectureTests/RepositoryPattern.ArchitectureTests.csproj -c Release --no-build"]

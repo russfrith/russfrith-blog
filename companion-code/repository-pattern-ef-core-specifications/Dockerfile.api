@@ -1,0 +1,23 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+COPY RepositoryPatternEfCoreSpecifications.slnx .
+COPY src/Domain/RepositoryPattern.Domain.csproj src/Domain/
+COPY src/Application/RepositoryPattern.Application.csproj src/Application/
+COPY src/Infrastructure/RepositoryPattern.Infrastructure.csproj src/Infrastructure/
+COPY src/Api/RepositoryPattern.Api.csproj src/Api/
+COPY src/Comparisons/RepositoryPattern.Comparisons.csproj src/Comparisons/
+COPY src/Seeder/RepositoryPattern.Seeder.csproj src/Seeder/
+COPY src/Tests/RepositoryPattern.Tests.csproj src/Tests/
+COPY src/ArchitectureTests/RepositoryPattern.ArchitectureTests.csproj src/ArchitectureTests/
+RUN dotnet restore src/Api/RepositoryPattern.Api.csproj
+
+COPY src/ src/
+RUN dotnet publish src/Api/RepositoryPattern.Api.csproj -c Release -o /app --no-restore
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+RUN apt-get update && apt-get install -y --no-install-recommends libgssapi-krb5-2 && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY --from=build /app .
+EXPOSE 8080
+ENTRYPOINT ["dotnet", "RepositoryPattern.Api.dll"]

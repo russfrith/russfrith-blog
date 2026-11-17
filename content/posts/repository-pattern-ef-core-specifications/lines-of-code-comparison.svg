@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 470" width="820" height="470" role="img" aria-labelledby="loc-chart-title loc-chart-desc" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif">
+  <title id="loc-chart-title">Lines of code: five ways to do the same scenario</title>
+  <desc id="loc-chart-desc">Horizontal stacked bar chart. Option 1, raw DbContext: 24 lines, all its own code. Option 2, query objects: 32 lines, all its own. Option 3, classic repository: 40 lines, all its own. Option 4, specification repository: 46 lines of its own code plus 106 lines of shared Application scaffolding, 152 total; option 4 does not reuse any Infrastructure scaffolding, since its repository is a stand-in written for this comparison. Option 5, constrained hybrid: 20 lines of its own code, plus the same 106 lines of shared Application scaffolding, plus 167 lines of shared Infrastructure scaffolding only this option reuses, 293 total; option 5 is the actual production repository. Measured via Get-ChildItem piped to Measure-Object -Line, excluding generated migrations.</desc>
+
+  <rect x="0" y="0" width="820" height="470" rx="8" fill="#fcfcfb" />
+
+  <text x="24" y="34" font-size="20" font-weight="700" fill="#0b0b0b">Lines of code: five ways to do the same scenario</text>
+  <text x="24" y="56" font-size="13" fill="#52514e">Each option's own code vs. the shared Application and Infrastructure scaffolding it reuses, measured from the repo.</text>
+
+  <!-- baseline -->
+  <line x1="300" y1="70" x2="300" y2="366" stroke="#c3c2b7" stroke-width="2" />
+
+  <!-- Row 1: Option 1 - 24 lines, all own -->
+  <text x="290" y="102" text-anchor="end" font-size="13" fill="#52514e">Option 1: raw DbContext</text>
+  <rect x="300" y="80" width="38" height="32" rx="4" fill="#255691" />
+  <text x="346" y="101" font-size="13" font-weight="700" fill="#0b0b0b">24</text>
+
+  <!-- Row 2: Option 2 - 32 lines, all own -->
+  <text x="290" y="164" text-anchor="end" font-size="13" fill="#52514e">Option 2: query objects</text>
+  <rect x="300" y="142" width="50" height="32" rx="4" fill="#255691" />
+  <text x="358" y="163" font-size="13" font-weight="700" fill="#0b0b0b">32</text>
+
+  <!-- Row 3: Option 3 - 40 lines, all own -->
+  <text x="290" y="226" text-anchor="end" font-size="13" fill="#52514e">Option 3: classic repository</text>
+  <rect x="300" y="204" width="63" height="32" rx="4" fill="#255691" />
+  <text x="371" y="225" font-size="13" font-weight="700" fill="#0b0b0b">40</text>
+
+  <!-- Row 4: Option 4 - 46 own + 106 Application shared = 152 (no Infrastructure reuse) -->
+  <text x="290" y="288" text-anchor="end" font-size="13" fill="#52514e">Option 4: spec repository</text>
+  <rect x="300" y="266" width="72" height="32" rx="4" fill="#255691" />
+  <text x="336" y="286" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">46</text>
+  <rect x="374" y="266" width="166" height="32" rx="4" fill="#36a488" />
+  <text x="457" y="286" text-anchor="middle" font-size="11" font-weight="700" fill="#0b0b0b">106</text>
+  <text x="548" y="287" font-size="13" font-weight="700" fill="#0b0b0b">152</text>
+
+  <!-- Row 5: Option 5 - 20 own + the same 106 Application shared + 167 Infrastructure shared = 293 -->
+  <text x="290" y="350" text-anchor="end" font-size="13" fill="#52514e">Option 5: constrained hybrid</text>
+  <rect x="300" y="328" width="31" height="32" rx="4" fill="#255691" />
+  <text x="315" y="348" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">20</text>
+  <rect x="333" y="328" width="166" height="32" rx="4" fill="#36a488" />
+  <text x="416" y="348" text-anchor="middle" font-size="11" font-weight="700" fill="#0b0b0b">106</text>
+  <rect x="501" y="328" width="262" height="32" rx="4" fill="#00866a" />
+  <text x="632" y="348" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">167</text>
+  <text x="771" y="349" font-size="13" font-weight="700" fill="#0b0b0b">293</text>
+
+  <!-- legend -->
+  <rect x="300" y="392" width="14" height="14" rx="3" fill="#255691" />
+  <text x="322" y="403" font-size="13" fill="#52514e">The option's own code</text>
+
+  <rect x="300" y="414" width="14" height="14" rx="3" fill="#36a488" />
+  <text x="322" y="425" font-size="13" fill="#52514e">Application scaffolding (reused by options 4 and 5)</text>
+
+  <rect x="300" y="436" width="14" height="14" rx="3" fill="#00866a" />
+  <text x="322" y="447" font-size="13" fill="#52514e">Infrastructure scaffolding (only reused by option 5)</text>
+</svg>
