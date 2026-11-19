@@ -48,6 +48,7 @@ categories: ["category"]
 
 - Straight quotes/apostrophes, not curly/smart quotes.
 - Don't use em-dashes. Use commas, periods, parentheses, colons, or semicolons instead, whichever reads most naturally in context. I use em-dashes myself only rarely, for a deliberate dramatic pause (like a joke's beat), not as a general-purpose connector.
+- Don't overuse colons as a "setup: payoff" rhetorical crutch (a short fragment, then a colon, then the sentence that actually says the thing), especially not more than once in the same paragraph or in consecutive paragraphs. Reserve colons for introducing an actual list, or a direct, specific elaboration where the left side is a complete clause. When in doubt, use a period and start a new sentence instead.
 - Don't use the phrase "a lot" (or "a lot of"). Use a more precise word or phrase instead ("many," "much," "significant," "considerable," a specific quantity, etc.), whichever fits the sentence.
 - Prefer tight, direct prose. Merge short one-sentence paragraphs where it improves flow rather than leaving them fragmented.
 - Use bullet lists for actual lists rather than list-like prose paragraphs.
