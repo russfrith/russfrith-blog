@@ -1,0 +1,6 @@
+@Shop.VerticalSlice_HostAddress = http://localhost:5261
+
+GET {{Shop.VerticalSlice_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

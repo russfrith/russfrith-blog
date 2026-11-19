@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/Onion/">
+    <Project Path="Onion/Shop.Onion.Api/Shop.Onion.Api.csproj" />
+    <Project Path="Onion/Shop.Onion.Application/Shop.Onion.Application.csproj" />
+    <Project Path="Onion/Shop.Onion.Domain/Shop.Onion.Domain.csproj" />
+    <Project Path="Onion/Shop.Onion.Infrastructure/Shop.Onion.Infrastructure.csproj" />
+    <Project Path="Onion/Shop.Onion.Tests/Shop.Onion.Tests.csproj" />
+  </Folder>
+  <Folder Name="/VerticalSlice/">
+    <Project Path="VerticalSlice/Shop.VerticalSlice.Tests/Shop.VerticalSlice.Tests.csproj" />
+    <Project Path="VerticalSlice/Shop.VerticalSlice/Shop.VerticalSlice.csproj" />
+  </Folder>
+</Solution>
