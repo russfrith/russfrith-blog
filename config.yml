@@ -17,7 +17,7 @@ outputs:
 
 params:
   label:
-    icon: "/images/blog-logo.svg"
+    icon: "/images/logo/logo-color-dark.svg"
     iconHeight: 35
 
   homeInfoParams:

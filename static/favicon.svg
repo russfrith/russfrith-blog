@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="34 -14 150 150" width="150" height="150" role="img">
+  <title>Russ Frith logo</title>
+  <defs>
+  <mask id="cut" maskUnits="userSpaceOnUse" x="-50" y="-50" width="400" height="400">
+    <rect x="-50" y="-50" width="400" height="400" fill="#fff"/>
+    <g transform="translate(14,-4)"><path d="M164 16 C148 20 128 42 116 76 L106 96 L120 90 C148 80 162 52 164 16 Z" fill="#000" stroke="#000" stroke-width="5.0" stroke-linejoin="round"/></g>
+  </mask>
+  <mask id="cutq" maskUnits="userSpaceOnUse" x="-50" y="-50" width="400" height="400">
+    <rect x="-50" y="-50" width="400" height="400" fill="#fff"/>
+    <g transform="translate(14,-4)"><path d="M162 20 L108 94 M152 36 L138 42 M145 50 L131 56 M138 64 L125 70 M131 78 L120 82" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round"/></g>
+  </mask>
+  <mask id="tab" maskUnits="userSpaceOnUse" x="-50" y="-50" width="400" height="400">
+    <rect x="-50" y="-50" width="400" height="400" fill="#fff"/><path d="M60 58 L76 72 L60 86 M86 90 H108" fill="none" stroke="#000" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  </mask>
+  </defs>
+  
+  <g mask="url(#cut)"><rect x="40" y="36" width="96" height="74" rx="14" fill="#3b8fd9" mask="url(#tab)"/></g>
+  <g transform="translate(14,-4)" mask="url(#cutq)"><path d="M164 16 C148 20 128 42 116 76 L106 96 L120 90 C148 80 162 52 164 16 Z" fill="#7cc0f5"/></g>
+</svg>

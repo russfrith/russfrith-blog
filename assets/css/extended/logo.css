@@ -1,0 +1,21 @@
+.logo a img.logo-dark {
+    display: none;
+}
+
+[data-theme="dark"] .logo a img.logo-light {
+    display: none;
+}
+
+[data-theme="dark"] .logo a img.logo-dark {
+    display: inline;
+}
+
+@media (prefers-color-scheme: dark) {
+    [data-theme="auto"] .logo a img.logo-light {
+        display: none;
+    }
+
+    [data-theme="auto"] .logo a img.logo-dark {
+        display: inline;
+    }
+}
