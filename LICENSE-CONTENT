@@ -22,6 +22,10 @@ does NOT apply to:
   - Theme-derived template files (see README.md for details).
   - Source code under companion-code/, which is separately licensed under
     the MIT License (see companion-code/LICENSE).
+  - The logo and other brand marks (static/images/logo/, favicons, and
+    the "Russell 'Russ' Frith" name as a brand). See BRANDING.md — these
+    are not licensed under CC BY-NC 4.0 or any other open license in
+    this repository.
 
 =======================================================================
 
