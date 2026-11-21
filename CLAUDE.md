@@ -66,6 +66,16 @@ Some posts reference runnable code — benchmarks, demos, sample projects — th
 - C# style rules for companion code (e.g. when to use `var` vs. an explicit type) live in `companion-code/CONVENTIONS.md`, not here — check it before writing or editing companion code.
 - When a post references companion code, prefer showing short, relevant snippets directly in the post itself rather than assuming readers will go clone the folder to understand the point being made — the companion code is for readers who want to reproduce or extend it, not a substitute for explaining things in the post.
 
+## Cross-session editorial handoff notes
+
+I sometimes move between machines mid-post. When there's open editorial discussion (unresolved questions, drafted-but-not-yet-committed text, pending decisions) that needs to survive the switch, write it to `companion-code/<post-slug>/NOTES.md` — even for a post with no companion code at all, just to keep the convention in one consistent place across posts.
+
+- This is a scratch/discussion file, not a pre-publish checklist. If a post needs the latter, keep it in a separate `TODO.md` and don't duplicate it here.
+- Don't duplicate content that already lives in a dedicated file for that purpose (e.g. this post's own `PREDICTIONS.md`/`REVIEW.md`/`CITATIONS.md`/`VERSIONS.md`) — point at it instead.
+- Prune resolved items rather than letting the file grow into a transcript. Keep a short "Resolved, for context" section for closed items, but don't let that turn into a changelog either — `git log` is the actual record.
+- Anything that exists only in a session's own scratchpad (never committed, e.g. a drafted file proposed for review) will NOT survive to a different machine. Copy its actual content into `NOTES.md` rather than just pointing at a path that won't exist in the next session.
+- Commit with `docs(posts): add cross-session editorial notes for <slug> post` (or `docs(posts): update cross-session editorial notes for <slug> post` for later revisions).
+
 ## What not to touch without being asked
 
 - Don't modify files under `layouts/`, `static/`, `assets/`, or theme/config files (`hugo.toml` / `config.yaml`) unless explicitly asked.
@@ -75,6 +85,7 @@ Some posts reference runnable code — benchmarks, demos, sample projects — th
 
 - Use [Conventional Commits](https://www.conventionalcommits.org/).
 - Blog content changes (new posts, edits, revisions) use `feat(posts): ...` — treat published/updated content as the "feature," since that's the product of this repo.
+- Non-content documentation about a post (cross-session handoff notes, other working notes that aren't the article itself) uses `docs(posts): ...` — see "Cross-session editorial handoff notes" above.
 - Keep commit subject lines focused on the content change itself, not implementation details like flipping `draft: false`.
 - Prefer single-line commit messages unless a change genuinely needs explanation that isn't obvious from the diff.
 - One commit per post/topic when multiple posts change in the same session — don't bundle unrelated posts into one commit.
