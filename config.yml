@@ -21,8 +21,8 @@ params:
     iconHeight: 35
 
   homeInfoParams:
-    Title: "Welcome to My Blog"
-    Content: I am a seasoned software developer. I share what I have learned, alongside the mistakes that I have made and continue to make so that you don’t have to. However, if you code, you too will make mistakes and learn along with me.
+    Title: "Hi, I'm Russ"
+    Content: I'm a software developer with enough years in to have made most of the classic mistakes, and some that aren't in the books. I write about what I've learned and the ones I keep making, so you can skip a few of them. If you code, you'll make your own anyway, and you're welcome to learn alongside me.
 
   socialIcons:
     - name: email
