@@ -1,8 +1,8 @@
 ---
 title: "Thankful for C#: It Doesn't Make You Pick a Paradigm"
 description: "A Thanksgiving-week thank-you to C#: seven paradigms in one strongly typed language, and the small features that make each one pleasant."
-date: 2026-11-23T22:02:34-05:00
-draft: true
+date: 2026-11-24T12:41:21-05:00
+draft: false
 cover:
   image: ulleo-corn-3663086_1920.jpg
   alt: "Colorful Indian corn cobs in a rustic autumn harvest display."
@@ -23,7 +23,7 @@ So no single item in this post is unique to C#, and a few languages are arguably
 
 This post is organized by paradigm, not by release, because the paradigms change slowly and the releases do not. Each section has a larger idea that has been around for a while, and then a few small features that made that style nicer to write. The small ones are the real Thanksgiving list. They do not headline conference keynotes, and none of them has a logo. They just remove a few lines that I would otherwise have to write, read, or get slightly wrong.
 
-I should say which of these I actually use. I regularly use nullable reference types, guard clauses of some kind, null-conditional assignment, records, LINQ, and async streams and channels. .NET 11 only became generally available on November 10, so I have not put many of its features into production yet. For those, and for anything else here that I have not used regularly, I am going on the documentation and the test projects I ran.
+Let me point out that I don't yet use all of these features. I regularly use nullable reference types, guard clauses of some kind, null-conditional assignment, records, LINQ, and async streams and channels. .NET 11 only became generally available on November 10, so I have not put many of its features into production yet. For those, and for anything else here that I don't use regularly, I am going by the documentation and the test projects I created.
 
 A note on versions. .NET 11 reached general availability on November 10, and nothing in this post is a preview feature.[[2](#references)] Only .NET 10 and .NET 11 are currently supported by Microsoft, so the "available since" versions tell you when something arrived, not what you should be running.[[2](#references)] The table near the end collects them all. I compiled and ran the C# snippets in a Linux container built from the official .NET 11 SDK image (`mcr.microsoft.com/dotnet/sdk:11.0`, SDK 11.0.100).
 
@@ -45,7 +45,7 @@ string name = null;                        // warning CS8600: Converting null li
 Those two warnings are what the compiler printed for this snippet. They are warnings, not errors, unless you configure otherwise, so a build that treats warnings as errors is where the feature earns its keep. The compiler checks the code you wrote. It cannot check what a caller from older code, reflection, or a project with the feature turned off decides to pass you, and that is the gap the next small feature fills. The one after it makes the null handling you do write shorter.
 
 ### Guard Clauses That Write Themselves
-Many constructors and public methods open with the same ritual. Check the argument, throw the right exception, remember to pass the parameter name as a string. Here is the long way:
+Many constructors and public methods open with the same ritual. Check the argument, throw the right exception, remember to pass the parameter name as a string. I follow the ritual because I want to fail as soon as possible when inputs aren't correct. Here is the long way:
 
 ```csharp
 public sealed class Order
@@ -113,7 +113,7 @@ That produces `ObjectDisposedException: Cannot access a disposed object. Object 
 The versions are spread out, which is the only annoying part. `ArgumentNullException.ThrowIfNull` arrived in .NET 6. `ArgumentException.ThrowIfNullOrEmpty` and `ObjectDisposedException.ThrowIf` came in .NET 7. `ThrowIfNullOrWhiteSpace` and the `ArgumentOutOfRangeException` family (`ThrowIfNegativeOrZero`, `ThrowIfGreaterThan`, and friends) came in .NET 8. I confirmed those minimums by compiling each call against `net6.0` through `net11.0` in the .NET 11 SDK container. Since only .NET 10 and .NET 11 are supported now, you have all of them on any supported runtime, and the version list mostly matters if you maintain a library that still targets something older.
 
 {{< aside >}}
-If these helpers look like what guard clause libraries have offered for years, that is not an accident. The dotnet/runtime proposal behind them (issue #48573) observed that many libraries, including the framework's own, already wrote private throw helpers, and suggested building the pattern into the exception types themselves.[[4](#references)] Its stated motivation was code size and the cost of just-in-time (JIT) compilation. The proposal started as `ArgumentNullException.Throw` and was later revised to the `ThrowIfNull` shape with `[CallerArgumentExpression]` that shipped. If you want richer or fluent checks than the framework provides, community libraries such as [Ardalis.GuardClauses](https://github.com/ardalis/GuardClauses) and [Throw](https://github.com/amantinband/throw) still fill that role. Neither is where the framework helpers came from. Throw's repository, for one, was created in 2022, after `ThrowIfNull` had shipped in .NET 6.
+If these helpers look like what guard clause libraries have offered for years, that is not a coincidence. The dotnet/runtime proposal behind them (issue #48573) observed that many libraries, including the framework's own, already wrote private throw helpers, and suggested building the pattern into the exception types themselves.[[4](#references)] Its stated motivation was code size and the cost of just-in-time (JIT) compilation. The proposal started as `ArgumentNullException.Throw` and was later revised to the `ThrowIfNull` shape with `[CallerArgumentExpression]` that shipped. If you want richer or fluent checks than the framework provides, community libraries such as [Ardalis.GuardClauses](https://github.com/ardalis/GuardClauses) and [Throw](https://github.com/amantinband/throw) still fill that role. Neither is where the framework helpers came from. Throw's repository, for one, was created in 2022, after `ThrowIfNull` had shipped in .NET 6.
 {{< /aside >}}
 
 One caution. These are for programmer errors, meaning arguments that should never be wrong if the caller is behaving. They throw exceptions, so they are not a substitute for validating user input, where a bad value is expected and deserves a friendly response rather than a stack trace.
@@ -189,7 +189,7 @@ var (amount, currency) = raised;
 The positional properties of a `record` are immutable, so `with` makes a copy instead of changing the original. A `record` is a reference type, and a `record struct` (added in C# 10) is the value type version.[[6](#references)] If you want to see value objects modeled seriously with EF Core, the complex types section of [Upgrading to EF Core 11](/posts/upgrading-to-ef-core-11/) covers it.
 
 ### Extension Members
-The name is not an accident, so start with what you already know. Extension methods, added in C# 3, let you add behavior to a type you do not own by writing a static method whose first parameter is marked `this`. They are how LINQ's `Where` and `Select` appear on every sequence. C# 14 adds extension members, a new `extension` block that can declare more than methods. It can also declare properties, indexers, and operators, and members that look like statics on the type.[[7](#references)] Here are the two side by side:
+The name is intentional, so start with what you already know. Extension methods, added in C# 3, let you add behavior to a type you do not own by writing a static method whose first parameter is marked `this`. They are how LINQ's `Where` and `Select` appear on every sequence. C# 14 adds extension members, a new `extension` block that can declare more than methods. It can also declare properties, indexers, and operators, and members that look like statics on the type.[[7](#references)] Here are the two side by side:
 
 ```csharp
 // The extension method you already know
@@ -389,7 +389,7 @@ foreach (var (status, total) in orders.AggregateBy(o => o.Status, 0m, (sum, o) =
 Both return a sequence of key and value pairs, which is why the deconstruction works. If you want a dictionary, call `ToDictionary()` on the result.
 
 ### Is It Actually Faster?
-It is not just syntax, so it is worth measuring. This was a BenchmarkDotNet run (version 0.15.8, short-run job) inside the .NET 11 SDK container on Linux, using the .NET 11.0.0 runtime on a laptop with an Intel Core i7-13700H (20 logical cores). BenchmarkDotNet did not yet recognize `net11.0` for its normal separate-process runs, so I used its in-process toolchain. The benchmark counted a `List` of order records in memory at three sizes and two key shapes. One shape is five distinct keys, like an order status. The other has one key per ten items, like a customer ID. Each cell shows time and memory allocated (KB and MB are decimal).
+It is not just syntax, so let's check its performance. We're concerned about both speed and memory usage. This was a BenchmarkDotNet run (version 0.15.8, short-run job) inside the .NET 11 SDK container on Linux, using the .NET 11.0.0 runtime on a laptop with an Intel Core i7-13700H (20 logical cores). BenchmarkDotNet did not yet recognize `net11.0` for its normal separate-process runs, so I used its in-process toolchain. The benchmark counted a `List` of order records in memory at three sizes and two key shapes. One shape is five distinct keys, like an order status. The other has one key per ten items, like a customer ID. Each cell shows time and memory allocated (KB and MB are decimal).
 
 Items | Distinct keys | `GroupBy` + `Count` | `CountBy` | Hand-written dictionary loop
 ------|---------------|---------------------|-----------|-----------------------------
@@ -451,7 +451,7 @@ Func<OrderSummary, bool> compiled = big.Compile();   // or turn it into a delega
 
 That is how a library can read your `Where` clause and do something other than run it, such as translate it to SQL. EF Core works this way, which is why a `Where` in an EF query can become a `WHERE` in the database. If you want EF Core in practice, [Upgrading to EF Core 11](/posts/upgrading-to-ef-core-11/) is the place to start.
 
-One interaction with a later section is worth knowing now. Native AOT, which compiles a program to native machine code when you publish it instead of while it runs, gets its own section below. Its documentation says that `System.Linq.Expressions` always uses its interpreted form in a Native AOT app, which is slower than runtime-generated compiled code.[[12](#references)] Expression trees still work there. They just run in a different way.
+One interaction with a later section is worth discussing now. Native AOT, which compiles a program to native machine code when you publish it instead of while it runs, gets its own section below. Its documentation says that `System.Linq.Expressions` always uses its interpreted form in a Native AOT app, which is slower than runtime-generated compiled code.[[12](#references)] Expression trees still work there; they just run in a different way.
 
 > I am thankful that a lambda can be data as well as code, which is the trick that lets EF Core read a `Where` instead of just running it.
 
@@ -510,7 +510,7 @@ One detail if you have nullable reference types enabled. The key selector receiv
 C# 5 baked `async` and `await` into the language, and the official version history is not shy about calling them the stars of that release.[[8](#references)] The scalability argument is simple. A thread that is waiting on I/O is a thread doing nothing, and `await` lets it go do something else. Used badly, it costs real money, which is the subject of [Async/Await and What It Actually Costs You in the Cloud](/posts/async-await-web-api-cloud-costs/). The language gives you the mechanism, and you still have to hold it correctly.
 
 ### Async Streams and Channels
-`async` handles a single result that arrives later. Many real workloads produce a sequence of results over time. C# 8 added `IAsyncEnumerable<T>` and `await foreach`, backed by .NET Core 3.0 and .NET Standard 2.1.[[14](#references)] An async iterator looks just like a normal one:
+`async` handles a single result that arrives later. Many real workloads produce a sequence of results over time. I used async streams on a project that streamed files through an API, sometimes generating the file from a database or other sources. C# 8 added `IAsyncEnumerable<T>` and `await foreach`, backed by .NET Core 3.0 and .NET Standard 2.1.[[14](#references)] An async iterator looks just like a normal one:
 
 ```csharp
 static async IAsyncEnumerable<int> ReadPagesAsync([EnumeratorCancellation] CancellationToken ct = default)
@@ -593,7 +593,7 @@ await foreach (var finished in Task.WhenEach(tasks))
 // done: slow
 ```
 
-There is no list to maintain and no `Remove` to forget. One detail worth knowing is that a faulted task does not throw out of the enumeration. The loop keeps going, and the exception surfaces when you `await` that individual task, which is why the `try` block lives inside the loop. That is the behavior I observed in the run above, and it is usually what you want.
+There is no list to maintain and no `Remove` to forget. One detail to highlight is that a faulted task does not throw out of the enumeration. The loop keeps going, and the exception surfaces when you `await` that individual task, which is why the `try` block lives inside the loop. That is the behavior I observed in the run above, and it is usually what you want.
 
 Before you swap every `WhenAny` loop for it, here is what it does and does not do. I checked each of these in a test project on .NET 11.
 
@@ -665,7 +665,7 @@ A bad pattern passed to `new Regex(...)` throws an exception when that line runs
 error SYSLIB1042: The specified regex is invalid. 'Invalid pattern '^(unclosed' at offset 10. Not enough )'s.'
 ```
 
-The compiler also reports a second error (CS8795), because the method was left without a body. Moving a failure from a user's session to your build is the quiet payoff of generating code at compile time.
+The compiler also reports a second error (CS8795), because the method was left without a body. Moving a failure from a user's session to your build is the payoff of generating code at compile time.
 
 ### More Generators in the Box
 Regular expressions are not the only generator you already have. `System.Text.Json` uses reflection by default, and the documentation warns that a basic serialization call can break a Native AOT app, which does not support all the reflection APIs it needs. Source generation is the supported way around that.[[18](#references)] You declare a context and ask for the types you need:
@@ -693,14 +693,14 @@ logger.OrderShipped("AB1234", "Newark");   // logs "Order AB1234 shipped to Newa
 
 Both of these compiled and ran in the .NET 11 SDK container with warnings treated as errors. For that small project, the JSON generator wrote six files and the logging generator wrote one.
 
-There are trade-offs worth knowing before you reach for a generator:
+There are trade-offs to understand before you reach for a generator:
 
 - **The type or method must be `partial`.** The generator needs somewhere to put its half.
 - **The inputs must be known at compile time.** A regex pattern assembled at run time from user input cannot use the generator.
 - **You get files you did not write.** They are readable, and you should not edit them, so the fix for a surprising result is always in the attribute or the code that feeds it.
 - **Writing your own generator is a project, not a snippet.** The documentation points to incremental generators and a cookbook for that.[[16](#references)] I did not write one for this post.
 
-That is the quiet connection between this section and the next one. Native AOT cannot support every reflection API, so a generator does the reflection-style work at build time instead, and you keep the convenience.
+That is the subtle connection between this section and the next one. Native AOT cannot support every reflection API, so a generator does the reflection-style work at build time instead, and you keep the convenience.
 
 > I am thankful that a typo in a regex pattern now fails the build instead of waiting to surprise someone at run time.
 
