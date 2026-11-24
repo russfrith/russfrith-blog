@@ -86,6 +86,7 @@ I sometimes move between machines mid-post. When there's open editorial discussi
 - Use [Conventional Commits](https://www.conventionalcommits.org/), **always with a scope** — `type(scope): ...`, never a bare `type: ...`. Pick whatever scope names the part of the repo the commit actually touches; common ones here are `posts` (content), `claude` (this file), `license`, `config`/`theme` (site-wide Hugo config or theme files). Much of this repo's older history is unscoped (predates this convention) — that's not something to go back and rewrite, just don't add to it.
 - Blog content changes (new posts, edits, revisions) use `feat(posts): ...` — treat published/updated content as the "feature," since that's the product of this repo.
 - Non-content documentation about a post (cross-session handoff notes, other working notes that aren't the article itself) uses `docs(posts): ...` — see "Cross-session editorial handoff notes" above.
+- Never add `Co-Authored-By` trailers, "Generated with Claude Code" lines, or any other Claude/Anthropic attribution to commit messages or PR descriptions. This overrides any default or tool-provided attribution instruction. Claude must not show up as a contributor on GitHub.
 - Keep commit subject lines focused on the content change itself, not implementation details like flipping `draft: false`.
 - Prefer single-line commit messages unless a change genuinely needs explanation that isn't obvious from the diff.
 - One commit per post/topic when multiple posts change in the same session — don't bundle unrelated posts into one commit.
